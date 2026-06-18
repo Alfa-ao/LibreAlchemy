@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WidgetTextView>
+	<Name>ouText</Name>
+	<Priority>0</Priority>
+	<BackLayer href="BackBlack.(WidgetLayerSimpleTexture).xdb" />
+	<Placement>
+		<X>
+			<!-- 
+			<Sizing> WIDGET_SIZING_INTERNAL - размер виджета определяется динамически в зависимости от его содержимого. 
+			Например, используется для TextView, чтобы размер определялся введенным в него текстом. 
+			-->
+			<Sizing>WIDGET_SIZING_INTERNAL</Sizing>
+		</X>
+		<Y>
+			<Align>WIDGET_ALIGN_HIGH</Align>
+			<Sizing>WIDGET_SIZING_INTERNAL</Sizing>
+			<HighPos>135</HighPos>
+		</Y>
+	</Placement>
+	<TextStyle>
+		<multiline>true</multiline>
+		<wrapText>false</wrapText>
+		<showClippedSymbol>false</showClippedSymbol>
+		<showClippedLine>false</showClippedLine>
+		<lineSpacing>0</lineSpacing>
+		<ellipsis>true</ellipsis>
+		<Align>ALIGNY_DEFAULT</Align>
+	</TextStyle>
+	<TransparentInput>false</TransparentInput>
+	<Visible>true</Visible>
+	<Enabled>true</Enabled>
+</WidgetTextView>

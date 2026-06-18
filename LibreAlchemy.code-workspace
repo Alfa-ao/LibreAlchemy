@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.autoGuessEncoding": true,
+		"[lua]": {
+			"files.encoding": "windows1251"
+		}
+	}
+}

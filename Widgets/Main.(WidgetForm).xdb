@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WidgetForm>
+	<Name>mainForm</Name>
+	<Priority>10000</Priority>
+	<Children>
+		<Item href="Text/ouText.(WidgetTextView).xdb" />
+	</Children>
+	<Placement>
+		<X>
+			<Align>WIDGET_ALIGN_BOTH</Align>
+		</X>
+		<Y>
+			<Align>WIDGET_ALIGN_BOTH</Align>
+		</Y>
+	</Placement>
+	<Visible>true</Visible>
+	<Enabled>true</Enabled>
+	<TransparentInput>false</TransparentInput>
+	<PickChildrenOnly>true</PickChildrenOnly>
+</WidgetForm>
