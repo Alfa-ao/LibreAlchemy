@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UIAddon>
+	<Name>LibreAlchemy</Name>
+	<AutoStart>true</AutoStart>
+	<ScriptFileRefs>
+		<Item href="LibreAlchemy.lua"/>
+	</ScriptFileRefs>
+	<Form href="Main.(WidgetForm).xdb"/>
+<addon_name>LibreAlchemy</addon_name><addon_date>1751480715</addon_date><addon_link>https://alloder.pro/files/file/209-librealchemy/</addon_link><localizedNameFileRef href="name.txt"/><localizedDescFileRef href="desc.txt"/><userAddonInfo><name href="name.txt"/><description href="desc.txt"/><sourceLink href="link.txt"/><supportLink href="link.txt"/><author>vitaliy75</author><version>1.1.4</version><buildTime>1751480715</buildTime></userAddonInfo></UIAddon>
