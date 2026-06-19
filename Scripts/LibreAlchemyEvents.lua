@@ -1,253 +1,18 @@
 --------------------------------------------------------------------------------
 -- EVENTS
--- Обработчики событий.
+-- РћР±СЂР°Р±РѕС‚С‡РёРєРё СЃРѕР±С‹С‚РёР№.
 --------------------------------------------------------------------------------
 
---- @function EVENT_ALCHEMY_REACTION_FINISHED
---- @description Завершён (ПЕРВЫЙ) этап алхимической реакции.
---- Анализирует барабаны, запускает рекурсивный поиск всех комбинаций сдвигов,
---- сортирует найденные рецепты и выводит топ-N результатов в интерфейс.
-_G.LibreAlchemy.events.EVENT_ALCHEMY_REACTION_FINISHED = function()
-    if _G.LibreAlchemy.debug then 
-        common.LogInfo( "", "EVENT_ALCHEMY_REACTION_FINISHED" ) 
-    end
-    
-    -- Получаем данные из API
-    local ainf = avatar.GetAlchemyInfo()
-    local dri = avatar.GetAlchemyDrumInfo( 0 )
-    
-    -- Инициализация параметров сдвигов
-    _G.LibreAlchemy.nSinshi = dri.maxCorrectionsPerColumn or _G.LibreAlchemy.nSinshi
-    local nRota = ainf.correctionCount or 0
-    _G.LibreAlchemy.nDrums = ainf.drumsCount or _G.LibreAlchemy.nDrums -- Актуализируем количество барабанов
-    
-    local lineMinus1, linePlus1 = nil, nil
-    
-    -- 3. Проверяем доступность дополнительных линий результата (-1 и 1)
-    if avatar.IsAlchemyLineAvailable( -1 ) then lineMinus1 = {} end
-    if avatar.IsAlchemyLineAvailable( 1 ) then linePlus1 = {} end
-    
-    -- 4. Анализируем барабаны и фильтруем рецепты
-    _G.LibreAlchemy.fn.BuildComponentMapAndFilter()
-    _G.LibreAlchemy.lFound = {}
-    
-    -- 5. Запускаем рекурсивный поиск всех комбинаций сдвигов
-    for shiftsLeft = 0, nRota do 
-        _G.LibreAlchemy.fn.RecursiveShiftSearch( _G.LibreAlchemy.nDrums, shiftsLeft, {}, {}, lineMinus1, linePlus1 )
-    end
-    
-    -- 6. Обработка результатов
-    if #_G.LibreAlchemy.lFound == 0 then
-        if _G.LibreAlchemy.debugReaction then 
-            common.LogInfo( "", "EVENT_ALCHEMY_REACTION_FINISHED:{empty}" ) 
-        end
-        
-        _G.LibreAlchemy.fn.wSetText( "Тут ничего, кроме бормотухи." )
-        _G.LibreAlchemy.reactionSuccess = false
-    else
-        -- Сортируем найденные рецепты по приоритету
-        table.sort( _G.LibreAlchemy.lFound, function( a, b )
-			if a.rc.score == b.rc.score then
-				return a.rc.name > b.rc.name
-			else
-				return a.rc.score > b.rc.score
-			end
-		end )
-        
-        -- Таблицы для сбора частей строк
-        local fmtParts = {} -- Для вывода в интерфейс
-        local logParts = {} -- Для вывода в лог
-        
-        -- Формируем строки для вывода в интерфейс и лог, ограничиваемся топ-N рецептами (используем глобальную maxDisplay)
-        for i = 1, math.min( #_G.LibreAlchemy.lFound, _G.LibreAlchemy.maxDisplay ) do
-            local vr = _G.LibreAlchemy.lFound[i]
-            
-            -- Формируем строку сдвигов для интерфейса/лога
-            local shiftStr = string.format( "%d", -vr.sh[1] )
-            local logShiftStr = string.format( "%d", -vr.sh[1] )
-            
-            for dc = 2, _G.LibreAlchemy.nDrums do
-                shiftStr = shiftStr .. string.format( " |% d", -vr.sh[dc] ) -- "% d" добавляет пробел перед положительными числами для выравнивания
-                logShiftStr = logShiftStr .. string.format( ",%d", -vr.sh[dc] )
-            end
-            
-            -- Добавляем отформатированную строку в таблицу для интерфейса/лога
-            table.insert( fmtParts, string.format( "%d: %s - %s", vr.rc.score, shiftStr, vr.rc.name ) )
-            table.insert( logParts, string.format( "%d,%s,%s", vr.rc.score, logShiftStr, vr.rc.name ) )
-        end
-        
-        if _G.LibreAlchemy.debugReaction then 
-            -- Результат: "EVENT_ALCHEMY_REACTION_FINISHED:1,0,0,0,0,0,Обычный пятновыводитель|1,1,0,0,0,0,Обычный пятновыводитель"
-            common.LogInfo("", "EVENT_ALCHEMY_REACTION_FINISHED:" .. table.concat( logParts, "|" ) ) 
-        end
-		
-        -- Результат: "120:  0 | 1 | 2 | 0 | 0 - Королевское зелье исцеления<br/>120:  0 | 0 | 1 |-1 |-1 - Королевское зелье восстановления"
-        _G.LibreAlchemy.fn.wSetText( table.concat( fmtParts, "<br/>" ) )
-        
-        _G.LibreAlchemy.reactionSuccess = true
-    end
-end
-
---- @function EVENT_ALCHEMY_RECIPES_CHANGED
---- @description Изменился список алхимических рецептов главного игрока.
-_G.LibreAlchemy.events.EVENT_ALCHEMY_RECIPES_CHANGED = function()
-    if _G.LibreAlchemy.debug then common.LogInfo( "", "EVENT_ALCHEMY_RECIPES_CHANGED" ) end
-	
-	-- Сбрасываем кэш, чтобы при следующем запросе список рецептов обновился
-    _G.LibreAlchemy.lReci = nil
-    
-	_G.LibreAlchemy.fn.wSetText( "LibreAlchemy: Поздравляю!" )
-	
-	_G.LibreAlchemy.welcomeBack = true
-end
-
---- @function EVENT_ALCHEMY_STARTED
---- @description Умение алхимии начало действие после использования алхимического инструмента.
-_G.LibreAlchemy.events.EVENT_ALCHEMY_STARTED = function()
-    if _G.LibreAlchemy.debug then common.LogInfo( "", "EVENT_ALCHEMY_STARTED" ) end
-	
-	_G.mainForm:Show( true )
-	_G.LibreAlchemy.active = true
-	
-	-- ОБЯЗАТЕЛЬНО актуализируем количество барабанов.
-    _G.LibreAlchemy.nDrums = avatar.GetAlchemyInfo().drumsCount
-	
-	if _G.LibreAlchemy.welcomeBack then
-		_G.LibreAlchemy.fn.wSetText( "LibreAlchemy: С возвращением!" )
-	elseif _G.LibreAlchemy.welcomeBack == false then
-		_G.LibreAlchemy.fn.wSetText( "LibreAlchemy: Приветствую O_O!" )
-    end
-end
-
---- @function _G.LibreAlchemy.events.EVENT_ALCHEMY_CANCELED
---- @description Обработчик события прерывания или завершения алхимического действия. 
---- Отвечает за скрытие интерфейса и полный сброс внутренних флагов состояния аддона в исходное положение, 
---- если процесс варки был прерван.
---- @param params table Параметры события.
---- @param params.isSuccess boolean Флаг успешности завершения действия:
---- false: Действие было прервано (например, окно алхимии закрыто).
---- true: Действие завершилось штатно.
-_G.LibreAlchemy.events.EVENT_ALCHEMY_CANCELED = function( params )
-    if _G.LibreAlchemy.debug then 
-		common.LogInfo( "", "EVENT_ALCHEMY_CANCELED" )
-		common.LogInfo( "", "isSuccess: " .. tostring( params.isSuccess ) )
-	end
-	
-    if not params.isSuccess then
-        
-        -- Скрываем текстовый виджет подсказок
-		_G.mainForm:Show( false )
-        
-        -- Сбрасываем состояние размещения компонентов в слоты
-        _G.LibreAlchemy.place.placed = nil
-        _G.LibreAlchemy.place.readyNotFoundMessage = false
-        
-        -- Сбрасываем флаги активности и успешности реакции
-        _G.LibreAlchemy.reactionSuccess = false
-        _G.LibreAlchemy.active = false
-        
-        -- Устанавливаем флаг для показа сообщения "С возвращением!" при следующем открытии алхимии
-        _G.LibreAlchemy.welcomeBack = true
-    end
-end
-
---- @function _G.LibreAlchemy.events.EVENT_ALCHEMY_ITEM_PLACED
---- @description Обрабатывает событие помещения или извлечения алхимического компонента в барабан.
---- Отслеживает состояние слотов, обновляет внутренние счетчики и выводит пользователю 
---- предварительную оценку возможности создания рецептов на основе текущих компонентов.
---- @param params table Параметры события:
---- @param params.slot number Индекс слота (барабана), в котором произошло изменение (0-первый слот).
---- @param params.placed boolean true, если компонент помещен; false, если извлечен.
-_G.LibreAlchemy.events.EVENT_ALCHEMY_ITEM_PLACED = function( params )
-	if _G.LibreAlchemy.debug then
-		common.LogInfo( "", "EVENT_ALCHEMY_ITEM_PLACED" )
-		common.LogInfo( "", tostring( params.placed and "(+) положен" or "(-) вынут" ) )
-		common.LogInfo( "", tostring( params.slot ) )
-	end
-	--[[
-	Ивент EVENT_ALCHEMY_ITEM_PLACED отрабатывает
-	При открытии алхимии:
-	Info: EVENT_ALCHEMY_STARTED
-	Info: EVENT_ALCHEMY_ITEM_PLACED
-	Info: положен
-	Info: 0
-	Info: EVENT_ALCHEMY_ITEM_PLACED
-	Info: положен
-	Info: 1
-	
-	При выборе зелья:
-	Info: EVENT_ALCHEMY_ITEM_PLACED
-	Info: убран
-	Info: 0
-	Info: EVENT_ALCHEMY_ITEM_PLACED
-	Info: убран
-	Info: 1
-	Info: EVENT_ALCHEMY_ITEM_PLACED
-	Info: положен
-	Info: 0
-	Info: EVENT_ALCHEMY_ITEM_PLACED
-	Info: положен
-	Info: 1
-	
-	Сигналы при переключении на другое зелье:
-	сначала полностью убирает слоты
-	тут-же обратно ложит слоты
-
-	Во время этих действий может легко влесть ивент EVENT_SECOND_TIMER
-	]]
-	
-	_G.LibreAlchemy.place.placed = params.placed
-	_G.LibreAlchemy.place.readyNotFoundMessage = false
-	
-	-- Если событие пришло с вынутым компонентом.
-	-- Устанавливаем финишную реакцию ( даже если она не была EVENT_ALCHEMY_REACTION_FINISHED ) - false
-	-- Ограничиваем выполнение дальнейшего кода
-	if not params.placed then
-		_G.LibreAlchemy.reactionSuccess = false
-		_G.LibreAlchemy.place.count = 0 -- Присваиваем 0, ведь по логике компоненты сначала убираются все... Смысла минусовать нет.
-		return
-	end
-	
-	_G.LibreAlchemy.place.count = _G.LibreAlchemy.place.count + 1
-	
-	-- При старте нужно показать сообщение приветствие или с возвращением
-	if _G.LibreAlchemy.welcomeBack ~= nil then
-		return -- Поэтому глушим дальнейший код
-	end
-	
-	if not _G.LibreAlchemy.reactionSuccess then
-		local rc, dc = _G.LibreAlchemy.fn.CountPotentialRecipes() -- Кол-во рецептов / вложенное кол-во компонентов
-		
-		if _G.LibreAlchemy.debug then
-			common.LogInfo( "", string.format( "--- Возможно, есть рецепты: %d шт.", rc ) )
-			common.LogInfo( "", string.format( "--- Кол-во компонентов: %d шт.", dc ) )
-			common.LogInfo( "", string.format( "--- Итерация компонентов: %d", _G.LibreAlchemy.place.count ) )
-		end
-		
-		if rc > 0 and _G.LibreAlchemy.place.count == dc then
-			_G.LibreAlchemy.fn.wSetText( string.format( "Возможно, есть рецепты: %d шт.", rc ) )
-		elseif _G.LibreAlchemy.place.count == dc then
-			-- Изредка CountPotentialRecipes даёт 0 рецептов, когда они имеются...
-			-- КОСТЫЛЬ. Добавили params.slot > 0
-			-- Решили проблему с ложным срабатыванием, но другая проблема - если единственный компонент будет присутствовать в 1(0 в системе) лоте
-			-- Логически не решаемо... Нужна функция avatar.IsAlchemyComponentsReady(), которая убита AS-XKJ-489-73348 10 июн. 2026г.
-			-- Был убран params.slot > 0
-			_G.LibreAlchemy.fn.wSetText( "Компоненты не готовы." )
-		end
-		if _G.LibreAlchemy.debug then common.LogInfo( "", "------------------------------------------------------" ) end
-	end
-end
-
 --- @function EVENT_SECOND_TIMER
---- @description Глобальный таймер (срабатывает раз в секунду).
---- Используется как механизм задержки (debounce) для корректного вывода сообщения "Тут нет рецептов", 
---- когда игрок извлек все компоненты из барабанов, но окно алхимии все еще открыто.
---- Флаг readyNotFoundMessage предотвращает спам этим сообщением каждый тик таймера.
---- Также сбрасывает флаг welcomeBack в nil, позволяя аддону перейти в штатный режим работы после приветствия.
+--- @description Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ С‚Р°Р№РјРµСЂ (СЃСЂР°Р±Р°С‚С‹РІР°РµС‚ СЂР°Р· РІ СЃРµРєСѓРЅРґСѓ).
+--- РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РєР°Рє РјРµС…Р°РЅРёР·Рј Р·Р°РґРµСЂР¶РєРё (debounce) РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕРіРѕ РІС‹РІРѕРґР° СЃРѕРѕР±С‰РµРЅРёСЏ "РўСѓС‚ РЅРµС‚ СЂРµС†РµРїС‚РѕРІ", 
+--- РєРѕРіРґР° РёРіСЂРѕРє РёР·РІР»РµРє РІСЃРµ РєРѕРјРїРѕРЅРµРЅС‚С‹ РёР· Р±Р°СЂР°Р±Р°РЅРѕРІ, РЅРѕ РѕРєРЅРѕ Р°Р»С…РёРјРёРё РІСЃРµ РµС‰Рµ РѕС‚РєСЂС‹С‚Рѕ.
+--- Р¤Р»Р°Рі readyNotFoundMessage РїСЂРµРґРѕС‚РІСЂР°С‰Р°РµС‚ СЃРїР°Рј СЌС‚РёРј СЃРѕРѕР±С‰РµРЅРёРµРј РєР°Р¶РґС‹Р№ С‚РёРє С‚Р°Р№РјРµСЂР°.
+--- РўР°РєР¶Рµ СЃР±СЂР°СЃС‹РІР°РµС‚ С„Р»Р°Рі welcomeBack РІ nil, РїРѕР·РІРѕР»СЏСЏ Р°РґРґРѕРЅСѓ РїРµСЂРµР№С‚Рё РІ С€С‚Р°С‚РЅС‹Р№ СЂРµР¶РёРј СЂР°Р±РѕС‚С‹ РїРѕСЃР»Рµ РїСЂРёРІРµС‚СЃС‚РІРёСЏ.
 _G.LibreAlchemy.events.EVENT_SECOND_TIMER = function()
 	if _G.LibreAlchemy.active and _G.LibreAlchemy.place.placed == false and avatar.GetAlchemyInfo().active then
 		if _G.LibreAlchemy.place.readyNotFoundMessage then
-			_G.LibreAlchemy.fn.wSetText( "Тут нет рецептов" )
+			_G.LibreAlchemy.fn.wSetText( _G.LibreAlchemy.locales.NOT_FOUND_RECIPLES )
 			
 			_G.LibreAlchemy.place.placed = nil
 			_G.LibreAlchemy.place.readyNotFoundMessage = false
@@ -262,28 +27,270 @@ _G.LibreAlchemy.events.EVENT_SECOND_TIMER = function()
 end
 
 --- @function EVENT_AVATAR_ITEM_TAKEN
---- @description Срабатывает при получении предмета главным игроком.
---- В контексте данного аддона используется для перехвата результата успешной алхимической варки.
---- Проверяет тип действия (Craft) и флаг reactionSuccess, чтобы вывести поздравление 
---- с названием и количеством созданного зелья, игнорируя все остальные получения предметов.
---- @param params table - Параметры события.
---- @param params.itemObject ValuedObject - Объект, содержащий информацию о полученном предмете.
---- @param params.actionType string - Тип действия "ENUM_TakeItemActionType_Craft".
+--- @description РЎСЂР°Р±Р°С‚С‹РІР°РµС‚ РїСЂРё РїРѕР»СѓС‡РµРЅРёРё РїСЂРµРґРјРµС‚Р° РіР»Р°РІРЅС‹Рј РёРіСЂРѕРєРѕРј.
+--- Р’ РєРѕРЅС‚РµРєСЃС‚Рµ РґР°РЅРЅРѕРіРѕ Р°РґРґРѕРЅР° РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ РїРµСЂРµС…РІР°С‚Р° СЂРµР·СѓР»СЊС‚Р°С‚Р° СѓСЃРїРµС€РЅРѕР№ Р°Р»С…РёРјРёС‡РµСЃРєРѕР№ РІР°СЂРєРё.
+--- РџСЂРѕРІРµСЂСЏРµС‚ С‚РёРї РґРµР№СЃС‚РІРёСЏ (Craft) Рё С„Р»Р°Рі reactionSuccess, С‡С‚РѕР±С‹ РІС‹РІРµСЃС‚Рё РїРѕР·РґСЂР°РІР»РµРЅРёРµ 
+--- СЃ РЅР°Р·РІР°РЅРёРµРј Рё РєРѕР»РёС‡РµСЃС‚РІРѕРј СЃРѕР·РґР°РЅРЅРѕРіРѕ Р·РµР»СЊСЏ, РёРіРЅРѕСЂРёСЂСѓСЏ РІСЃРµ РѕСЃС‚Р°Р»СЊРЅС‹Рµ РїРѕР»СѓС‡РµРЅРёСЏ РїСЂРµРґРјРµС‚РѕРІ.
+--- @param params table - РџР°СЂР°РјРµС‚СЂС‹ СЃРѕР±С‹С‚РёСЏ.
+--- @param params.itemObject ValuedObject - РћР±СЉРµРєС‚, СЃРѕРґРµСЂР¶Р°С‰РёР№ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РїРѕР»СѓС‡РµРЅРЅРѕРј РїСЂРµРґРјРµС‚Рµ.
+--- @param params.actionType string - РўРёРї РґРµР№СЃС‚РІРёСЏ "ENUM_TakeItemActionType_Craft".
 _G.LibreAlchemy.events.EVENT_AVATAR_ITEM_TAKEN = function( params )
+	if _G.LibreAlchemy.debug then 
+        common.LogInfo( "", "EVENT_AVATAR_ITEM_TAKEN" )
+		common.LogInfo( "", params.actionType )
+		common.LogInfo( "", "reactionSuccess: " .. tostring( _G.LibreAlchemy.reactionSuccess ) )
+    end
+	
 	if params.actionType == "ENUM_TakeItemActionType_Craft" and _G.LibreAlchemy.reactionSuccess then
 		local potionName = userMods.FromWString( itemLib.GetItemInfo( params.itemObject:GetId() ).name )
 		local count = itemLib.GetStackInfo( params.itemObject:GetId() ).count
-		_G.LibreAlchemy.fn.wSetText( string.format( "Поздравляю! Вы получаете: [%s] %d шт", potionName, count ) )
+		_G.LibreAlchemy.fn.wSetText( string.format( _G.LibreAlchemy.locales.AVATAR_ITEM_TAKEN, potionName, count ) )
 	end
 end
 
+--- @function EVENT_ALCHEMY_REACTION_FINISHED
+--- @description Р—Р°РІРµСЂС€С‘РЅ (РџР•Р Р’Р«Р™) СЌС‚Р°Рї Р°Р»С…РёРјРёС‡РµСЃРєРѕР№ СЂРµР°РєС†РёРё.
+--- РђРЅР°Р»РёР·РёСЂСѓРµС‚ Р±Р°СЂР°Р±Р°РЅС‹, Р·Р°РїСѓСЃРєР°РµС‚ СЂРµРєСѓСЂСЃРёРІРЅС‹Р№ РїРѕРёСЃРє РІСЃРµС… РєРѕРјР±РёРЅР°С†РёР№ СЃРґРІРёРіРѕРІ,
+--- СЃРѕСЂС‚РёСЂСѓРµС‚ РЅР°Р№РґРµРЅРЅС‹Рµ СЂРµС†РµРїС‚С‹ Рё РІС‹РІРѕРґРёС‚ С‚РѕРї-N СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ РІ РёРЅС‚РµСЂС„РµР№СЃ.
+_G.LibreAlchemy.events.EVENT_ALCHEMY_REACTION_FINISHED = function()
+    if _G.LibreAlchemy.debug then 
+        common.LogInfo( "", "EVENT_ALCHEMY_REACTION_FINISHED" ) 
+    end
+    
+    -- РџРѕР»СѓС‡Р°РµРј РґР°РЅРЅС‹Рµ РёР· API
+    local ainf = avatar.GetAlchemyInfo()
+    local dri = avatar.GetAlchemyDrumInfo( 0 )
+    
+    -- РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ СЃРґРІРёРіРѕРІ
+    _G.LibreAlchemy.nSinshi = dri.maxCorrectionsPerColumn or _G.LibreAlchemy.nSinshi
+    local nRota = ainf.correctionCount or 0
+    _G.LibreAlchemy.nDrums = ainf.drumsCount or _G.LibreAlchemy.nDrums -- РђРєС‚СѓР°Р»РёР·РёСЂСѓРµРј РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°СЂР°Р±Р°РЅРѕРІ
+    
+    local lineMinus1, linePlus1 = nil, nil
+    
+    -- 3. РџСЂРѕРІРµСЂСЏРµРј РґРѕСЃС‚СѓРїРЅРѕСЃС‚СЊ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹С… Р»РёРЅРёР№ СЂРµР·СѓР»СЊС‚Р°С‚Р° (-1 Рё 1)
+    if avatar.IsAlchemyLineAvailable( -1 ) then lineMinus1 = {} end
+    if avatar.IsAlchemyLineAvailable( 1 ) then linePlus1 = {} end
+    
+    -- 4. РђРЅР°Р»РёР·РёСЂСѓРµРј Р±Р°СЂР°Р±Р°РЅС‹ Рё С„РёР»СЊС‚СЂСѓРµРј СЂРµС†РµРїС‚С‹
+    _G.LibreAlchemy.fn.BuildComponentMapAndFilter()
+    _G.LibreAlchemy.lFound = {}
+    
+    -- 5. Р—Р°РїСѓСЃРєР°РµРј СЂРµРєСѓСЂСЃРёРІРЅС‹Р№ РїРѕРёСЃРє РІСЃРµС… РєРѕРјР±РёРЅР°С†РёР№ СЃРґРІРёРіРѕРІ
+    for shiftsLeft = 0, nRota do 
+        _G.LibreAlchemy.fn.RecursiveShiftSearch( _G.LibreAlchemy.nDrums, shiftsLeft, {}, {}, lineMinus1, linePlus1 )
+    end
+    
+    -- 6. РћР±СЂР°Р±РѕС‚РєР° СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ
+    if #_G.LibreAlchemy.lFound == 0 then
+        if _G.LibreAlchemy.debugReaction then 
+            common.LogInfo( "", "EVENT_ALCHEMY_REACTION_FINISHED:{empty}" ) 
+        end
+        
+        _G.LibreAlchemy.fn.wSetText( _G.LibreAlchemy.locales.RESULT_GIBBERISH )
+        _G.LibreAlchemy.reactionSuccess = false
+    else
+        -- РЎРѕСЂС‚РёСЂСѓРµРј РЅР°Р№РґРµРЅРЅС‹Рµ СЂРµС†РµРїС‚С‹ РїРѕ РїСЂРёРѕСЂРёС‚РµС‚Сѓ
+        table.sort( _G.LibreAlchemy.lFound, function( a, b )
+			if a.rc.score == b.rc.score then
+				return a.rc.name > b.rc.name
+			else
+				return a.rc.score > b.rc.score
+			end
+		end )
+        
+        -- РўР°Р±Р»РёС†С‹ РґР»СЏ СЃР±РѕСЂР° С‡Р°СЃС‚РµР№ СЃС‚СЂРѕРє
+        local fmtParts = {} -- Р”Р»СЏ РІС‹РІРѕРґР° РІ РёРЅС‚РµСЂС„РµР№СЃ
+        local logParts = {} -- Р”Р»СЏ РІС‹РІРѕРґР° РІ Р»РѕРі
+        
+        -- Р¤РѕСЂРјРёСЂСѓРµРј СЃС‚СЂРѕРєРё РґР»СЏ РІС‹РІРѕРґР° РІ РёРЅС‚РµСЂС„РµР№СЃ Рё Р»РѕРі, РѕРіСЂР°РЅРёС‡РёРІР°РµРјСЃСЏ С‚РѕРї-N СЂРµС†РµРїС‚Р°РјРё (РёСЃРїРѕР»СЊР·СѓРµРј РіР»РѕР±Р°Р»СЊРЅСѓСЋ maxDisplay)
+        for i = 1, math.min( #_G.LibreAlchemy.lFound, _G.LibreAlchemy.maxDisplay ) do
+            local vr = _G.LibreAlchemy.lFound[i]
+            
+            -- Р¤РѕСЂРјРёСЂСѓРµРј СЃС‚СЂРѕРєСѓ СЃРґРІРёРіРѕРІ РґР»СЏ РёРЅС‚РµСЂС„РµР№СЃР°/Р»РѕРіР°
+            local shiftStr = string.format( "%d", -vr.sh[1] )
+            local logShiftStr = string.format( "%d", -vr.sh[1] )
+            
+            for dc = 2, _G.LibreAlchemy.nDrums do
+                shiftStr = shiftStr .. string.format( " |% d", -vr.sh[dc] ) -- "% d" РґРѕР±Р°РІР»СЏРµС‚ РїСЂРѕР±РµР» РїРµСЂРµРґ РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹РјРё С‡РёСЃР»Р°РјРё РґР»СЏ РІС‹СЂР°РІРЅРёРІР°РЅРёСЏ
+                logShiftStr = logShiftStr .. string.format( ",%d", -vr.sh[dc] )
+            end
+            
+            -- Р”РѕР±Р°РІР»СЏРµРј РѕС‚С„РѕСЂРјР°С‚РёСЂРѕРІР°РЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ РІ С‚Р°Р±Р»РёС†Сѓ РґР»СЏ РёРЅС‚РµСЂС„РµР№СЃР°/Р»РѕРіР°
+            table.insert( fmtParts, string.format( "%d: %s - %s", vr.rc.score, shiftStr, vr.rc.name ) )
+            table.insert( logParts, string.format( "%d,%s,%s", vr.rc.score, logShiftStr, vr.rc.name ) )
+        end
+        
+        if _G.LibreAlchemy.debugReaction then 
+            -- Р РµР·СѓР»СЊС‚Р°С‚: "EVENT_ALCHEMY_REACTION_FINISHED:1,0,0,0,0,0,РћР±С‹С‡РЅС‹Р№ РїСЏС‚РЅРѕРІС‹РІРѕРґРёС‚РµР»СЊ|1,1,0,0,0,0,РћР±С‹С‡РЅС‹Р№ РїСЏС‚РЅРѕРІС‹РІРѕРґРёС‚РµР»СЊ"
+            common.LogInfo("", "EVENT_ALCHEMY_REACTION_FINISHED:" .. table.concat( logParts, "|" ) ) 
+        end
+		
+        -- Р РµР·СѓР»СЊС‚Р°С‚: "120:  0 | 1 | 2 | 0 | 0 - РљРѕСЂРѕР»РµРІСЃРєРѕРµ Р·РµР»СЊРµ РёСЃС†РµР»РµРЅРёСЏ<br/>120:  0 | 0 | 1 |-1 |-1 - РљРѕСЂРѕР»РµРІСЃРєРѕРµ Р·РµР»СЊРµ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ"
+        _G.LibreAlchemy.fn.wSetText( table.concat( fmtParts, "<br/>" ) )
+        
+        _G.LibreAlchemy.reactionSuccess = true
+    end
+end
+
+--- @function EVENT_ALCHEMY_RECIPES_CHANGED
+--- @description РР·РјРµРЅРёР»СЃСЏ СЃРїРёСЃРѕРє Р°Р»С…РёРјРёС‡РµСЃРєРёС… СЂРµС†РµРїС‚РѕРІ РіР»Р°РІРЅРѕРіРѕ РёРіСЂРѕРєР°.
+_G.LibreAlchemy.events.EVENT_ALCHEMY_RECIPES_CHANGED = function()
+    if _G.LibreAlchemy.debug then common.LogInfo( "", "EVENT_ALCHEMY_RECIPES_CHANGED" ) end
+	
+	-- РЎР±СЂР°СЃС‹РІР°РµРј РєСЌС€, С‡С‚РѕР±С‹ РїСЂРё СЃР»РµРґСѓСЋС‰РµРј Р·Р°РїСЂРѕСЃРµ СЃРїРёСЃРѕРє СЂРµС†РµРїС‚РѕРІ РѕР±РЅРѕРІРёР»СЃСЏ
+    _G.LibreAlchemy.lReci = nil
+    
+	_G.LibreAlchemy.fn.wSetText( _G.LibreAlchemy.locales.CONGRATULATION )
+	
+	_G.LibreAlchemy.welcomeBack = true
+end
+
+--- @function _G.LibreAlchemy.events.EVENT_ALCHEMY_ITEM_PLACED
+--- @description РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ СЃРѕР±С‹С‚РёРµ РїРѕРјРµС‰РµРЅРёСЏ РёР»Рё РёР·РІР»РµС‡РµРЅРёСЏ Р°Р»С…РёРјРёС‡РµСЃРєРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РІ Р±Р°СЂР°Р±Р°РЅ.
+--- РћС‚СЃР»РµР¶РёРІР°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ СЃР»РѕС‚РѕРІ, РѕР±РЅРѕРІР»СЏРµС‚ РІРЅСѓС‚СЂРµРЅРЅРёРµ СЃС‡РµС‚С‡РёРєРё Рё РІС‹РІРѕРґРёС‚ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ 
+--- РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅСѓСЋ РѕС†РµРЅРєСѓ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё СЃРѕР·РґР°РЅРёСЏ СЂРµС†РµРїС‚РѕРІ РЅР° РѕСЃРЅРѕРІРµ С‚РµРєСѓС‰РёС… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ.
+--- @param params table РџР°СЂР°РјРµС‚СЂС‹ СЃРѕР±С‹С‚РёСЏ:
+--- @param params.slot number РРЅРґРµРєСЃ СЃР»РѕС‚Р° (Р±Р°СЂР°Р±Р°РЅР°), РІ РєРѕС‚РѕСЂРѕРј РїСЂРѕРёР·РѕС€Р»Рѕ РёР·РјРµРЅРµРЅРёРµ (0-РїРµСЂРІС‹Р№ СЃР»РѕС‚).
+--- @param params.placed boolean true, РµСЃР»Рё РєРѕРјРїРѕРЅРµРЅС‚ РїРѕРјРµС‰РµРЅ; false, РµСЃР»Рё РёР·РІР»РµС‡РµРЅ.
+_G.LibreAlchemy.events.EVENT_ALCHEMY_ITEM_PLACED = function( params )
+	if _G.LibreAlchemy.debug then
+		common.LogInfo( "", "EVENT_ALCHEMY_ITEM_PLACED" )
+		common.LogInfo( "", params.placed and _G.LibreAlchemy.locales.DEBUG_INSERT_BAR or _G.LibreAlchemy.locales.DEBUG_REMOVED_BAR )
+		common.LogInfo( "", tostring( params.slot ) )
+	end
+	--[[
+	РРІРµРЅС‚ EVENT_ALCHEMY_ITEM_PLACED РѕС‚СЂР°Р±Р°С‚С‹РІР°РµС‚
+	РџСЂРё РѕС‚РєСЂС‹С‚РёРё Р°Р»С…РёРјРёРё:
+	Info: EVENT_ALCHEMY_STARTED
+	Info: EVENT_ALCHEMY_ITEM_PLACED
+	Info: РїРѕР»РѕР¶РµРЅ
+	Info: 0
+	Info: EVENT_ALCHEMY_ITEM_PLACED
+	Info: РїРѕР»РѕР¶РµРЅ
+	Info: 1
+	
+	РџСЂРё РІС‹Р±РѕСЂРµ Р·РµР»СЊСЏ:
+	Info: EVENT_ALCHEMY_ITEM_PLACED
+	Info: СѓР±СЂР°РЅ
+	Info: 0
+	Info: EVENT_ALCHEMY_ITEM_PLACED
+	Info: СѓР±СЂР°РЅ
+	Info: 1
+	Info: EVENT_ALCHEMY_ITEM_PLACED
+	Info: РїРѕР»РѕР¶РµРЅ
+	Info: 0
+	Info: EVENT_ALCHEMY_ITEM_PLACED
+	Info: РїРѕР»РѕР¶РµРЅ
+	Info: 1
+	
+	РЎРёРіРЅР°Р»С‹ РїСЂРё РїРµСЂРµРєР»СЋС‡РµРЅРёРё РЅР° РґСЂСѓРіРѕРµ Р·РµР»СЊРµ:
+	СЃРЅР°С‡Р°Р»Р° РїРѕР»РЅРѕСЃС‚СЊСЋ СѓР±РёСЂР°РµС‚ СЃР»РѕС‚С‹
+	С‚СѓС‚-Р¶Рµ РѕР±СЂР°С‚РЅРѕ Р»РѕР¶РёС‚ СЃР»РѕС‚С‹
+
+	Р’Рѕ РІСЂРµРјСЏ СЌС‚РёС… РґРµР№СЃС‚РІРёР№ РјРѕР¶РµС‚ Р»РµРіРєРѕ РІР»РµСЃС‚СЊ РёРІРµРЅС‚ EVENT_SECOND_TIMER
+	]]
+	
+	_G.LibreAlchemy.place.placed = params.placed
+	_G.LibreAlchemy.place.readyNotFoundMessage = false
+	
+	-- Р•СЃР»Рё СЃРѕР±С‹С‚РёРµ РїСЂРёС€Р»Рѕ СЃ РІС‹РЅСѓС‚С‹Рј РєРѕРјРїРѕРЅРµРЅС‚РѕРј.
+	-- РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„РёРЅРёС€РЅСѓСЋ СЂРµР°РєС†РёСЋ ( РґР°Р¶Рµ РµСЃР»Рё РѕРЅР° РЅРµ Р±С‹Р»Р° EVENT_ALCHEMY_REACTION_FINISHED ) - false
+	-- РћРіСЂР°РЅРёС‡РёРІР°РµРј РІС‹РїРѕР»РЅРµРЅРёРµ РґР°Р»СЊРЅРµР№С€РµРіРѕ РєРѕРґР°
+	if not params.placed then
+		_G.LibreAlchemy.reactionSuccess = false
+		_G.LibreAlchemy.place.count = 0 -- РџСЂРёСЃРІР°РёРІР°РµРј 0, РІРµРґСЊ РїРѕ Р»РѕРіРёРєРµ РєРѕРјРїРѕРЅРµРЅС‚С‹ СЃРЅР°С‡Р°Р»Р° СѓР±РёСЂР°СЋС‚СЃСЏ РІСЃРµ... РЎРјС‹СЃР»Р° РјРёРЅСѓСЃРѕРІР°С‚СЊ РЅРµС‚.
+		return
+	end
+	
+	_G.LibreAlchemy.place.count = _G.LibreAlchemy.place.count + 1
+	
+	-- РџСЂРё СЃС‚Р°СЂС‚Рµ РЅСѓР¶РЅРѕ РїРѕРєР°Р·Р°С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ РїСЂРёРІРµС‚СЃС‚РІРёРµ РёР»Рё СЃ РІРѕР·РІСЂР°С‰РµРЅРёРµРј
+	if _G.LibreAlchemy.welcomeBack ~= nil then
+		return -- РџРѕСЌС‚РѕРјСѓ РіР»СѓС€РёРј РґР°Р»СЊРЅРµР№С€РёР№ РєРѕРґ
+	end
+	
+	if not _G.LibreAlchemy.reactionSuccess then
+		local rc, dc = _G.LibreAlchemy.fn.CountPotentialRecipes() -- РљРѕР»-РІРѕ СЂРµС†РµРїС‚РѕРІ / РІР»РѕР¶РµРЅРЅРѕРµ РєРѕР»-РІРѕ РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
+		
+		if _G.LibreAlchemy.debug then
+			common.LogInfo( "", string.format( _G.LibreAlchemy.locales.DEBUG_COUNT_RECIPES, rc ) )
+			common.LogInfo( "", string.format( _G.LibreAlchemy.locales.DEBUG_COUNT_COMPONENTS, dc ) )
+			common.LogInfo( "", string.format( _G.LibreAlchemy.locales.DEBUG_ITERATION_COMPONENTS, _G.LibreAlchemy.place.count ) )
+		end
+		
+		if rc > 0 and _G.LibreAlchemy.place.count == dc then
+			_G.LibreAlchemy.fn.wSetText( string.format( _G.LibreAlchemy.locales.COUNT_RECIPLES, rc ) )
+		elseif _G.LibreAlchemy.place.count == dc then
+			-- РР·СЂРµРґРєР° CountPotentialRecipes РґР°С‘С‚ 0 СЂРµС†РµРїС‚РѕРІ, РєРѕРіРґР° РѕРЅРё РёРјРµСЋС‚СЃСЏ...
+			-- РљРћРЎРўР«Р›Р¬. Р”РѕР±Р°РІРёР»Рё params.slot > 0
+			-- Р РµС€РёР»Рё РїСЂРѕР±Р»РµРјСѓ СЃ Р»РѕР¶РЅС‹Рј СЃСЂР°Р±Р°С‚С‹РІР°РЅРёРµРј, РЅРѕ РґСЂСѓРіР°СЏ РїСЂРѕР±Р»РµРјР° - РµСЃР»Рё РµРґРёРЅСЃС‚РІРµРЅРЅС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚ Р±СѓРґРµС‚ РїСЂРёСЃСѓС‚СЃС‚РІРѕРІР°С‚СЊ РІ 1(0 РІ СЃРёСЃС‚РµРјРµ) Р»РѕС‚Рµ
+			-- Р›РѕРіРёС‡РµСЃРєРё РЅРµ СЂРµС€Р°РµРјРѕ... РќСѓР¶РЅР° С„СѓРЅРєС†РёСЏ avatar.IsAlchemyComponentsReady(), РєРѕС‚РѕСЂР°СЏ СѓР±РёС‚Р° AS-XKJ-489-73348 10 РёСЋРЅ. 2026Рі.
+			-- Р‘С‹Р» СѓР±СЂР°РЅ params.slot > 0
+			_G.LibreAlchemy.fn.wSetText( _G.LibreAlchemy.locales.COMPONENTS_NOT_READY )
+		end
+		if _G.LibreAlchemy.debug then common.LogInfo( "", "------------------------------------------------------" ) end
+	end
+end
+
+--- @function _G.LibreAlchemy.events.EVENT_ALCHEMY_CANCELED
+--- @description РћР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёСЏ РїСЂРµСЂС‹РІР°РЅРёСЏ РёР»Рё Р·Р°РІРµСЂС€РµРЅРёСЏ Р°Р»С…РёРјРёС‡РµСЃРєРѕРіРѕ РґРµР№СЃС‚РІРёСЏ. 
+--- РћС‚РІРµС‡Р°РµС‚ Р·Р° СЃРєСЂС‹С‚РёРµ РёРЅС‚РµСЂС„РµР№СЃР° Рё РїРѕР»РЅС‹Р№ СЃР±СЂРѕСЃ РІРЅСѓС‚СЂРµРЅРЅРёС… С„Р»Р°РіРѕРІ СЃРѕСЃС‚РѕСЏРЅРёСЏ Р°РґРґРѕРЅР° РІ РёСЃС…РѕРґРЅРѕРµ РїРѕР»РѕР¶РµРЅРёРµ, 
+--- РµСЃР»Рё РїСЂРѕС†РµСЃСЃ РІР°СЂРєРё Р±С‹Р» РїСЂРµСЂРІР°РЅ.
+--- @param params table РџР°СЂР°РјРµС‚СЂС‹ СЃРѕР±С‹С‚РёСЏ.
+--- @param params.isSuccess boolean Р¤Р»Р°Рі СѓСЃРїРµС€РЅРѕСЃС‚Рё Р·Р°РІРµСЂС€РµРЅРёСЏ РґРµР№СЃС‚РІРёСЏ:
+--- false: Р”РµР№СЃС‚РІРёРµ Р±С‹Р»Рѕ РїСЂРµСЂРІР°РЅРѕ (РЅР°РїСЂРёРјРµСЂ, РѕРєРЅРѕ Р°Р»С…РёРјРёРё Р·Р°РєСЂС‹С‚Рѕ).
+--- true: Р”РµР№СЃС‚РІРёРµ Р·Р°РІРµСЂС€РёР»РѕСЃСЊ С€С‚Р°С‚РЅРѕ.
+_G.LibreAlchemy.events.EVENT_ALCHEMY_CANCELED = function( params )
+    if _G.LibreAlchemy.debug then 
+		common.LogInfo( "", "EVENT_ALCHEMY_CANCELED" )
+		common.LogInfo( "", "isSuccess: " .. tostring( params.isSuccess ) )
+	end
+	
+    if not params.isSuccess then
+        
+        -- РЎРєСЂС‹РІР°РµРј С‚РµРєСЃС‚РѕРІС‹Р№ РІРёРґР¶РµС‚ РїРѕРґСЃРєР°Р·РѕРє
+		_G.mainForm:Show( false )
+        
+        -- РЎР±СЂР°СЃС‹РІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ СЂР°Р·РјРµС‰РµРЅРёСЏ РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РІ СЃР»РѕС‚С‹
+        _G.LibreAlchemy.place.placed = nil
+        _G.LibreAlchemy.place.readyNotFoundMessage = false
+        
+        -- РЎР±СЂР°СЃС‹РІР°РµРј С„Р»Р°РіРё Р°РєС‚РёРІРЅРѕСЃС‚Рё Рё СѓСЃРїРµС€РЅРѕСЃС‚Рё СЂРµР°РєС†РёРё
+        _G.LibreAlchemy.reactionSuccess = false
+        _G.LibreAlchemy.active = false
+        
+        -- РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„Р»Р°Рі РґР»СЏ РїРѕРєР°Р·Р° СЃРѕРѕР±С‰РµРЅРёСЏ "РЎ РІРѕР·РІСЂР°С‰РµРЅРёРµРј!" РїСЂРё СЃР»РµРґСѓСЋС‰РµРј РѕС‚РєСЂС‹С‚РёРё Р°Р»С…РёРјРёРё
+        _G.LibreAlchemy.welcomeBack = true
+    end
+end
+
+--- @function EVENT_ALCHEMY_STARTED
+--- @description РЈРјРµРЅРёРµ Р°Р»С…РёРјРёРё РЅР°С‡Р°Р»Рѕ РґРµР№СЃС‚РІРёРµ РїРѕСЃР»Рµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ Р°Р»С…РёРјРёС‡РµСЃРєРѕРіРѕ РёРЅСЃС‚СЂСѓРјРµРЅС‚Р°.
+_G.LibreAlchemy.events.EVENT_ALCHEMY_STARTED = function()
+    if _G.LibreAlchemy.debug then common.LogInfo( "", "EVENT_ALCHEMY_STARTED" ) end
+	
+	_G.mainForm:Show( true )
+	_G.LibreAlchemy.active = true
+	
+	-- РћР‘РЇР—РђРўР•Р›Р¬РќРћ Р°РєС‚СѓР°Р»РёР·РёСЂСѓРµРј РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°СЂР°Р±Р°РЅРѕРІ.
+    _G.LibreAlchemy.nDrums = avatar.GetAlchemyInfo().drumsCount
+	
+	if _G.LibreAlchemy.welcomeBack then
+		_G.LibreAlchemy.fn.wSetText( _G.LibreAlchemy.locales.WELCOME_BACK )
+	elseif _G.LibreAlchemy.welcomeBack == false then
+		_G.LibreAlchemy.fn.wSetText( _G.LibreAlchemy.locales.GREETINGS )
+    end
+end
+
 --- @function EVENT_AVATAR_CREATED
---- @description Срабатывает при инициализации аватара (ЗАГРУЗКА ПЕРСОНАЖА В МИР).
---- Используется для первичной инициализации пользовательского интерфейса: 
---- получения ссылки на текстовый виджет ouText и настройки его позиционирования по центру экрана.
---- @param params table - Параметры события.
---- @param params.id ObjectId - Идентификатор аватара (not nil).
+--- @description РЎСЂР°Р±Р°С‚С‹РІР°РµС‚ РїСЂРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё Р°РІР°С‚Р°СЂР° (Р—РђР“Р РЈР—РљРђ РџР•Р РЎРћРќРђР–Рђ Р’ РњРР ).
+--- @param params table - РџР°СЂР°РјРµС‚СЂС‹ СЃРѕР±С‹С‚РёСЏ.
+--- @param params.id ObjectId - РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ Р°РІР°С‚Р°СЂР° (not nil).
 _G.LibreAlchemy.events.EVENT_AVATAR_CREATED = function( params )
-	-- Вызываем функцию для инициализации и настройки виджетов
+	-- РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј Р»РѕРєР°Р»РёР·Р°С†РёСЋ
+	_G.LibreAlchemy.fn.InitLocale()
+	
+	-- РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РЅР°СЃС‚СЂРѕР№РєРё РІРёРґР¶РµС‚РѕРІ
 	_G.LibreAlchemy.fn.InitWidgets()
 end

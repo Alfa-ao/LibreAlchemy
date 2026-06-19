@@ -1,13 +1,29 @@
 --------------------------------------------------------------------------------
 -- HANDLERS
--- Вспомогательные функции для логики аддона.
+-- Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ С„СѓРЅРєС†РёРё РґР»СЏ Р»РѕРіРёРєРё Р°РґРґРѕРЅР°.
 --------------------------------------------------------------------------------
 
+--- @function _G.LibreAlchemy.fn.InitLocale
+--- @description РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ Р»РѕРєР°Р»РёР·Р°С†РёСЋ (rus, eng etc.) С‚РµРєСЃС‚РѕРІС‹С… РґР°РЅРЅС‹С….
+_G.LibreAlchemy.fn.InitLocale = function()
+    local group = common.GetAddonRelatedTextGroup( common.GetLocalization(), true ) or common.GetAddonRelatedTextGroup( "eng" )
+    
+    setmetatable( _G.LibreAlchemy.locales, 
+    {
+        __index = function( _, name )
+            if group:HasText( name ) then
+                return userMods.FromWString( group:GetText( name ) )
+            end
+        end
+    } )
+end
+
 --- @function _G.LibreAlchemy.fn.wSetText
---- @description Вспомогательная функция для установки текста в виджет ouText.
-function _G.LibreAlchemy.fn.wSetText( tv )
+--- @description Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅР°СЏ С„СѓРЅРєС†РёСЏ РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё С‚РµРєСЃС‚Р° РІ РІРёРґР¶РµС‚ ouText.
+--- @param tv string - РўРµРєСЃС‚РѕРІР°СЏ СЃС‚СЂРѕРєР°.
+_G.LibreAlchemy.fn.wSetText = function( tv )
 	if _G.LibreAlchemy.debug then
-		common.LogInfo("", tostring( tv ) )
+		common.LogInfo("", tv )
 	end
 	
 	local vt = common.CreateValuedText()
@@ -16,23 +32,23 @@ function _G.LibreAlchemy.fn.wSetText( tv )
 end
 
 --- @function _G.LibreAlchemy.fn.MakeReciList
---- @description Формирует и кэширует список всех доступных рецептов алхимии для текущего персонажа.
+--- @description Р¤РѕСЂРјРёСЂСѓРµС‚ Рё РєСЌС€РёСЂСѓРµС‚ СЃРїРёСЃРѕРє РІСЃРµС… РґРѕСЃС‚СѓРїРЅС‹С… СЂРµС†РµРїС‚РѕРІ Р°Р»С…РёРјРёРё РґР»СЏ С‚РµРєСѓС‰РµРіРѕ РїРµСЂСЃРѕРЅР°Р¶Р°.
 _G.LibreAlchemy.fn.MakeReciList = function()
-    -- Если список уже сформирован, повторно не создаем
+    -- Р•СЃР»Рё СЃРїРёСЃРѕРє СѓР¶Рµ СЃС„РѕСЂРјРёСЂРѕРІР°РЅ, РїРѕРІС‚РѕСЂРЅРѕ РЅРµ СЃРѕР·РґР°РµРј
     if _G.LibreAlchemy.lReci == nil then
         _G.LibreAlchemy.lReci = {}
-        -- Получаем общую информацию об алхимии (включая список ID рецептов)
+        -- РџРѕР»СѓС‡Р°РµРј РѕР±С‰СѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± Р°Р»С…РёРјРёРё (РІРєР»СЋС‡Р°СЏ СЃРїРёСЃРѕРє ID СЂРµС†РµРїС‚РѕРІ)
         local ainf = avatar.GetAlchemyInfo()
         for ir, vr in pairs( ainf.recipes ) do
-            -- Получаем детальную информацию о каждом рецепте по его ID
+            -- РџРѕР»СѓС‡Р°РµРј РґРµС‚Р°Р»СЊРЅСѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РєР°Р¶РґРѕРј СЂРµС†РµРїС‚Рµ РїРѕ РµРіРѕ ID
             local gr = avatar.GetRecipeInfo( vr )
-            -- Формируем структуру рецепта: cc - кол-во компонентов, wName - оригинальное имя, name - строковое имя, score - сложность/приоритет, cli - таблица компонентов {имя=кол-во}
+            -- Р¤РѕСЂРјРёСЂСѓРµРј СЃС‚СЂСѓРєС‚СѓСЂСѓ СЂРµС†РµРїС‚Р°: cc - РєРѕР»-РІРѕ РєРѕРјРїРѕРЅРµРЅС‚РѕРІ, wName - РѕСЂРёРіРёРЅР°Р»СЊРЅРѕРµ РёРјСЏ, name - СЃС‚СЂРѕРєРѕРІРѕРµ РёРјСЏ, score - СЃР»РѕР¶РЅРѕСЃС‚СЊ/РїСЂРёРѕСЂРёС‚РµС‚, cli - С‚Р°Р±Р»РёС†Р° РєРѕРјРїРѕРЅРµРЅС‚РѕРІ {РёРјСЏ=РєРѕР»-РІРѕ}
             local lr = { cc = 0, wName = gr.name, name = userMods.FromWString( gr.name ), score = gr.score, cli = {} }
             for ic, vc in pairs( gr.components ) do
-                -- Получаем информацию о каждом компоненте рецепта
+                -- РџРѕР»СѓС‡Р°РµРј РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РєР°Р¶РґРѕРј РєРѕРјРїРѕРЅРµРЅС‚Рµ СЂРµС†РµРїС‚Р°
                 local co = avatar.GetComponentInfo( vc )
                 local cn = userMods.FromWString( co.name )
-                -- Считаем количество одинаковых компонентов в рецепте
+                -- РЎС‡РёС‚Р°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РѕРґРёРЅР°РєРѕРІС‹С… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РІ СЂРµС†РµРїС‚Рµ
                 if lr.cli[cn] == nil then lr.cli[cn] = 1 else lr.cli[cn] = lr.cli[cn] + 1 end
                 lr.cc = lr.cc + 1
             end
@@ -42,13 +58,13 @@ _G.LibreAlchemy.fn.MakeReciList = function()
 end
 
 --------------------------------------------------------------------------------
--- ФУНКЦИИ ПОИСКА И АНАЛИЗА КОМБИНАЦИЙ СДВИГОВ
+-- Р¤РЈРќРљР¦РР РџРћРРЎРљРђ Р РђРќРђР›РР—Рђ РљРћРњР‘РРќРђР¦РР™ РЎР”Р’РР“РћР’
 --------------------------------------------------------------------------------
 
 --- @function _G.LibreAlchemy.fn.CopyTable
---- @description Создает поверхностную копию таблицы без мусора.
---- @param tbl table - Исходная таблица.
---- @return table|nil - Новая таблица с теми же ключами и значениями, или nil, если передан не table.
+--- @description РЎРѕР·РґР°РµС‚ РїРѕРІРµСЂС…РЅРѕСЃС‚РЅСѓСЋ РєРѕРїРёСЋ С‚Р°Р±Р»РёС†С‹ Р±РµР· РјСѓСЃРѕСЂР°.
+--- @param tbl table - РСЃС…РѕРґРЅР°СЏ С‚Р°Р±Р»РёС†Р°.
+--- @return table|nil - РќРѕРІР°СЏ С‚Р°Р±Р»РёС†Р° СЃ С‚РµРјРё Р¶Рµ РєР»СЋС‡Р°РјРё Рё Р·РЅР°С‡РµРЅРёСЏРјРё, РёР»Рё nil, РµСЃР»Рё РїРµСЂРµРґР°РЅ РЅРµ table.
 _G.LibreAlchemy.fn.CopyTable = function( tbl )
     if type( tbl ) ~= "table" then return nil end
     local copy = {}
@@ -59,11 +75,11 @@ _G.LibreAlchemy.fn.CopyTable = function( tbl )
 end
 
 --- @function _G.LibreAlchemy.fn.CountPotentialRecipes
---- @description Быстрая проверка: подсчитывает количество рецептов, которые теоретически могут быть созданы 
---- из компонентов, уже находящихся в барабанах (без учета сложных сдвигов, только наличие).
---- Используется в EVENT_ALCHEMY_ITEM_PLACED для раннего информирования игрока.
---- @return number potentialCount - Количество потенциально подходящих рецептов.
---- @return number filledDrumsCount - Количество барабанов, содержащих компоненты.
+--- @description Р‘С‹СЃС‚СЂР°СЏ РїСЂРѕРІРµСЂРєР°: РїРѕРґСЃС‡РёС‚С‹РІР°РµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ СЂРµС†РµРїС‚РѕРІ, РєРѕС‚РѕСЂС‹Рµ С‚РµРѕСЂРµС‚РёС‡РµСЃРєРё РјРѕРіСѓС‚ Р±С‹С‚СЊ СЃРѕР·РґР°РЅС‹ 
+--- РёР· РєРѕРјРїРѕРЅРµРЅС‚РѕРІ, СѓР¶Рµ РЅР°С…РѕРґСЏС‰РёС…СЃСЏ РІ Р±Р°СЂР°Р±Р°РЅР°С… (Р±РµР· СѓС‡РµС‚Р° СЃР»РѕР¶РЅС‹С… СЃРґРІРёРіРѕРІ, С‚РѕР»СЊРєРѕ РЅР°Р»РёС‡РёРµ).
+--- РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РІ EVENT_ALCHEMY_ITEM_PLACED РґР»СЏ СЂР°РЅРЅРµРіРѕ РёРЅС„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ РёРіСЂРѕРєР°.
+--- @return number potentialCount - РљРѕР»РёС‡РµСЃС‚РІРѕ РїРѕС‚РµРЅС†РёР°Р»СЊРЅРѕ РїРѕРґС…РѕРґСЏС‰РёС… СЂРµС†РµРїС‚РѕРІ.
+--- @return number filledDrumsCount - РљРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°СЂР°Р±Р°РЅРѕРІ, СЃРѕРґРµСЂР¶Р°С‰РёС… РєРѕРјРїРѕРЅРµРЅС‚С‹.
 _G.LibreAlchemy.fn.CountPotentialRecipes = function()
     _G.LibreAlchemy.fn.MakeReciList()
     local potentialCount = 0
@@ -86,19 +102,19 @@ _G.LibreAlchemy.fn.CountPotentialRecipes = function()
                 end
             end
 
-            -- Агрегируем уникальные компоненты текущего барабана в общий счетчик
+            -- РђРіСЂРµРіРёСЂСѓРµРј СѓРЅРёРєР°Р»СЊРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚С‹ С‚РµРєСѓС‰РµРіРѕ Р±Р°СЂР°Р±Р°РЅР° РІ РѕР±С‰РёР№ СЃС‡РµС‚С‡РёРє
             for compName, _ in pairs( drumUniqueComponents ) do
                 availableComponents[compName] = ( availableComponents[compName] or 0 ) + 1
             end
         end
     end
 
-    -- Перебираем все известные рецепты и проверяем, хватает ли компонентов
+    -- РџРµСЂРµР±РёСЂР°РµРј РІСЃРµ РёР·РІРµСЃС‚РЅС‹Рµ СЂРµС†РµРїС‚С‹ Рё РїСЂРѕРІРµСЂСЏРµРј, С…РІР°С‚Р°РµС‚ Р»Рё РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
     for _, recipe in pairs( _G.LibreAlchemy.lReci ) do
         if recipe.cc <= filledDrumsCount then
             local isPossible = true
             for reqCompName, reqCount in pairs( recipe.cli ) do
-                -- Идиоматичная проверка: если компонента нет, (nil or 0) вернет 0
+                -- РРґРёРѕРјР°С‚РёС‡РЅР°СЏ РїСЂРѕРІРµСЂРєР°: РµСЃР»Рё РєРѕРјРїРѕРЅРµРЅС‚Р° РЅРµС‚, (nil or 0) РІРµСЂРЅРµС‚ 0
                 if ( availableComponents[reqCompName] or 0 ) < reqCount then
                     isPossible = false
                     break
@@ -114,16 +130,16 @@ _G.LibreAlchemy.fn.CountPotentialRecipes = function()
 end
 
 --- @function _G.LibreAlchemy.fn.RegisterBestMatchingRecipe
---- @description Проверяет, подходит ли какой-либо отфильтрованный рецепт под текущий набор компонентов (componentMap),
---- находит лучший по приоритету (score) и добавляет его в список найденных вариантов lFound, если его там еще нет.
---- @param componentMap table - Таблица компонентов {имя=кол-во} для проверки.
---- @param shiftMap table - Таблица сдвигов барабанов, при которых получился этот набор.
+--- @description РџСЂРѕРІРµСЂСЏРµС‚, РїРѕРґС…РѕРґРёС‚ Р»Рё РєР°РєРѕР№-Р»РёР±Рѕ РѕС‚С„РёР»СЊС‚СЂРѕРІР°РЅРЅС‹Р№ СЂРµС†РµРїС‚ РїРѕРґ С‚РµРєСѓС‰РёР№ РЅР°Р±РѕСЂ РєРѕРјРїРѕРЅРµРЅС‚РѕРІ (componentMap),
+--- РЅР°С…РѕРґРёС‚ Р»СѓС‡С€РёР№ РїРѕ РїСЂРёРѕСЂРёС‚РµС‚Сѓ (score) Рё РґРѕР±Р°РІР»СЏРµС‚ РµРіРѕ РІ СЃРїРёСЃРѕРє РЅР°Р№РґРµРЅРЅС‹С… РІР°СЂРёР°РЅС‚РѕРІ lFound, РµСЃР»Рё РµРіРѕ С‚Р°Рј РµС‰Рµ РЅРµС‚.
+--- @param componentMap table - РўР°Р±Р»РёС†Р° РєРѕРјРїРѕРЅРµРЅС‚РѕРІ {РёРјСЏ=РєРѕР»-РІРѕ} РґР»СЏ РїСЂРѕРІРµСЂРєРё.
+--- @param shiftMap table - РўР°Р±Р»РёС†Р° СЃРґРІРёРіРѕРІ Р±Р°СЂР°Р±Р°РЅРѕРІ, РїСЂРё РєРѕС‚РѕСЂС‹С… РїРѕР»СѓС‡РёР»СЃСЏ СЌС‚РѕС‚ РЅР°Р±РѕСЂ.
 _G.LibreAlchemy.fn.RegisterBestMatchingRecipe = function( componentMap, shiftMap )
     if type( componentMap ) ~= "table" then return end
 
     local bestRecipe = nil
 
-    -- Ищем рецепт с максимальным score, который можно собрать из компонентов componentMap
+    -- РС‰РµРј СЂРµС†РµРїС‚ СЃ РјР°РєСЃРёРјР°Р»СЊРЅС‹Рј score, РєРѕС‚РѕСЂС‹Р№ РјРѕР¶РЅРѕ СЃРѕР±СЂР°С‚СЊ РёР· РєРѕРјРїРѕРЅРµРЅС‚РѕРІ componentMap
     for _, recipe in pairs( _G.LibreAlchemy.lFilt ) do
         local isMatch = true
         for reqCompName, reqCount in pairs( recipe.cli ) do
@@ -142,7 +158,7 @@ _G.LibreAlchemy.fn.RegisterBestMatchingRecipe = function( componentMap, shiftMap
 
     if bestRecipe == nil then return end
 
-    -- Проверяем, не добавлен ли уже этот рецепт в lFound (защита от дубликатов по имени)
+    -- РџСЂРѕРІРµСЂСЏРµРј, РЅРµ РґРѕР±Р°РІР»РµРЅ Р»Рё СѓР¶Рµ СЌС‚РѕС‚ СЂРµС†РµРїС‚ РІ lFound (Р·Р°С‰РёС‚Р° РѕС‚ РґСѓР±Р»РёРєР°С‚РѕРІ РїРѕ РёРјРµРЅРё)
     local alreadyFound = false
     for _, foundEntry in pairs( _G.LibreAlchemy.lFound ) do
         if foundEntry.rc.name == bestRecipe.name then
@@ -151,7 +167,7 @@ _G.LibreAlchemy.fn.RegisterBestMatchingRecipe = function( componentMap, shiftMap
         end
     end
 
-    -- Если рецепт уникален для текущего набора сдвигов, добавляем его
+    -- Р•СЃР»Рё СЂРµС†РµРїС‚ СѓРЅРёРєР°Р»РµРЅ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ РЅР°Р±РѕСЂР° СЃРґРІРёРіРѕРІ, РґРѕР±Р°РІР»СЏРµРј РµРіРѕ
     if not alreadyFound then
         table.insert( _G.LibreAlchemy.lFound, {
             rc = bestRecipe,
@@ -162,20 +178,20 @@ _G.LibreAlchemy.fn.RegisterBestMatchingRecipe = function( componentMap, shiftMap
 end
 
 --- @function _G.LibreAlchemy.fn.RecursiveShiftSearch
---- @description Рекурсивная функция (поиск с возвратом) для перебора всех возможных комбинаций сдвигов барабанов.
---- На каждом шаге формирует комбинации компонентов для разных линий результата и проверяет их.
---- @param drumIdx number - Индекс текущего обрабатываемого барабана (уменьшается при рекурсии, от nDrums до 1).
---- @param shiftsLeft number - Текущее общее количество доступных сдвигов (лимит коррекций).
---- @param currentShifts table - Таблица накопленных сдвигов для каждого барабана.
---- @param line0 table - Таблица компонентов для базовой линии результата (0).
---- @param lineMinus1 table|nil - Таблица компонентов для линии результата -1 (если доступна).
---- @param linePlus1 table|nil - Таблица компонентов для линии результата 1 (если доступна).
+--- @description Р РµРєСѓСЂСЃРёРІРЅР°СЏ С„СѓРЅРєС†РёСЏ (РїРѕРёСЃРє СЃ РІРѕР·РІСЂР°С‚РѕРј) РґР»СЏ РїРµСЂРµР±РѕСЂР° РІСЃРµС… РІРѕР·РјРѕР¶РЅС‹С… РєРѕРјР±РёРЅР°С†РёР№ СЃРґРІРёРіРѕРІ Р±Р°СЂР°Р±Р°РЅРѕРІ.
+--- РќР° РєР°Р¶РґРѕРј С€Р°РіРµ С„РѕСЂРјРёСЂСѓРµС‚ РєРѕРјР±РёРЅР°С†РёРё РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РґР»СЏ СЂР°Р·РЅС‹С… Р»РёРЅРёР№ СЂРµР·СѓР»СЊС‚Р°С‚Р° Рё РїСЂРѕРІРµСЂСЏРµС‚ РёС….
+--- @param drumIdx number - РРЅРґРµРєСЃ С‚РµРєСѓС‰РµРіРѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ Р±Р°СЂР°Р±Р°РЅР° (СѓРјРµРЅСЊС€Р°РµС‚СЃСЏ РїСЂРё СЂРµРєСѓСЂСЃРёРё, РѕС‚ nDrums РґРѕ 1).
+--- @param shiftsLeft number - РўРµРєСѓС‰РµРµ РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РґРѕСЃС‚СѓРїРЅС‹С… СЃРґРІРёРіРѕРІ (Р»РёРјРёС‚ РєРѕСЂСЂРµРєС†РёР№).
+--- @param currentShifts table - РўР°Р±Р»РёС†Р° РЅР°РєРѕРїР»РµРЅРЅС‹С… СЃРґРІРёРіРѕРІ РґР»СЏ РєР°Р¶РґРѕРіРѕ Р±Р°СЂР°Р±Р°РЅР°.
+--- @param line0 table - РўР°Р±Р»РёС†Р° РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РґР»СЏ Р±Р°Р·РѕРІРѕР№ Р»РёРЅРёРё СЂРµР·СѓР»СЊС‚Р°С‚Р° (0).
+--- @param lineMinus1 table|nil - РўР°Р±Р»РёС†Р° РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РґР»СЏ Р»РёРЅРёРё СЂРµР·СѓР»СЊС‚Р°С‚Р° -1 (РµСЃР»Рё РґРѕСЃС‚СѓРїРЅР°).
+--- @param linePlus1 table|nil - РўР°Р±Р»РёС†Р° РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РґР»СЏ Р»РёРЅРёРё СЂРµР·СѓР»СЊС‚Р°С‚Р° 1 (РµСЃР»Рё РґРѕСЃС‚СѓРїРЅР°).
 _G.LibreAlchemy.fn.RecursiveShiftSearch = function( drumIdx, shiftsLeft, currentShifts, line0, lineMinus1, linePlus1 )
-    -- Если нашли все возможные отфильтрованные рецепты, прекращаем поиск
+    -- Р•СЃР»Рё РЅР°С€Р»Рё РІСЃРµ РІРѕР·РјРѕР¶РЅС‹Рµ РѕС‚С„РёР»СЊС‚СЂРѕРІР°РЅРЅС‹Рµ СЂРµС†РµРїС‚С‹, РїСЂРµРєСЂР°С‰Р°РµРј РїРѕРёСЃРє
     if #_G.LibreAlchemy.lFilt > 0 and #_G.LibreAlchemy.lFound >= #_G.LibreAlchemy.lFilt then return end
 
     if drumIdx > 0 then
-        -- Если в барабане нет компонентов, пропускаем его (сдвиг 0)
+        -- Р•СЃР»Рё РІ Р±Р°СЂР°Р±Р°РЅРµ РЅРµС‚ РєРѕРјРїРѕРЅРµРЅС‚РѕРІ, РїСЂРѕРїСѓСЃРєР°РµРј РµРіРѕ (СЃРґРІРёРі 0)
         if _G.LibreAlchemy.lCodr[drumIdx][0] == nil then
             if ( drumIdx > 1 ) or ( ( drumIdx == 1 ) and ( shiftsLeft == 0 ) ) then
                 currentShifts[drumIdx] = 0
@@ -187,7 +203,7 @@ _G.LibreAlchemy.fn.RecursiveShiftSearch = function( drumIdx, shiftsLeft, current
         local step = 1
         local maxShift = shiftsLeft
 
-        -- Определяем шаг и лимит сдвигов для текущего барабана
+        -- РћРїСЂРµРґРµР»СЏРµРј С€Р°Рі Рё Р»РёРјРёС‚ СЃРґРІРёРіРѕРІ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р±Р°СЂР°Р±Р°РЅР°
         if drumIdx == 1 then
             if shiftsLeft > _G.LibreAlchemy.nSinshi then return end
             if shiftsLeft > 0 then step = 2 * shiftsLeft end
@@ -195,19 +211,19 @@ _G.LibreAlchemy.fn.RecursiveShiftSearch = function( drumIdx, shiftsLeft, current
             if shiftsLeft > _G.LibreAlchemy.nSinshi then maxShift = _G.LibreAlchemy.nSinshi end
         end
 
-        -- Перебираем возможные сдвиги для текущего барабана
+        -- РџРµСЂРµР±РёСЂР°РµРј РІРѕР·РјРѕР¶РЅС‹Рµ СЃРґРІРёРіРё РґР»СЏ С‚РµРєСѓС‰РµРіРѕ Р±Р°СЂР°Р±Р°РЅР°
         for shift = -maxShift, maxShift, step do
-            -- Копируем таблицы компонентов, чтобы не портить состояния из других веток рекурсии
+            -- РљРѕРїРёСЂСѓРµРј С‚Р°Р±Р»РёС†С‹ РєРѕРјРїРѕРЅРµРЅС‚РѕРІ, С‡С‚РѕР±С‹ РЅРµ РїРѕСЂС‚РёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёСЏ РёР· РґСЂСѓРіРёС… РІРµС‚РѕРє СЂРµРєСѓСЂСЃРёРё
             local nextLine0 = _G.LibreAlchemy.fn.CopyTable( line0 )
             local nextLineMinus1 = _G.LibreAlchemy.fn.CopyTable( lineMinus1 )
             local nextLinePlus1 = _G.LibreAlchemy.fn.CopyTable( linePlus1 )
 
-            -- Вычисляем оставшиеся доступные сдвиги. 
+            -- Р’С‹С‡РёСЃР»СЏРµРј РѕСЃС‚Р°РІС€РёРµСЃСЏ РґРѕСЃС‚СѓРїРЅС‹Рµ СЃРґРІРёРіРё. 
             local nextShiftsLeft = shiftsLeft - math.abs( shift )
             local hasComponent = ( shift == 0 )
             local compName
 
-            -- Линия 0 (базовая)
+            -- Р›РёРЅРёСЏ 0 (Р±Р°Р·РѕРІР°СЏ)
             if nextLine0 ~= nil then
                 compName = _G.LibreAlchemy.lCodr[drumIdx][shift]
                 if compName ~= nil then
@@ -216,7 +232,7 @@ _G.LibreAlchemy.fn.RecursiveShiftSearch = function( drumIdx, shiftsLeft, current
                 end
             end
 
-            -- Линия -1
+            -- Р›РёРЅРёСЏ -1
             if nextLineMinus1 ~= nil then
                 compName = _G.LibreAlchemy.lCodr[drumIdx][shift - 1]
                 if compName ~= nil then
@@ -225,7 +241,7 @@ _G.LibreAlchemy.fn.RecursiveShiftSearch = function( drumIdx, shiftsLeft, current
                 end
             end
 
-            -- Линия +1
+            -- Р›РёРЅРёСЏ +1
             if nextLinePlus1 ~= nil then
                 compName = _G.LibreAlchemy.lCodr[drumIdx][shift + 1]
                 if compName ~= nil then
@@ -234,14 +250,14 @@ _G.LibreAlchemy.fn.RecursiveShiftSearch = function( drumIdx, shiftsLeft, current
                 end
             end
 
-            -- Если хотя бы один компонент добавлен, идем глубже в рекурсию для следующего барабана
+            -- Р•СЃР»Рё С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ РєРѕРјРїРѕРЅРµРЅС‚ РґРѕР±Р°РІР»РµРЅ, РёРґРµРј РіР»СѓР±Р¶Рµ РІ СЂРµРєСѓСЂСЃРёСЋ РґР»СЏ СЃР»РµРґСѓСЋС‰РµРіРѕ Р±Р°СЂР°Р±Р°РЅР°
             if hasComponent then
                 currentShifts[drumIdx] = shift
                 _G.LibreAlchemy.fn.RecursiveShiftSearch( drumIdx - 1, nextShiftsLeft, currentShifts, nextLine0, nextLineMinus1, nextLinePlus1 )
             end
         end
     else
-        -- Достигли конца рекурсии (drumIdx == 0), проверяем собранные комбинации компонентов
+        -- Р”РѕСЃС‚РёРіР»Рё РєРѕРЅС†Р° СЂРµРєСѓСЂСЃРёРё (drumIdx == 0), РїСЂРѕРІРµСЂСЏРµРј СЃРѕР±СЂР°РЅРЅС‹Рµ РєРѕРјР±РёРЅР°С†РёРё РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
         _G.LibreAlchemy.fn.RegisterBestMatchingRecipe( line0, currentShifts )
         _G.LibreAlchemy.fn.RegisterBestMatchingRecipe( lineMinus1, currentShifts )
         _G.LibreAlchemy.fn.RegisterBestMatchingRecipe( linePlus1, currentShifts )
@@ -249,14 +265,14 @@ _G.LibreAlchemy.fn.RecursiveShiftSearch = function( drumIdx, shiftsLeft, current
 end
 
 --------------------------------------------------------------------------------
--- ФУНКЦИИ АНАЛИЗА БАРАБАНОВ И ФИЛЬТРАЦИИ РЕЦЕПТОВ
+-- Р¤РЈРќРљР¦РР РђРќРђР›РР—Рђ Р‘РђР РђР‘РђРќРћР’ Р Р¤РР›Р¬РўР РђР¦РР Р Р•Р¦Р•РџРўРћР’
 --------------------------------------------------------------------------------
 
 --- @function _G.LibreAlchemy.fn.BuildDrumShiftMap
---- @description Считывает информацию о барабанах, строит карту сдвигов (lCodr) 
---- и агрегирует доступные уникальные компоненты в таблицу drc.
---- @return table drc - Таблица подсчета доступных компонентов {имя_компонента = количество}
---- @return number tdc - Количество барабанов, содержащих компоненты
+--- @description РЎС‡РёС‚С‹РІР°РµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ Р±Р°СЂР°Р±Р°РЅР°С…, СЃС‚СЂРѕРёС‚ РєР°СЂС‚Сѓ СЃРґРІРёРіРѕРІ (lCodr) 
+--- Рё Р°РіСЂРµРіРёСЂСѓРµС‚ РґРѕСЃС‚СѓРїРЅС‹Рµ СѓРЅРёРєР°Р»СЊРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚С‹ РІ С‚Р°Р±Р»РёС†Сѓ drc.
+--- @return table drc - РўР°Р±Р»РёС†Р° РїРѕРґСЃС‡РµС‚Р° РґРѕСЃС‚СѓРїРЅС‹С… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ {РёРјСЏ_РєРѕРјРїРѕРЅРµРЅС‚Р° = РєРѕР»РёС‡РµСЃС‚РІРѕ}
+--- @return number tdc - РљРѕР»РёС‡РµСЃС‚РІРѕ Р±Р°СЂР°Р±Р°РЅРѕРІ, СЃРѕРґРµСЂР¶Р°С‰РёС… РєРѕРјРїРѕРЅРµРЅС‚С‹
 _G.LibreAlchemy.fn.BuildDrumShiftMap = function()
     local drc = {}
     _G.LibreAlchemy.lCodr = {}
@@ -270,15 +286,15 @@ _G.LibreAlchemy.fn.BuildDrumShiftMap = function()
             tdc = tdc + 1
             local d1c = {}
             
-            -- Определяем длину таблицы компонентов.
+            -- РћРїСЂРµРґРµР»СЏРµРј РґР»РёРЅСѓ С‚Р°Р±Р»РёС†С‹ РєРѕРјРїРѕРЅРµРЅС‚РѕРІ.
             local compCount = #dri.components
             if compCount == 0 and dri.components[1] ~= nil then compCount = 1 end
             
-            -- Перебираем возможные сдвиги компонентов в барабане
+            -- РџРµСЂРµР±РёСЂР°РµРј РІРѕР·РјРѕР¶РЅС‹Рµ СЃРґРІРёРіРё РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РІ Р±Р°СЂР°Р±Р°РЅРµ
             for sh = -_G.LibreAlchemy.nSinshi, _G.LibreAlchemy.nSinshi do
                 local cp = ( dri.position or 0 ) + sh
                 
-                -- Циклический сдвиг (wrap-around) для индексов.
+                -- Р¦РёРєР»РёС‡РµСЃРєРёР№ СЃРґРІРёРі (wrap-around) РґР»СЏ РёРЅРґРµРєСЃРѕРІ.
                 if cp < 0 then 
                     cp = cp + compCount 
                 elseif cp >= compCount then 
@@ -294,14 +310,14 @@ _G.LibreAlchemy.fn.BuildDrumShiftMap = function()
                     local gc = avatar.GetComponentInfo( dri.components[targetIndex] )
                     if gc ~= nil then
                         local compName = userMods.FromWString( gc.name )
-                        -- Сохраняем имя компонента для данного барабана и сдвига
+                        -- РЎРѕС…СЂР°РЅСЏРµРј РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° РґР»СЏ РґР°РЅРЅРѕРіРѕ Р±Р°СЂР°Р±Р°РЅР° Рё СЃРґРІРёРіР°
                         _G.LibreAlchemy.lCodr[dru][sh] = compName
                         d1c[compName] = 1
                     end
                 end
             end
             
-            -- Агрегируем уникальные компоненты текущего барабана в общий счетчик
+            -- РђРіСЂРµРіРёСЂСѓРµРј СѓРЅРёРєР°Р»СЊРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚С‹ С‚РµРєСѓС‰РµРіРѕ Р±Р°СЂР°Р±Р°РЅР° РІ РѕР±С‰РёР№ СЃС‡РµС‚С‡РёРє
             for compName, _ in pairs( d1c ) do
                 drc[compName] = ( drc[compName] or 0 ) + 1
             end
@@ -311,26 +327,26 @@ _G.LibreAlchemy.fn.BuildDrumShiftMap = function()
 end
 
 --- @function _G.LibreAlchemy.fn.FilterRecipes
---- @description Фильтрует список рецептов (lReci), оставляя только те, 
---- которые можно создать из компонентов, имеющихся в барабанах (drc).
---- @param drc table - Таблица доступных компонентов {имя_компонента = количество}
---- @param tdc number - Количество заполненных барабанов
---- @return number tc - Количество подходящих рецептов
+--- @description Р¤РёР»СЊС‚СЂСѓРµС‚ СЃРїРёСЃРѕРє СЂРµС†РµРїС‚РѕРІ (lReci), РѕСЃС‚Р°РІР»СЏСЏ С‚РѕР»СЊРєРѕ С‚Рµ, 
+--- РєРѕС‚РѕСЂС‹Рµ РјРѕР¶РЅРѕ СЃРѕР·РґР°С‚СЊ РёР· РєРѕРјРїРѕРЅРµРЅС‚РѕРІ, РёРјРµСЋС‰РёС…СЃСЏ РІ Р±Р°СЂР°Р±Р°РЅР°С… (drc).
+--- @param drc table - РўР°Р±Р»РёС†Р° РґРѕСЃС‚СѓРїРЅС‹С… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ {РёРјСЏ_РєРѕРјРїРѕРЅРµРЅС‚Р° = РєРѕР»РёС‡РµСЃС‚РІРѕ}
+--- @param tdc number - РљРѕР»РёС‡РµСЃС‚РІРѕ Р·Р°РїРѕР»РЅРµРЅРЅС‹С… Р±Р°СЂР°Р±Р°РЅРѕРІ
+--- @return number tc - РљРѕР»РёС‡РµСЃС‚РІРѕ РїРѕРґС…РѕРґСЏС‰РёС… СЂРµС†РµРїС‚РѕРІ
 _G.LibreAlchemy.fn.FilterRecipes = function( drc, tdc )
-    -- Гарантируем наличие кэша рецептов перед фильтрацией
+    -- Р“Р°СЂР°РЅС‚РёСЂСѓРµРј РЅР°Р»РёС‡РёРµ РєСЌС€Р° СЂРµС†РµРїС‚РѕРІ РїРµСЂРµРґ С„РёР»СЊС‚СЂР°С†РёРµР№
     _G.LibreAlchemy.fn.MakeReciList()
     
     _G.LibreAlchemy.lFilt = {}
     local tc = 0
     
     for _, vr in pairs( _G.LibreAlchemy.lReci ) do
-        -- Если общее кол-во компонентов в рецепте больше, чем барабанов, пропускаем
+        -- Р•СЃР»Рё РѕР±С‰РµРµ РєРѕР»-РІРѕ РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РІ СЂРµС†РµРїС‚Рµ Р±РѕР»СЊС€Рµ, С‡РµРј Р±Р°СЂР°Р±Р°РЅРѕРІ, РїСЂРѕРїСѓСЃРєР°РµРј
         if vr.cc <= tdc then
             local isFit = true
             for reqCompName, reqCount in pairs( vr.cli ) do
                 if ( drc[reqCompName] or 0 ) < reqCount then
                     isFit = false
-                    break -- Нет смысла проверять дальше, рецепт не подходит
+                    break -- РќРµС‚ СЃРјС‹СЃР»Р° РїСЂРѕРІРµСЂСЏС‚СЊ РґР°Р»СЊС€Рµ, СЂРµС†РµРїС‚ РЅРµ РїРѕРґС…РѕРґРёС‚
                 end
             end
             
@@ -344,14 +360,14 @@ _G.LibreAlchemy.fn.FilterRecipes = function( drc, tdc )
 end
 
 --- @function _G.LibreAlchemy.fn.BuildComponentMapAndFilter
---- @description Главная функция-оркестратор. Анализирует барабаны, строит карту сдвигов 
---- и фильтрует возможные рецепты.
---- @return number tc - Количество найденных подходящих рецептов
+--- @description Р“Р»Р°РІРЅР°СЏ С„СѓРЅРєС†РёСЏ-РѕСЂРєРµСЃС‚СЂР°С‚РѕСЂ. РђРЅР°Р»РёР·РёСЂСѓРµС‚ Р±Р°СЂР°Р±Р°РЅС‹, СЃС‚СЂРѕРёС‚ РєР°СЂС‚Сѓ СЃРґРІРёРіРѕРІ 
+--- Рё С„РёР»СЊС‚СЂСѓРµС‚ РІРѕР·РјРѕР¶РЅС‹Рµ СЂРµС†РµРїС‚С‹.
+--- @return number tc - РљРѕР»РёС‡РµСЃС‚РІРѕ РЅР°Р№РґРµРЅРЅС‹С… РїРѕРґС…РѕРґСЏС‰РёС… СЂРµС†РµРїС‚РѕРІ
 _G.LibreAlchemy.fn.BuildComponentMapAndFilter = function()
-    -- Строим карту сдвигов и получаем агрегированные компоненты
+    -- РЎС‚СЂРѕРёРј РєР°СЂС‚Сѓ СЃРґРІРёРіРѕРІ Рё РїРѕР»СѓС‡Р°РµРј Р°РіСЂРµРіРёСЂРѕРІР°РЅРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚С‹
     local drc, tdc = _G.LibreAlchemy.fn.BuildDrumShiftMap()
     
-    -- Фильтруем рецепты на основе доступных компонентов
+    -- Р¤РёР»СЊС‚СЂСѓРµРј СЂРµС†РµРїС‚С‹ РЅР° РѕСЃРЅРѕРІРµ РґРѕСЃС‚СѓРїРЅС‹С… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
     local tc = _G.LibreAlchemy.fn.FilterRecipes( drc, tdc )
     
     return tc

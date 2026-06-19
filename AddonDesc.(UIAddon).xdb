@@ -30,4 +30,14 @@
 		<Item href="Scripts/LibreAlchemyInit.lua" />
 	</ScriptFileRefs>
 	<Form href="Widgets/Main.(WidgetForm).xdb" />
+	<textsGroups>
+		<Item>
+			<groupName>rus</groupName>
+			<texts href="Locales/rus/Locale.(UIRelatedTexts).xdb"/>
+		</Item>
+		<Item>
+			<groupName>eng</groupName>
+			<texts href="Locales/eng/Locale.(UIRelatedTexts).xdb"/>
+		</Item>
+	</textsGroups>
 </UIAddon>

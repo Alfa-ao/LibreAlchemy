@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UIRelatedTexts>
+	<items>
+		<Item>
+			<name>AVATAR_ITEM_TAKEN</name>
+			<resource href="AVATAR_ITEM_TAKEN.txt"/>
+		</Item>
+		<Item>
+			<name>COMPONENTS_NOT_READY</name>
+			<resource href="COMPONENTS_NOT_READY.txt"/>
+		</Item>
+		<Item>
+			<name>CONGRATULATION</name>
+			<resource href="CONGRATULATION.txt"/>
+		</Item>
+		<Item>
+			<name>COUNT_RECIPLES</name>
+			<resource href="COUNT_RECIPLES.txt"/>
+		</Item>
+		<Item>
+			<name>DEBUG_COUNT_COMPONENTS</name>
+			<resource href="DEBUG_COUNT_COMPONENTS.txt"/>
+		</Item>
+		<Item>
+			<name>DEBUG_COUNT_RECIPES</name>
+			<resource href="DEBUG_COUNT_RECIPES.txt"/>
+		</Item>
+		<Item>
+			<name>DEBUG_INSERT_BAR</name>
+			<resource href="DEBUG_INSERT_BAR.txt"/>
+		</Item>
+		<Item>
+			<name>DEBUG_ITERATION_COMPONENTS</name>
+			<resource href="DEBUG_ITERATION_COMPONENTS.txt"/>
+		</Item>
+		<Item>
+			<name>DEBUG_REMOVED_BAR</name>
+			<resource href="DEBUG_REMOVED_BAR.txt"/>
+		</Item>
+		<Item>
+			<name>GREETINGS</name>
+			<resource href="GREETINGS.txt"/>
+		</Item>
+		<Item>
+			<name>WELCOME_BACK</name>
+			<resource href="WELCOME_BACK.txt"/>
+		</Item>
+		<Item>
+			<name>NOT_FOUND_RECIPLES</name>
+			<resource href="NOT_FOUND_RECIPLES.txt"/>
+		</Item>
+		<Item>
+			<name>RESULT_GIBBERISH</name>
+			<resource href="RESULT_GIBBERISH.txt"/>
+		</Item>
+	</items>
+</UIRelatedTexts>
