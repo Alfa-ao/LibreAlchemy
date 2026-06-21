@@ -8,7 +8,7 @@
 --- Используется как механизм задержки (debounce) для корректного вывода сообщения "Тут нет рецептов", 
 --- когда игрок извлек все компоненты из барабанов, но окно алхимии все еще открыто.
 --- Флаг readyNotFoundMessage предотвращает спам этим сообщением каждый тик таймера.
---- Также сбрасывает флаг welcomeBack в nil, позволяя аддону перейти в штатный режим работы после приветствия.
+--- Также сбрасывает флаг messageType в 0, позволяя аддону перейти в штатный режим работы после приветствия.
 _G.LibreAlchemy.events.EVENT_SECOND_TIMER = function()
 	if _G.LibreAlchemy.active and _G.LibreAlchemy.place.placed == false and avatar.GetAlchemyInfo().active then
 		if _G.LibreAlchemy.place.readyNotFoundMessage then
@@ -22,7 +22,7 @@ _G.LibreAlchemy.events.EVENT_SECOND_TIMER = function()
 	end
 	
 	if _G.LibreAlchemy.active then
-		_G.LibreAlchemy.welcomeBack = nil
+		_G.LibreAlchemy.messageType = 0
 	end
 end
 
@@ -49,9 +49,7 @@ _G.LibreAlchemy.events.EVENT_AVATAR_ITEM_TAKEN = function( params )
 end
 
 --- @function EVENT_ALCHEMY_REACTION_FINISHED
---- @description Завершён (ПЕРВЫЙ) этап алхимической реакции.
---- Анализирует барабаны, запускает рекурсивный поиск всех комбинаций сдвигов,
---- сортирует найденные рецепты и выводит топ-N результатов в интерфейс.
+--- @description Событие приходит, когда переходим в окно зельеварки.
 _G.LibreAlchemy.events.EVENT_ALCHEMY_REACTION_FINISHED = function()
     if _G.LibreAlchemy.debug then 
         common.LogInfo( "", "EVENT_ALCHEMY_REACTION_FINISHED" ) 
@@ -68,20 +66,20 @@ _G.LibreAlchemy.events.EVENT_ALCHEMY_REACTION_FINISHED = function()
     
     local lineMinus1, linePlus1 = nil, nil
     
-    -- 3. Проверяем доступность дополнительных линий результата (-1 и 1)
+    -- Проверяем доступность дополнительных линий результата (-1 и 1)
     if avatar.IsAlchemyLineAvailable( -1 ) then lineMinus1 = {} end
     if avatar.IsAlchemyLineAvailable( 1 ) then linePlus1 = {} end
     
-    -- 4. Анализируем барабаны и фильтруем рецепты
+    -- Анализируем барабаны и фильтруем рецепты
     _G.LibreAlchemy.fn.BuildComponentMapAndFilter()
     _G.LibreAlchemy.lFound = {}
     
-    -- 5. Запускаем рекурсивный поиск всех комбинаций сдвигов
+    -- Запускаем рекурсивный поиск всех комбинаций сдвигов
     for shiftsLeft = 0, nRota do 
         _G.LibreAlchemy.fn.RecursiveShiftSearch( _G.LibreAlchemy.nDrums, shiftsLeft, {}, {}, lineMinus1, linePlus1 )
     end
     
-    -- 6. Обработка результатов
+    -- Обработка результатов
     if #_G.LibreAlchemy.lFound == 0 then
         if _G.LibreAlchemy.debugReaction then 
             common.LogInfo( "", "EVENT_ALCHEMY_REACTION_FINISHED:{empty}" ) 
@@ -103,7 +101,7 @@ _G.LibreAlchemy.events.EVENT_ALCHEMY_REACTION_FINISHED = function()
         local fmtParts = {} -- Для вывода в интерфейс
         local logParts = {} -- Для вывода в лог
         
-        -- Формируем строки для вывода в интерфейс и лог, ограничиваемся топ-N рецептами (используем глобальную maxDisplay)
+        -- Формируем строки для вывода в интерфейс и лог, ограничиваемся топ-N рецептами
         for i = 1, math.min( #_G.LibreAlchemy.lFound, _G.LibreAlchemy.maxDisplay ) do
             local vr = _G.LibreAlchemy.lFound[i]
             
@@ -143,16 +141,14 @@ _G.LibreAlchemy.events.EVENT_ALCHEMY_RECIPES_CHANGED = function()
     
 	_G.LibreAlchemy.fn.wSetText( _G.LibreAlchemy.locales.CONGRATULATION )
 	
-	_G.LibreAlchemy.welcomeBack = true
+	_G.LibreAlchemy.messageType = 2
 end
 
 --- @function _G.LibreAlchemy.events.EVENT_ALCHEMY_ITEM_PLACED
 --- @description Обрабатывает событие помещения или извлечения алхимического компонента в барабан.
---- Отслеживает состояние слотов, обновляет внутренние счетчики и выводит пользователю 
---- предварительную оценку возможности создания рецептов на основе текущих компонентов.
 --- @param params table Параметры события:
 --- @param params.slot number Индекс слота (барабана), в котором произошло изменение (0-первый слот).
---- @param params.placed boolean true, если компонент помещен; false, если извлечен.
+--- @param params.placed boolean - true: если компонент помещен; false: если извлечен.
 _G.LibreAlchemy.events.EVENT_ALCHEMY_ITEM_PLACED = function( params )
 	if _G.LibreAlchemy.debug then
 		common.LogInfo( "", "EVENT_ALCHEMY_ITEM_PLACED" )
@@ -195,8 +191,6 @@ _G.LibreAlchemy.events.EVENT_ALCHEMY_ITEM_PLACED = function( params )
 	_G.LibreAlchemy.place.readyNotFoundMessage = false
 	
 	-- Если событие пришло с вынутым компонентом.
-	-- Устанавливаем финишную реакцию ( даже если она не была EVENT_ALCHEMY_REACTION_FINISHED ) - false
-	-- Ограничиваем выполнение дальнейшего кода
 	if not params.placed then
 		_G.LibreAlchemy.reactionSuccess = false
 		_G.LibreAlchemy.place.count = 0 -- Присваиваем 0, ведь по логике компоненты сначала убираются все... Смысла минусовать нет.
@@ -205,9 +199,10 @@ _G.LibreAlchemy.events.EVENT_ALCHEMY_ITEM_PLACED = function( params )
 	
 	_G.LibreAlchemy.place.count = _G.LibreAlchemy.place.count + 1
 	
-	-- При старте нужно показать сообщение приветствие или с возвращением
-	if _G.LibreAlchemy.welcomeBack ~= nil then
-		return -- Поэтому глушим дальнейший код
+	-- При старте нужно показать особое сообщение 
+	if _G.LibreAlchemy.messageType ~= 0 then
+		return -- Поэтому глушим дальнейший код, иначе перекроет одно другим.
+		-- EVENT_SECOND_TIMER присвоит значение 0
 	end
 	
 	if not _G.LibreAlchemy.reactionSuccess then
@@ -221,6 +216,7 @@ _G.LibreAlchemy.events.EVENT_ALCHEMY_ITEM_PLACED = function( params )
 		
 		if rc > 0 and _G.LibreAlchemy.place.count == dc then
 			_G.LibreAlchemy.fn.wSetText( string.format( _G.LibreAlchemy.locales.COUNT_RECIPLES, rc ) )
+			
 		elseif _G.LibreAlchemy.place.count == dc then
 			-- Изредка CountPotentialRecipes даёт 0 рецептов, когда они имеются...
 			-- КОСТЫЛЬ. Добавили params.slot > 0
@@ -234,13 +230,11 @@ _G.LibreAlchemy.events.EVENT_ALCHEMY_ITEM_PLACED = function( params )
 end
 
 --- @function _G.LibreAlchemy.events.EVENT_ALCHEMY_CANCELED
---- @description Обработчик события прерывания или завершения алхимического действия. 
---- Отвечает за скрытие интерфейса и полный сброс внутренних флагов состояния аддона в исходное положение, 
---- если процесс варки был прерван.
+--- @description Обработчик события завершения алхимического действия.
 --- @param params table Параметры события.
 --- @param params.isSuccess boolean Флаг успешности завершения действия:
---- false: Действие было прервано (например, окно алхимии закрыто).
---- true: Действие завершилось штатно.
+--- false: Окно алхимии закрыли.
+--- true: Вышли в меню после варки.
 _G.LibreAlchemy.events.EVENT_ALCHEMY_CANCELED = function( params )
     if _G.LibreAlchemy.debug then 
 		common.LogInfo( "", "EVENT_ALCHEMY_CANCELED" )
@@ -261,12 +255,12 @@ _G.LibreAlchemy.events.EVENT_ALCHEMY_CANCELED = function( params )
         _G.LibreAlchemy.active = false
         
         -- Устанавливаем флаг для показа сообщения "С возвращением!" при следующем открытии алхимии
-        _G.LibreAlchemy.welcomeBack = true
+        _G.LibreAlchemy.messageType = 2
     end
 end
 
 --- @function EVENT_ALCHEMY_STARTED
---- @description Умение алхимии начало действие после использования алхимического инструмента.
+--- @description Окно алхимии открыли.
 _G.LibreAlchemy.events.EVENT_ALCHEMY_STARTED = function()
     if _G.LibreAlchemy.debug then common.LogInfo( "", "EVENT_ALCHEMY_STARTED" ) end
 	
@@ -276,9 +270,9 @@ _G.LibreAlchemy.events.EVENT_ALCHEMY_STARTED = function()
 	-- ОБЯЗАТЕЛЬНО актуализируем количество барабанов.
     _G.LibreAlchemy.nDrums = avatar.GetAlchemyInfo().drumsCount
 	
-	if _G.LibreAlchemy.welcomeBack then
+	if _G.LibreAlchemy.messageType == 2 then
 		_G.LibreAlchemy.fn.wSetText( _G.LibreAlchemy.locales.WELCOME_BACK )
-	elseif _G.LibreAlchemy.welcomeBack == false then
+	elseif _G.LibreAlchemy.messageType == 1 then
 		_G.LibreAlchemy.fn.wSetText( _G.LibreAlchemy.locales.GREETINGS )
     end
 end

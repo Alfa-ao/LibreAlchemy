@@ -42,6 +42,10 @@
 			<resource href="GREETINGS.txt"/>
 		</Item>
 		<Item>
+			<name>INSTALL_LIB_DND</name>
+			<resource href="INSTALL_LIB_DND.txt"/>
+		</Item>
+		<Item>
 			<name>WELCOME_BACK</name>
 			<resource href="WELCOME_BACK.txt"/>
 		</Item>

@@ -6,6 +6,10 @@
 		<Item href="Text/ouText.(WidgetTextView).xdb" />
 	</Children>
 	<Placement>
+		<!-- 
+			WIDGET_ALIGN_BOTH - растягивает на весь размер экрана.
+			Drag&Drop реализация перетаскивания по внутренней области.
+		-->
 		<X>
 			<Align>WIDGET_ALIGN_BOTH</Align>
 		</X>
@@ -13,7 +17,7 @@
 			<Align>WIDGET_ALIGN_BOTH</Align>
 		</Y>
 	</Placement>
-	<Visible>true</Visible>
+	<Visible>false</Visible>
 	<Enabled>true</Enabled>
 	<TransparentInput>false</TransparentInput>
 	<PickChildrenOnly>true</PickChildrenOnly>

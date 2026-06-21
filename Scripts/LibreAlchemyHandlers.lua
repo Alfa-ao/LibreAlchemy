@@ -27,6 +27,8 @@ _G.LibreAlchemy.fn.wSetText = function( tv )
 	end
 	
 	local vt = common.CreateValuedText()
+    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    -- переписать vt:SetFormat
 	vt:SetFormat( userMods.ToWString( string.format( [[<html><log fontsize="20">%s</log></html>]], tv ) ) )
 	_G.LibreAlchemy.widgets.ouText:SetValuedText( vt )
 end

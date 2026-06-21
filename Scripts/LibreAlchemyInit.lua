@@ -1,3 +1,4 @@
+-- (ПЕРЕСМОТРЕТЬ) в сторону ООП. events:new( ... )
 for eventName, callable in pairs( _G.LibreAlchemy.events ) do
 	common.RegisterEventHandler( callable, eventName )
 end

@@ -3,6 +3,7 @@
 	<Name>ouText</Name>
 	<Priority>0</Priority>
 	<BackLayer href="BackBlack.(WidgetLayerSimpleTexture).xdb" />
+	<!-- <FormatFileRef href="Format.txt" /> -->
 	<Placement>
 		<X>
 			<!-- 
