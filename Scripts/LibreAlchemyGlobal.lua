@@ -55,5 +55,9 @@ end
 Global( "LibreAlchemy", LibreAlchemyClass:new() )
 
 if rawget( _G, "Facade" ) then
-	Global( "log", _G.Facade.customAO.log )
+	Global( "log", _G.Facade.customAO.log ) -- var_dump в стиле PHP языка
+else
+	Global( "log", function( ... )
+		common.LogInfo( "log", ... )
+	end )
 end
