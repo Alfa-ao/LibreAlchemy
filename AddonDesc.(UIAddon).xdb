@@ -25,11 +25,22 @@
 		<Item href="/Mods/Libs/LibDnD.lua" />
 		
 		<!-- LibreAlchemy -->
-		<Item href="Scripts/LibreAlchemyGlobal.lua" />
-		<Item href="Scripts/LibreAlchemyHandlers.lua" />
-		<Item href="Scripts/LibreAlchemyWidgets.lua" />
-		<Item href="Scripts/LibreAlchemyEvents.lua" />
-		<Item href="Scripts/LibreAlchemyInit.lua" />
+        <Item href="/Mods/SampleCommon/CoreScripts/ClassesImplementation.lua" />
+		<Item href="Scripts/Facade.lua" />
+        <Item href="Scripts/Core/AlchemyConfig.lua" />
+        <Item href="Scripts/Core/AlchemyState.lua" />
+		<Item href="Scripts/Services/AlchemyDebugService.lua" />
+        <Item href="Scripts/Services/AlchemyLocaleService.lua" />
+        <Item href="Scripts/Services/AlchemyRecipeService.lua" />
+        <Item href="Scripts/Services/AlchemySearchService.lua" />
+        <Item href="Scripts/UI/AlchemyWidgetManager.lua" />
+        <Item href="Scripts/UI/AlchemyTextFormatter.lua" />
+		<Item href="Scripts/Events/AlchemySystemEvents.lua" />
+        <Item href="Scripts/Events/AlchemyEvents.lua" />
+        <Item href="Scripts/Events/AlchemyAvatarEvents.lua" />
+        <Item href="Scripts/Events/AlchemyEventBus.lua" />
+        <Item href="Scripts/Core/AlchemyInit.lua" />
+    </ScriptFiles>
 	</ScriptFileRefs>
 	
 	<!-- Локализация Аддона -->
