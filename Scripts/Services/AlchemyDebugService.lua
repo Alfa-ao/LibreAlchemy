@@ -43,5 +43,3 @@ end
 
 function AlchemyDebugService:LogGeneral( ... )  self:Log( "GENERAL", ... )  end
 function AlchemyDebugService:LogReaction( ... ) self:Log( "REACTION", ... ) end
-function AlchemyDebugService:LogSearch( ... )   self:Log( "SEARCH", ... )   end
-function AlchemyDebugService:LogUI( ... )       self:Log( "UI", ... )       end
