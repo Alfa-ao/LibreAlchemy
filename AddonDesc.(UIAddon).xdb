@@ -21,11 +21,13 @@
 		<Item href="/Mods/Facade/support/String.lua" />
 		<Item href="/Mods/Facade/support/Table.lua" />
 		
+		<!-- FrameWork: Создание класса / Инструменты для работы с классом -->
+		<Item href="/Mods/SampleCommon/CoreScripts/ClassesImplementation.lua" />
+		
 		<!-- Drag&Drop (Требуем единую, глобальную библиотеку) -->
-		<Item href="/Mods/Libs/LibDnD.lua" />
+		<Item href="/Mods/vendor/Libs/LibDnD.lua" />
 		
 		<!-- LibreAlchemy -->
-        <Item href="/Mods/SampleCommon/CoreScripts/ClassesImplementation.lua" />
 		<Item href="Scripts/Facade.lua" />
         <Item href="Scripts/Core/AlchemyConfig.lua" />
         <Item href="Scripts/Core/AlchemyState.lua" />
@@ -40,7 +42,6 @@
         <Item href="Scripts/Events/AlchemyAvatarEvents.lua" />
         <Item href="Scripts/Events/AlchemyEventBus.lua" />
         <Item href="Scripts/Core/AlchemyInit.lua" />
-    </ScriptFiles>
 	</ScriptFileRefs>
 	
 	<!-- Локализация Аддона -->
