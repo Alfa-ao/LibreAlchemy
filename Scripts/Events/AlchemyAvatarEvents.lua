@@ -29,8 +29,8 @@ function AlchemyAvatarEvents:OnAvatarCreated()
     self._ui:Init()
 
     if not self._ui:InitDragAndDrop() then
-        self._text:SetText( self._services.locale:Get( "INSTALL_LIB_DND" ) )
-        self._state.messageType = self._config.MESSAGE_WARNING
+        --self._text:SetText( self._services.locale:Get( "INSTALL_LIB_DND" ) )
+        --self._state.messageType = self._config.MESSAGE_WARNING
     end
 end
 
