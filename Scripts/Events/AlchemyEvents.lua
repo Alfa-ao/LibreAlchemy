@@ -28,12 +28,20 @@ function AlchemyEvents:GetEventMap()
     }
 end
 
+-- Событие дергает только при открытии окна Алхимии.
 function AlchemyEvents:OnStarted()
     self._services.debug:LogGeneral( "EVENT_ALCHEMY_STARTED" )
 	
     self._ui:Show()
     self._state.active = true
-    self._state.drumsCount = avatar.GetAlchemyInfo().drumsCount
+    
+    -- Если recipe:BuildRecipeCache() тут отрабатывает,
+    -- то смысла здесь записывать нет, а лучше перенести в BuildRecipeCache()
+    -- self._state.drumsCount = avatar.GetAlchemyInfo().drumsCount
+    
+    -- Более логично подготовить весь список зелий (249) при открытии Алхимии.
+    -- Но и оставить в CountPotential(), если список поменялся во время работы.
+    self._services.recipe:BuildRecipeCache()
 
     if self._state.messageType == self._config.MESSAGE_WELCOME_BACK then
         self._text:SetText( self._services.locale:Get( "WELCOME_BACK" ) )
