@@ -63,7 +63,7 @@ Addon to assist with Alchemy. Allods Online.
   + `MainForm`
     + `Priority` – increased parent positioning priority for the hint text by `10000`. At any game interface scale, the text will not be hidden behind the alchemy window.
     + `Placement` – fixed window size to `WIDGET_ALIGN_BOTH`.
-  + `ouText` – `Placement` fixed. Size based on text content.
+  + `ouText` – `Placement` - fixed. Size based on text content.
   + `BackBlack` – `Color` - `0xe61a1a0d` instead of using `SetBackgroundColor`.
 
 </details>
