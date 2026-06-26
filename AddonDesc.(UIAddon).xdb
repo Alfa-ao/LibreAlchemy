@@ -21,27 +21,48 @@
 		<Item href="/Mods/Facade/support/String.lua" />
 		<Item href="/Mods/Facade/support/Table.lua" />
 		
+		<!-- GetTableSize -->
+		<Item href="/Mods/SampleCommon/SampleAddonBase.lua" />
+		
 		<!-- FrameWork: Создание класса / Инструменты для работы с классом -->
 		<Item href="/Mods/SampleCommon/CoreScripts/ClassesImplementation.lua" />
 		
-		<!-- Drag&Drop (Требуем единую, глобальную библиотеку) -->
-		<Item href="/Mods/vendor/Libs/LibDnD.lua" />
+		<!-- Drag&Drop -->
+		<Item href="Libs/LibDnD.lua" />
 		
 		<!-- LibreAlchemy -->
 		<Item href="Scripts/Facade.lua" />
-        <Item href="Scripts/Core/AlchemyConfig.lua" />
-        <Item href="Scripts/Core/AlchemyState.lua" />
+		<Item href="Scripts/Core/AlchemyConfig.lua" />
+		<Item href="Scripts/Core/AlchemyState.lua" />
+		
+		<!-- Utils (Утилиты) -->
+		<Item href="Scripts/Utils/MathUtils.lua" />
+		
+		<!-- Search Subsystem (Базовые классы и реализации поиска) -->
+		<Item href="Scripts/Services/Search/SearchAlgorithm.lua" />
+		<Item href="Scripts/Services/Search/RecipeEvaluator.lua" />
+		<Item href="Scripts/Services/Search/DrumShiftMapper.lua" />
+		<Item href="Scripts/Services/Search/BacktrackingSearchAlgorithm.lua" />
+
+		<!-- Services (Сервисы) -->
 		<Item href="Scripts/Services/AlchemyDebugService.lua" />
-        <Item href="Scripts/Services/AlchemyLocaleService.lua" />
-        <Item href="Scripts/Services/AlchemyRecipeService.lua" />
-        <Item href="Scripts/Services/AlchemySearchService.lua" />
-        <Item href="Scripts/UI/AlchemyWidgetManager.lua" />
-        <Item href="Scripts/UI/AlchemyTextFormatter.lua" />
+		<Item href="Scripts/Services/AlchemyLocaleService.lua" />
+		<Item href="Scripts/Services/AlchemyRecipeService.lua" />
+		<Item href="Scripts/Services/AlchemySearchService.lua" />
+		
+		<!-- UI -->
+		<Item href="Scripts/UI/AlchemyWidgetManager.lua" />
+		<Item href="Scripts/UI/AlchemyTextFormatter.lua" />
+		
+		<!-- Events -->
 		<Item href="Scripts/Events/AlchemySystemEvents.lua" />
-        <Item href="Scripts/Events/AlchemyEvents.lua" />
-        <Item href="Scripts/Events/AlchemyAvatarEvents.lua" />
-        <Item href="Scripts/Events/AlchemyEventBus.lua" />
-        <Item href="Scripts/Core/AlchemyInit.lua" />
+		<Item href="Scripts/Events/AlchemyEvents.lua" />
+		<Item href="Scripts/Events/AlchemyAvatarEvents.lua" />
+		<Item href="Scripts/Events/AlchemyEventManager.lua" />
+		
+		<!-- Bootstrap & Init -->
+		<Item href="Scripts/Core/AlchemyBootstrap.lua" />
+		<Item href="Scripts/Core/AlchemyInit.lua" />
 	</ScriptFileRefs>
 	
 	<!-- Локализация Аддона -->
