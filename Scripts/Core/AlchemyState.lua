@@ -11,13 +11,15 @@ Class( "AlchemyState", {
     filteredRecipes = nil, -- Отфильтрованный список рецептов.
     drumShiftMap = nil,    -- Карта сдвигов: хранит компоненты в барабанах с учетом возможных сдвигов (индекс [барабан][сдвиг] = имя компонента).
     foundResults = nil,    -- Таблица найденных вариантов (рецепт + сдвиги барабанов).
+    drumsCount = 0,        -- (Re: UIAddon) Кол-во слотов доступных в ступке.
+    maxCorrections = 6,    -- У нас сломан GetAlchemyDrumInfo( N ).maxCorrectionsPerColumn (-1 - не определено)
 	
     place = {
         placed = nil,
         readyNotFoundMessage = false,
         count = 0,
     },
-})
+} )
 
 function AlchemyState:ResetPlace()
     self.place.placed = nil
