@@ -3,7 +3,6 @@
 
 Class( "AlchemyConfig", {
     MAX_DISPLAY_RESULTS = 5,     -- Максимальное кол-во ТОП-N возможных рецептов
-    -- (DEPRECATED) DEFAULT_DRUMS = 2,           -- (Re: UIAddon) Кол-во слотов доступных в ступке.
     DEFAULT_MAX_CORRECTIONS = 6, -- Максимальная коррекция в колбе (в меню варки).
 
     -- messageType:
@@ -15,4 +14,4 @@ Class( "AlchemyConfig", {
     -- Отладка
     DEBUG = false,
     DEBUG_REACTION = false,
-})
+} )
