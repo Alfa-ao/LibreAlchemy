@@ -41,7 +41,7 @@ function AlchemyEvents:OnStarted()
     
     -- Более логично подготовить весь список зелий (249) при открытии Алхимии.
     -- Но и оставить в CountPotential(), если список поменялся во время работы.
-    self._services.recipe:BuildRecipeCache()
+    self._services.recipe:CreateRecipeCache()
 
     if self._state.messageType == self._config.MESSAGE_WELCOME_BACK then
         self._text:SetText( self._services.locale:Get( "WELCOME_BACK" ) )
