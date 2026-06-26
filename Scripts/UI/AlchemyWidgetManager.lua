@@ -8,13 +8,13 @@ Class( "AlchemyWidgetManager", {
 function AlchemyWidgetManager:Init()
     self._mainForm = _G.mainForm
     self._ouText = self._mainForm:GetChildChecked( "ouText" )
-
+    
     local pco = common.GetPosConverterParams()
     local plc = self._ouText:GetPlacementPlain()
     plc.posX = pco.fullVirtualSizeX / 2 - 360
+    plc.posY = pco.fullVirtualSizeY - plc.posY -- https://github.com/Alfa-ao/LibreAlchemy/issues/1
     self._ouText:SetPlacementPlain( plc )
-
-    self:InitDragAndDrop()
+    
     self:Hide()
 end
 
