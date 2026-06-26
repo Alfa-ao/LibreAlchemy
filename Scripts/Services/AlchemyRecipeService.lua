@@ -1,190 +1,181 @@
 -- AlchemyRecipeService.lua
--- Кэш рецептов, фильтрация, подсчёт возможных рецептов.
+-- Сервис для работы с рецептами алхимии: кэширование, фильтрация и подсчет возможных рецептов.
 
 Class( "AlchemyRecipeService", {
-    _state = nil,
-})
+    _state = nil,               -- Ссылка на глобальный объект состояния аддона (AlchemyState). Хранит кэши рецептов и настройки.
+	
+    _componentNamesCache = {},  -- Хеш-таблица (кэш) для хранения имен компонентов. 
+                                -- Структура: { [ComponentId (userdata)] = "ИмяКомпонента (string)" }. 
+} )
 
+-- Инициализация сервиса
 function AlchemyRecipeService:Init( state )
     self._state = state
 end
 
--- Кеширует весь список существующих зелий в алхимии. 
--- Кол-во ( компонентов в одном зелье / повторений одинаковых компонентов ).
---- avatar.GetAlchemyInfo():
---- recipes - Возвращает таблицу обо всех рецептов существующих в алхимии (249 зелий на сегодняшний день)
-function AlchemyRecipeService:BuildRecipeCache() -- (ПЕРЕДЕЛАТЬ) BuildRecipeCache на CreateRecipeCache
-    if self._state.recipeCache ~= nil then return end
-
-    self._state.recipeCache = {}
-    local alchemyInfo = avatar.GetAlchemyInfo()
-    self._state.drumsCount = alchemyInfo.drumsCount
-	--[[ log( alchemyInfo )
-	["var_dump"] => table(1) {
-		[1] => table(0) {
-		["active"] => boolean(true) - true, если (Открыт инструмент алхимии)
-		["correctionCount"] => number(4)
-		["defaultResultCount"] => number(1)
-		["drumSize"] => number(24)
-		["drumsCount"] => number(5)
-		["finished"] => boolean(false)
-		["id"] => userdata(userdata: 0x57d46ce0)
-		["perComponentBonus"] => number(0)
-		["perfectBonus"] => number(0)
-		["reactionInited"] => boolean(false)
-		["recipes"] => table(248) {
-			[0] => userdata(userdata: 0x57d46d68)
-			[1] => userdata(userdata: 0x57d46da8)
-			...
-			[248] => userdata(userdata: 0x57d4b570)
-		}
-		["unusedRollsBonus"] => number(0.5)
-		}
-	} ]]
-	
-	
-
-    for ir, vr in pairs( alchemyInfo.recipes ) do -- (ПЕРЕДЕЛАТЬ) vr на recipe, ir на tableId
-        local recipeInfo = avatar.GetRecipeInfo( vr )
-		--[[ log(recipeInfo)
-		["var_dump"] => table(1) {
-			[1] => table(0) {
-				["bindResult"] => boolean(false) -- будет ли результат привязан к аватару
-				
-				-- table of ObjectId or ResourceId - массив компонент рецепта. Кол-во требуемых компонентов
-				-- avatar.GetComponentInfo( components ).name
-				-- примерно:
-				["components"] => table(3) { 
-					[0] => userdata(userdata: 0x60ff7380) -- { name = WString( Ослепление ) }
-					[1] => userdata(userdata: 0x60ff73c0) -- { name = WString( Биоморфичность ) }
-					[2] => userdata(userdata: 0x60ff7400) -- { name = WString( Исцеление ) }
-					[3] => userdata(userdata: 0x60ff7440) -- { name = WString( Исцеление ) }
-				}
-				
-				
-				["defaultItem"] => number(7736) -- ObjectId or nil - идентификатор предмета, получаемый из рецепта по умолчанию
-				["description"] => userdata(userdata: 0x60ff71f0) -- ValuedText or nil - описание с подставленными текущими значениями параметров
-				["id"] => userdata(userdata: 0x60ff70f8) -- RecipeId - Id ресурса рецепта
-				["image"] => userdata(userdata: 0x60ff7230)
-				["name"] => userdata(userdata: 0x60ff7138) -- WString( Имя зелья )
-				["nextRecipePoints"] => number(0) -- UnlockId or nil - идентификатор анлока следующего ресурса (если ещё не выполнен)
-				["resultItems"] => table(0) { -- table of ObjectId - индексированный с 0 массив идентификаторов предметов, создаваемых по рецепту (отсортированы по качеству от менее качественного (0) до более качественного)
-					[0] => number(7736)
-				}
-				["resultQuantity"] => number(1) -- количество предметов, получаемых из рецепта по умолчанию
-				["score"] => number(33) -- необходимый уровень (score) умения для изучения
-				
-				-- SkillId:GetInfo()
-					-- name: WString - локализованное название скилла
-					-- description: WString - локализованное описание скилла
-					-- sysName: string or nil - системное название скилла
-					-- image: TextureId - идентификатор текстуры для иконки умения
-					-- type: number (enum CRAFTING_SKILL_...) - тип скилла (какие компоненты входят в рецепт, какого типа игра и т.п.)
-					-- useLevels: boolean - true, если скилл прокачивается ступенчатыми уровнями, иначе плавно от 1 до максимального уровня
-				
-				-- CRAFTING_SKILL_UNKNOWN - неизвестный тип.
-				-- CRAFTING_SKILL_ALCHEMY - по типу алхимии. Компоненты крафта - алхимические компоненты предмета.
-				-- CRAFTING_SKILL_DICE_CRAFT - новый ARMOR_CRAFT с карточной игрой. Компоненты - обычные предметы.
-				["skillId"] => userdata(userdata: 0x60ff7188) -- SkillId or nil - идентификатор ресурса скила, которому принадлежит рецепт (если скилл выучен игроком)
-			}
-		} ]]
-		
-        local recipe = {
-            cc = 0, -- Кол-во компонентов
-            wName = recipeInfo.name, -- WString( имя зелья ) -- смысл в нём ? (УДАЛИТЬ)
-            name = userMods.FromWString( recipeInfo.name ), -- имя зелья
-            score = recipeInfo.score, -- лвл
-            cli = { -- (ПЕРЕДЕЛАТЬ) cli на uniqueComponentsCount
-				-- имя компонента = кол-во одинаковых компонентов.
-					-- Ослепление = 2, Исцеление = 1
-			},
-        }
-
-        for _, vc in pairs( recipeInfo.components ) do -- (ПЕРЕДЕЛАТЬ) vc на component
-			
-			-- возвращаемые значения
-			-- nil, если компонент не найден по идентификатору, или table:
-				-- id: ComponentPropertyId - Id ресурса компонента
-				-- name: WString - название
-				-- description: WString - описание
-            local co = avatar.GetComponentInfo( vc ) -- (ПЕРЕДЕЛАТЬ) co на componentInfo
-			
-            local cn = userMods.FromWString( co.name ) -- (ПЕРЕДЕЛАТЬ) cn на componentName
-			
-            recipe.cli[cn] = ( recipe.cli[cn] or 0 ) + 1 -- имя компонента = кол-во одинаковых компонентов.
-            recipe.cc = recipe.cc + 1 -- (ПЕРЕДЕЛАТЬ) cc на componentsCount
-        end
-
-        self._state.recipeCache[ir] = recipe
-		--[[
-		{
-			{ componentsCount, name, score, uniqueComponentsCount },
-			...
-		}
-		]]
+-- Вспомогательный метод: получение человекочитаемого имени компонента по его ID с использованием кэша.
+function AlchemyRecipeService:GetComponentName( componentId )
+    -- componentId: userdata (ComponentPropertyId/ResourceId).
+    
+    -- Если имя уже запрашивалось, возвращаем его сразу
+    if self._componentNamesCache[componentId] then
+        return self._componentNamesCache[componentId] -- string
     end
+    
+    -- componentInfo: table or nil. Содержит поля: id, name (WString), description (WString), image.
+    local componentInfo = avatar.GetComponentInfo( componentId )
+    
+    if componentInfo then
+        local name = userMods.FromWString( componentInfo.name ) -- string
+        
+        -- Сохраняем в кэш
+        self._componentNamesCache[componentId] = name
+        return name
+    end
+    
+    return nil
 end
 
--- Фильтрует рецепты по компонентам
-function AlchemyRecipeService:FilterByComponents( availableComponents, filledDrums )
-    self:BuildRecipeCache()
-    self._state.filteredRecipes = {}
-    local count = 0
+-- Метод: Создает и кэширует полный список всех доступных игроку рецептов алхимии.
+-- Вызывается один раз при открытии окна алхимии или при изменении списка рецептов.
+function AlchemyRecipeService:CreateRecipeCache()
+    -- Если кэш уже создан
+    if self._state.recipeCache ~= nil then return end
+    
+    self._state.recipeCache = {} -- Массив для хранения рецептов
+    
+    -- Получаем базовую информацию об алхимии
+    -- alchemyInfo: table. Содержит drumsCount, correctionCount, recipes (массив RecipeId) и т.д.
+    local alchemyInfo = avatar.GetAlchemyInfo()
+    
+    -- Сохраняем актуальное количество слотов (барабанов) в состояние
+    self._state.drumsCount = alchemyInfo.drumsCount -- number (int)
 
-    for _, recipe in pairs( self._state.recipeCache ) do
-        if recipe.cc <= filledDrums then -- Интересно, стоит ли делать требуемое кол-во компонентов, т.е. ==
-            local canCraft = true
-            for compName, needed in pairs( recipe.cli ) do
-                if ( availableComponents[compName] or 0 ) < needed then
-                    canCraft = false
-                    break
+    -- Проходим по всем доступным игроку рецептам
+    -- recipeId: userdata (RecipeId) - идентификатор ресурса рецепта
+    for _, recipeId in pairs( alchemyInfo.recipes ) do
+        -- Получаем детальную информацию о конкретном рецепте
+        -- recipeInfo: table. Содержит name (WString), score (int), components (массив ComponentId) и т.д.
+        local recipeInfo = avatar.GetRecipeInfo( recipeId )
+        
+        if recipeInfo then
+            local recipe = {
+                componentsCount = 0,                -- Общее количество компонентов, требуемых рецептом.
+                name = userMods.FromWString( recipeInfo.name ), -- Локализованное имя зелья/рецепта.
+                score = recipeInfo.score,           -- number (int). Необходимый уровень умения (score) для крафта.
+                requiredComponents = {},            -- table. Хеш-таблица требуемых компонентов: { ["ИмяКомпонента"] = количество }.
+            }
+
+            -- Разбираем массив компонентов рецепта
+            -- componentId: userdata (ComponentId) - ID компонента, входящего в рецепт
+            for _, componentId in pairs( recipeInfo.components ) do
+                local componentName = self:GetComponentName( componentId )
+                
+                if componentName then
+                    -- Увеличиваем счетчик требуемого количества данного компонента
+                    recipe.requiredComponents[componentName] = ( recipe.requiredComponents[componentName] or 0 ) + 1
+                    -- Увеличиваем общий счетчик компонентов в рецепте
+                    recipe.componentsCount = recipe.componentsCount + 1
                 end
             end
-            if canCraft then
-                table.insert( self._state.filteredRecipes, recipe )
-                count = count + 1
-            end
+
+            -- Добавляем готовую структуру рецепта в общий кэш
+            table.insert( self._state.recipeCache, recipe )
         end
     end
-
-    return count
 end
 
--- Подсчёт возможных рецептов
-function AlchemyRecipeService:CountPotential()
-    self:BuildRecipeCache() -- Оставить
-    local potentialCount = 0
-    local filledDrums = 0
-    local available = {}
+-- Метод: Проверяет, соответствуют ли доступные компоненты требованиям конкретного рецепта.
+function AlchemyRecipeService:IsRecipeMatch( recipe, availableComponents, filledSlotsCount )
+    -- recipe: table - структура рецепта из кэша (содержит componentsCount, requiredComponents).
+    -- availableComponents: table - хеш-таблица доступных компонентов { ["Имя"] = кол-во }.
+    -- filledSlotsCount: number (int) - количество заполненных слотов (барабанов) в ступке.
+    
+    -- Количество заполненных слотов должно совпадать с требуемым кол-вом компонентов
+    if recipe.componentsCount ~= filledSlotsCount then
+        return false
+    end
+    
+    -- Проверяем наличие каждого требуемого компонента
+    for componentName, neededCount in pairs( recipe.requiredComponents ) do
+        -- Если доступного компонента меньше, чем требуется
+        if ( availableComponents[componentName] or 0 ) < neededCount then
+            return false
+        end
+    end
+    
+    return true
+end
 
+-- Метод: Фильтрует глобальный кэш рецептов, оставляя только те, которым соответствуют
+-- уникальные компоненты, лежащие в барабанах (без учета сдвигов/коррекций).
+function AlchemyRecipeService:FilterByComponents( availableComponents, filledDrumsCount )
+    -- availableComponents: table - { ["ИмяКомпонента"] = кол-во_слотов_с_этим_компонентом }.
+    -- filledDrumsCount: number (int) - общее количество барабанов, в которые положены предметы.
+    
+    -- Проверяем чтобы кэш был
+    self:CreateRecipeCache()
+    
+    self._state.filteredRecipes = {} -- Инициализируем массив для отфильтрованных рецептов
+    local count = 0                  -- Счетчик подходящих рецептов.
+    
+    for _, recipe in pairs( self._state.recipeCache ) do
+        if self:IsRecipeMatch( recipe, availableComponents, filledDrumsCount ) then
+            table.insert( self._state.filteredRecipes, recipe )
+            count = count + 1
+        end
+    end
+    
+    return count -- Возвращаем количество найденных подходящих рецептов
+end
+
+-- Метод: Подсчитывает количество потенциально возможных рецептов на основе того, какие предметы физически положены в слоты.
+function AlchemyRecipeService:CountPotential()
+    -- Проверяем чтобы кэш был
+    self:CreateRecipeCache()
+    
+    local potentialCount = 0       -- Итоговое количество рецептов.
+    local filledDrumsCount = 0     -- Счетчик слотов, в которые положены предметы (itemId ~= nil).
+    local availableComponents = {} -- table. Хеш-таблица: { ["ИмяКомпонента"] = кол-во_слотов_с_этим_компонентом }.
+
+    -- Проходим по всем слотам (барабанам)
     for drumIdx = 1, self._state.drumsCount do
+        -- Получаем информацию о барабане (нумерация с 0)
+        -- drumInfo: table or nil. Содержит itemId, components (массив ComponentId), position и др.
         local drumInfo = avatar.GetAlchemyDrumInfo( drumIdx - 1 )
+        
+        -- Проверяем, что барабан существует и в него положен предмет
         if drumInfo and drumInfo.itemId ~= nil then
-            filledDrums = filledDrums + 1
-            local seen = {}
+            filledDrumsCount = filledDrumsCount + 1 -- Считаем заполненный слот
+
+            -- Если в барабане есть компоненты (предмет не пустой)
             if drumInfo.components then
-                for _, compId in pairs( drumInfo.components ) do
-                    local ci = avatar.GetComponentInfo( compId )
-                    if ci then
-                        seen[userMods.FromWString( ci.name )] = 1
+                local seenInDrum = {} -- table (Set). Хеш-таблица для учета УНИКАЛЬНЫХ компонентов внутри ОДНОГО барабана.
+                                      -- Структура: { ["ИмяКомпонента"] = true }.
+                
+                -- Собираем все уникальные компоненты этого барабана
+                for _, componentId in pairs( drumInfo.components ) do
+                    local componentName = self:GetComponentName( componentId )
+                    if componentName then
+                        seenInDrum[componentName] = true
                     end
                 end
-            end
-            for name, _ in pairs( seen ) do
-                available[name] = ( available[name] or 0 ) + 1
+                
+                -- Каждый уникальный компонент в барабане добавляет +1 к счетчику доступных компонентов
+                for componentName, _ in pairs( seenInDrum ) do
+                    availableComponents[componentName] = ( availableComponents[componentName] or 0 ) + 1
+                end
             end
         end
     end
 
+    -- Теперь проверяем, сколько рецептов из кэша удовлетворяют собранному набору
     for _, recipe in pairs( self._state.recipeCache ) do
-        if recipe.cc <= filledDrums then
-            local ok = true
-            for cn, needed in pairs( recipe.cli ) do
-                if ( available[cn] or 0 ) < needed then ok = false; break end
-            end
-            if ok then potentialCount = potentialCount + 1 end
+        if self:IsRecipeMatch( recipe, availableComponents, filledDrumsCount ) then
+            potentialCount = potentialCount + 1
         end
     end
 
-    return potentialCount, filledDrums
+    -- Возвращаем количество возможных рецептов и количество заполненных слотов
+    return potentialCount, filledDrumsCount
 end
