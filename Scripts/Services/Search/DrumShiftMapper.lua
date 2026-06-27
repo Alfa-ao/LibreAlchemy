@@ -1,4 +1,4 @@
--- DrumShiftMapper.lua
+-- Services/Search/DrumShiftMapper.lua
 
 Class( "DrumShiftMapper", {
 	_state         = nil,
@@ -39,7 +39,7 @@ function DrumShiftMapper:BuildMap()
 				-- Перебираем все возможные сдвиги от -maxCorrections до +maxCorrections
 				for shift = -self._state.maxCorrections, self._state.maxCorrections do
 					-- Вычисляем целевой индекс компонента с учетом сдвига и зацикленности барабана
-                    local targetIndex = safeModulo( basePos + shift, componentCount )
+                    local targetIndex = self._mathUtils.safeModulo( basePos + shift, componentCount )
 					
                     local componentId = drumInfo.components[ targetIndex ] -- ID компонента (userdata/ResourceId)
 					
