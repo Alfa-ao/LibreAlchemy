@@ -1,11 +1,11 @@
--- MathUtils.lua
+-- Utils/MathUtils.lua
 
 Class( "MathUtils", {} )
 
--- Локальная функция: безопасный математический модуль (остаток от деления).
+-- Безопасный математический модуль (остаток от деления).
 -- В Lua оператор % для отрицательных чисел может возвращать отрицательный результат. 
 -- Эта функция гарантирует, что результат всегда будет в диапазоне [0, b-1].
-function safeModulo( a, b )
+function MathUtils.safeModulo( a, b )
     -- a: number (int) - делимое (например, basePos + shift)
     -- b: number (int) - делитель (например, количество компонентов в барабане)
     return ( ( a % b ) + b ) % b
@@ -13,7 +13,8 @@ end
 
 
 -- (shallow copy) Поверхностное (неглубокое) копирование таблицы.
-function MathUtils:ShallowCopy( tbl )
+-- В общем: Просто так скопировать таблицу в lua нельзя, иначе копия будет ссылаться к родителю.
+function MathUtils.shallowCopy( tbl )
 	if type( tbl ) ~= "table" then return {} end
 	
 	--[[ {
