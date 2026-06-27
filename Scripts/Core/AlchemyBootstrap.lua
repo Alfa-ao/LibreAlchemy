@@ -1,4 +1,4 @@
--- AlchemyBootstrap.lua
+-- Core/AlchemyBootstrap.lua
 
 Class( "AlchemyBootstrap", {
     _eventManager = nil,
