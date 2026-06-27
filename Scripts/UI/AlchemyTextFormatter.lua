@@ -50,7 +50,7 @@ end
 
 --- Форматирует для лога
 function AlchemyTextFormatter:FormatResultsForLog( found, maxDisplay, nDrums )
-	local parts = { "EVENT_ALCHEMY_REACTION_FINISHED:" }
+	local parts = {}
 	
 	for i = 1, math.min( #found, maxDisplay ) do
 		local foundResult = found[i]
@@ -64,5 +64,5 @@ function AlchemyTextFormatter:FormatResultsForLog( found, maxDisplay, nDrums )
 		table.insert( parts, logStr )
 	end
 	
-	return table.concat( parts, "|" )
+	return "EVENT_ALCHEMY_REACTION_FINISHED:" .. table.concat( parts, "|" )
 end
