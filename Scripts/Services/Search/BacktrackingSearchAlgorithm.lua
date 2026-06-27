@@ -1,6 +1,6 @@
--- Search/BacktrackingSearchAlgorithm.lua
+-- Services/Search/BacktrackingSearchAlgorithm.lua
 
-Class( "BacktrackingSearchAlgorithm", SearchAlgorithm() )
+Class( "BacktrackingSearchAlgorithm", SearchAlgorithmClassInterface() )
 
 function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvailability )
 	local foundResults = {}
@@ -96,8 +96,8 @@ function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvai
 					foundSet[ bestRecipe.name ] = true
 					table.insert( foundResults, {
 						recipe     = bestRecipe,
-						shifts     = self._mathUtils:ShallowCopy( currentShifts ),
-						components = self._mathUtils:ShallowCopy( componentMap ),
+						shifts     = self._mathUtils.shallowCopy( currentShifts ),
+						components = self._mathUtils.shallowCopy( componentMap ),
 					} )
 				end
 			end
