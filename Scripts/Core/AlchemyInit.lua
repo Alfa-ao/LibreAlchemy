@@ -1,8 +1,11 @@
--- AlchemyInit.lua
+-- Core/AlchemyInit.lua
 
 local config = AlchemyConfig()
 local state  = AlchemyState()
 state.messageType = config.MESSAGE_GREETINGS
+
+-- Инструменты
+local mathUtils = MathUtils()
 
 -- Сервисы
 local services = { 
@@ -14,22 +17,21 @@ local services = {
 services.debug:Init( config )
 services.recipe:Init( state )
 
-local mathUtils = MathUtils()       -- Хелперы
-local evaluator = RecipeEvaluator() -- Поиск топового score рецепта
-
--- Маппер сдвигов
-local drumShiftMapper = DrumShiftMapper()
+----------------------------------
+local drumShiftMapper = DrumShiftMapper()             -- Маппер сдвигов барабанов
 drumShiftMapper:Init( state, services.recipe, mathUtils )
 
--- Алгоритм сервиса search
-local searchAlgorithm = BacktrackingSearchAlgorithm()
-searchAlgorithm:Init( evaluator, mathUtils )
+local searchAlgorithm = BacktrackingSearchAlgorithm() -- Алгоритм сервиса search
+searchAlgorithm:Init( RecipeEvaluator(), mathUtils )
 
-services.search = AlchemySearchService() -- Сервис поиска возможных рецептов
+services.search = AlchemySearchService()              -- Сервис поиска возможных рецептов
 services.search:Init( state, services.recipe, drumShiftMapper, searchAlgorithm )
+----------------------------------
 
 -- Интерфейс
 local widgetManager = AlchemyWidgetManager()
+widgetManager:Init( WidgetOuText(), WidgetDnD(), WidgetRollsBar() ) 
+
 local textFormatter = AlchemyTextFormatter()
 textFormatter:Init( widgetManager, services.debug )
 
