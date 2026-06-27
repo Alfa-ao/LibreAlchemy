@@ -1,4 +1,4 @@
--- AlchemyConfig.lua
+-- Core/AlchemyConfig.lua
 -- Настройки по умолчанию.
 
 Class( "AlchemyConfig", {
@@ -10,6 +10,9 @@ Class( "AlchemyConfig", {
     MESSAGE_WELCOME_BACK = 2,    -- "С возвращением!"
     MESSAGE_WARNING = 3,         -- Предупреждение (нет LibDnD)
     MESSAGE_NORMAL = 0,          -- Остальное для алхимки
+    
+    -- Новый стиль окна с барабанами для Алхимии
+    ENABLE_CUSTOM_LAYOUT = true, -- false - Стандартный стиль. Требуется перезагрузка игры.
 
     -- Отладка
     DEBUG = false,
