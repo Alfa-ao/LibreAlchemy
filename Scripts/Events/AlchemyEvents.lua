@@ -92,6 +92,7 @@ function AlchemyEvents:OnReactionFinished()
     local found = self._services.search:FindBestRecipes()
 
     if #found == 0 then
+        self._services.debug:LogReaction( "EVENT_ALCHEMY_REACTION_FINISHED:{empty}" )
         self._text:SetText( self._services.locale:Get( "RESULT_GIBBERISH" ) )
         self._state.reactionSuccess = false
     else
