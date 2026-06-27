@@ -1,13 +1,7 @@
--- AlchemyAvatarEvents.lua
+-- Events/AlchemyAvatarEvents.lua
 -- Класс отвечающий за события EVENT_AVATAR_*.
 
-Class( "AlchemyAvatarEvents", {
-    _state    = nil,
-    _config   = nil,
-    _ui       = nil,
-    _text     = nil,
-	_services = {},
-} )
+Class( "AlchemyAvatarEvents", EventClassInterface() )
 
 function AlchemyAvatarEvents:Init( state, config, widgetMgr, textFmt, services )
     self._state    = state
@@ -26,9 +20,14 @@ end
 
 function AlchemyAvatarEvents:OnAvatarCreated()
     self._services.locale:Init()
-    self._ui:Init()
-
-    if not self._ui:InitDragAndDrop() then
+    
+    if self._config.ENABLE_CUSTOM_LAYOUT then
+        self._ui:GetWidget( "rollsBar" ):InitCustomLayout()
+    end
+    
+    local dndWidget = self._ui:GetWidget( "dnd" )
+    
+    if not dndWidget or not dndWidget:InitDragAndDrop() then
         -- Сохраним до лучших времен:
         -- self._text:SetText( self._services.locale:Get( "INSTALL_LIB_DND" ) )
         -- self._state.messageType = self._config.MESSAGE_WARNING
