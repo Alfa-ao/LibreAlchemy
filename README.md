@@ -19,7 +19,14 @@ Addon to assist with Alchemy. Allods Online.
   + Абсолютно вся скриптовая часть была переписана с нуля.
   + Использовано Объектно-Ориентированное Программирование (**ООП**), **SOLID** по возможности.
   + Контракты `EventClassInterface.lua`, `SearchAlgorithmClassInterface.lua`, `WidgetClassInterface.lua`
-  + И многого другого, не нужного обычному игроку слов.
+  + Сервис поиска `AlchemySearchService` разделен на логические составляющие и ответственность:
+    + `BacktrackingSearchAlgorithm` - Алгоритм перебора сдвигов каждого барабана на основе сопоставление аспетков компонента с требуемых компонетов.
+    + `DrumShiftMapper` - Создает карту всевозможных сдвигов для каждого барабана.
+    + `RecipeEvaluator` - Отсекает худшие рецепты.
+  + `AlchemyWidgetManager` - Регистратор виджетов с элементами управления. Он проверяет, что переданный объект реализует интерфейс `WidgetClassInterface` (используя `InstanceOf`).
+    + `WidgetRollsBar`, `WidgetOuText`, `WidgetDnD` - каждый реализует свои дополнения и инициализирует их по запросу в логике.
++ Widgets:
+  + Исправление недочётов. issues #1
 
 + **Известные ошибки**:
   1) При изменении масштаба интерфейса игры с минимального на стандартный после перезагрузки игры текст подсказки исчезает.
@@ -37,7 +44,14 @@ Addon to assist with Alchemy. Allods Online.
   + The entire scripting codebase has been completely rewritten from scratch.
   + Object-Oriented Programming (**OOP**) and **SOLID** principles were applied where possible.
   + Contracts: `EventClassInterface.lua`, `SearchAlgorithmClassInterface.lua`, `WidgetClassInterface.lua`.
-  + And plenty of other technical jargon unnecessary for the average player.
+  + The `AlchemySearchService` has been split into logical components with distinct responsibilities:
+    + `BacktrackingSearchAlgorithm` - A backtracking algorithm for shifting each drum based on matching component aspects to the required ones.
+    + `DrumShiftMapper` - Generates a map of all possible shifts for each drum.
+    + `RecipeEvaluator` - Filters out suboptimal recipes.
+  + `AlchemyWidgetManager` - Registers UI widgets with control elements. It verifies that the passed object implements the `WidgetClassInterface` (using `InstanceOf`).
+    + `WidgetRollsBar`, `WidgetOuText`, `WidgetDnD` - Each implements its specific extensions and initializes them on demand.
++ Widgets:
+  + Bug fixes (issue #1).
 
 + **Known issues**:
   1) When changing the game UI scale from minimum to default, the tooltip text disappears after restarting the game.
