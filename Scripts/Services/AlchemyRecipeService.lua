@@ -1,4 +1,4 @@
--- AlchemyRecipeService.lua
+-- Services/AlchemyRecipeService.lua
 -- Сервис для работы с рецептами алхимии: кэширование, фильтрация и подсчет возможных рецептов.
 
 Class( "AlchemyRecipeService", {
