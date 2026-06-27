@@ -1,11 +1,6 @@
--- AlchemySystemEvents.lua
+-- Events/AlchemySystemEvents.lua
 
-Class( "AlchemySystemEvents", {
-    _state    = nil,
-    _config   = nil,
-    _text     = nil,
-	_services = {},
-})
+Class( "AlchemySystemEvents", EventClassInterface() )
 
 function AlchemySystemEvents:Init( state, config, textFmt, services )
     self._state    = state
