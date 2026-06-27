@@ -1,4 +1,4 @@
--- AlchemyEventManager.lua
+-- Events/AlchemyEventManager.lua
 -- Централизованный менеджер событий.
 
 Class( "AlchemyEventManager", {
@@ -7,10 +7,23 @@ Class( "AlchemyEventManager", {
 })
 
 function AlchemyEventManager:Init( ... )
-    self._handlers = { ... }
-    self._registeredEvents = {}
+    local handlers = { ... }
+    for id, handler in ipairs( handlers ) do
+        if InstanceOf( handler, _G.EventClassInterface ) then
+            self._handlers[id] = handler
+        else
+            local objectClass = GetParentClass( handler )
+            local className = GetClassName( objectClass )
+            
+            error( string.format( 
+                "Unsupported class '%s' does not have an interface 'EventClassInterface'", 
+                className 
+            ) )
+        end
+    end
 end
 
+-- Регистрация всех событий
 function AlchemyEventManager:RegisterAll()
     for _, handler in ipairs( self._handlers ) do
         local eventMap = handler:GetEventMap() 
