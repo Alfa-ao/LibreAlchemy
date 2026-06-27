@@ -1,4 +1,4 @@
--- AlchemyDebugService.lua
+-- Services/AlchemyDebugService.lua
 
 Class( "AlchemyDebugService", {
     _categories = {},
