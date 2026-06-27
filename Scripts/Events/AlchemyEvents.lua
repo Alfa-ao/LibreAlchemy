@@ -1,14 +1,7 @@
--- AlchemyEvents.lua
+-- Events/AlchemyEvents.lua
 -- Класс отвечающий за события EVENT_ALCHEMY_*.
 
-Class( "AlchemyEvents", {
-    _state    = nil,
-    _config   = nil,
-    _ui       = nil,
-    _text     = nil,
-	_debug    = nil,
-	_services = nil,
-})
+Class( "AlchemyEvents", EventClassInterface() )
 
 function AlchemyEvents:Init( state, config, widgetMgr, textFmt, services )
     self._state    = state
@@ -34,10 +27,6 @@ function AlchemyEvents:OnStarted()
 	
     self._ui:Show()
     self._state.active = true
-    
-    -- Если recipe:BuildRecipeCache() тут отрабатывает,
-    -- то смысла здесь записывать нет, а лучше перенести в BuildRecipeCache()
-    -- self._state.drumsCount = avatar.GetAlchemyInfo().drumsCount
     
     -- Более логично подготовить весь список зелий (249) при открытии Алхимии.
     -- Но и оставить в CountPotential(), если список поменялся во время работы.
