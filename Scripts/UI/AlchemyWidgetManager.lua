@@ -1,32 +1,47 @@
--- AlchemyWidgetManager.lua
+-- UI/AlchemyWidgetManager.lua
 
 Class( "AlchemyWidgetManager", {
     _mainForm = nil,
-    _ouText = nil,
-})
+    _widgets = {},
+} )
 
-function AlchemyWidgetManager:Init()
+function AlchemyWidgetManager:Init( ... )
     self._mainForm = _G.mainForm
-    self._ouText = self._mainForm:GetChildChecked( "ouText" )
+    self._widgets = {}
     
-    local pco = common.GetPosConverterParams()
-    local plc = self._ouText:GetPlacementPlain()
-    plc.posX = pco.fullVirtualSizeX / 2 - 360
-    plc.posY = pco.fullVirtualSizeY - plc.posY -- https://github.com/Alfa-ao/LibreAlchemy/issues/1
-    self._ouText:SetPlacementPlain( plc )
+    local widgets = { ... }
+    for _, widget in ipairs( widgets ) do
+        if widget and InstanceOf( widget, _G.WidgetClassInterface ) then
+            local widgetName = widget:GetWidgetName()
+            self._widgets[widgetName] = widget
+            
+            -- Вызываем внутренний Init виджета, передавая ему ссылку на менеджер
+            if widget.Init then
+                widget:Init( self )
+            end
+        else
+            local objectClass = GetParentClass( widget )
+            local className = GetClassName( objectClass )
+            
+            error( string.format( 
+                "Unsupported class '%s' does not have an interface 'WidgetClassInterface'", 
+                className 
+            ) )
+        end
+    end
     
     self:Hide()
 end
 
-function AlchemyWidgetManager:InitDragAndDrop()
-    if rawget( _G, "DnD" ) then
-        _G.DnD.Init( self._ouText, nil, true )
-        return true
-    end
-    
-    return false
+-- Геттер для получения формы (чтобы виджеты не лазили в _mainForm напрямую)
+function AlchemyWidgetManager:GetMainForm()
+    return self._mainForm
 end
 
-function AlchemyWidgetManager:Show() self._mainForm:Show( true ) end
+-- Геттер конкретного виджета по имени
+function AlchemyWidgetManager:GetWidget( widgetName )
+    return self._widgets[widgetName]
+end
+
+function AlchemyWidgetManager:Show() self._mainForm:Show( true )  end
 function AlchemyWidgetManager:Hide() self._mainForm:Show( false ) end
-function AlchemyWidgetManager:GetTextWidget() return self._ouText end
