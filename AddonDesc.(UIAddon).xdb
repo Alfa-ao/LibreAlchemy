@@ -30,16 +30,16 @@
 		<!-- Drag&Drop -->
 		<Item href="Libs/LibDnD.lua" />
 		
+		<!-- Utils (Утилиты) -->
+		<Item href="Scripts/Utils/MathUtils.lua" />
+		
 		<!-- LibreAlchemy -->
 		<Item href="Scripts/Facade.lua" />
 		<Item href="Scripts/Core/AlchemyConfig.lua" />
 		<Item href="Scripts/Core/AlchemyState.lua" />
 		
-		<!-- Utils (Утилиты) -->
-		<Item href="Scripts/Utils/MathUtils.lua" />
-		
 		<!-- Search Subsystem (Базовые классы и реализации поиска) -->
-		<Item href="Scripts/Services/Search/SearchAlgorithm.lua" />
+		<Item href="Scripts/Services/Search/SearchAlgorithmClassInterface.lua" />
 		<Item href="Scripts/Services/Search/RecipeEvaluator.lua" />
 		<Item href="Scripts/Services/Search/DrumShiftMapper.lua" />
 		<Item href="Scripts/Services/Search/BacktrackingSearchAlgorithm.lua" />
@@ -51,10 +51,15 @@
 		<Item href="Scripts/Services/AlchemySearchService.lua" />
 		
 		<!-- UI -->
+		<Item href="Scripts/UI/Widgets/WidgetClassInterface.lua" />
+		<Item href="Scripts/UI/Widgets/WidgetDnD.lua" />
+		<Item href="Scripts/UI/Widgets/WidgetOuText.lua" />
+		<Item href="Scripts/UI/Widgets/WidgetRollsBar.lua" />
 		<Item href="Scripts/UI/AlchemyWidgetManager.lua" />
 		<Item href="Scripts/UI/AlchemyTextFormatter.lua" />
 		
 		<!-- Events -->
+		<Item href="Scripts/Events/EventClassInterface.lua" />
 		<Item href="Scripts/Events/AlchemySystemEvents.lua" />
 		<Item href="Scripts/Events/AlchemyEvents.lua" />
 		<Item href="Scripts/Events/AlchemyAvatarEvents.lua" />
