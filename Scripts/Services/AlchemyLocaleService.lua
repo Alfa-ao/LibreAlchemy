@@ -1,4 +1,4 @@
--- AlchemyLocaleService.lua
+-- Services/AlchemyLocaleService.lua
 
 Class( "AlchemyLocaleService", {
     _group = nil,
