@@ -1,4 +1,4 @@
--- AlchemySearchService.lua
+-- Services/AlchemySearchService.lua
 
 Class( "AlchemySearchService", {
 	_state         = nil,
@@ -13,8 +13,19 @@ function AlchemySearchService:Init( state, recipeService, mapper, algorithm )
 	self._state         = state
 	self._recipeService = recipeService
 	self._mapper        = mapper
-	self._algorithm     = algorithm
 	self._foundSet      = {}
+	
+	if InstanceOf( algorithm, _G.SearchAlgorithmClassInterface ) then
+		self._algorithm = algorithm
+	else
+		local objectClass = GetParentClass( algorithm )
+		local className = GetClassName( objectClass )
+		
+		error( string.format( 
+			"Unsupported class '%s' does not have an interface 'SearchAlgorithmClassInterface'", 
+			className 
+		) )
+	end
 end
 
 -- Главная точка входа.
