@@ -1,4 +1,4 @@
--- AlchemyTextFormatter.lua
+-- UI/AlchemyTextFormatter.lua
 
 Class( "AlchemyTextFormatter", {
 	_widgetManager = nil,
@@ -14,7 +14,14 @@ function AlchemyTextFormatter:SetText( text )
 	self._debug:LogGeneral( text )
 	local vt = common.CreateValuedText()
 	vt:SetFormat( userMods.ToWString( string.format( [[<html><log fontsize="20">%s</log></html>]], text ) ) )
-	self._widgetManager:GetTextWidget():SetValuedText( vt )
+	
+	local ouTextWidget = self._widgetManager:GetWidget( "ouText" )
+    if ouTextWidget then
+        ouTextWidget:SetValuedText( vt )
+		return
+    end
+	
+	error( "AlchemyTextFormatter: Widget 'ouText' not found", 2 )
 end
 
 -- Форматирует список найденных рецептов для UI
