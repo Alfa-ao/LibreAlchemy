@@ -1,4 +1,4 @@
--- AlchemyState.lua
+-- Core/AlchemyState.lua
 -- Хранилище изменяемого состояния аддона.
 
 Class( "AlchemyState", {
