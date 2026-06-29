@@ -4,12 +4,13 @@
 
 Addon to assist with Alchemy. Allods Online.
 
----
-
-### [v2.1.0](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.1.0)
 <p align="center">
   <img src="https://raw.githubusercontent.com/Alfa-ao/LibreAlchemyV2/refs/heads/main/LibreAlchemyV2.png" width="300px">
 </p>
+
+---
+
+### [v2.1.0](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.1.0)
 
 + **Главное дополнение**: Изменение интерфейса и расположение кнопок.
   + Для возврата стандартного расположения кнопок, нужно:
