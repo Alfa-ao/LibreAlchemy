@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <UIAddon>
-	<Name>LibreAlchemy</Name>
+	<Name>LibreAlchemyV2</Name>
 	<AutoStart>true</AutoStart>
 	<localizedNameFileRef href="name.txt" />
 	<localizedDescFileRef href="desc.txt" />
