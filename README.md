@@ -1,4 +1,4 @@
-# LibreAlchemy
+# LibreAlchemyV2
 
 Аддон для помощи в Алхимии. Аллоды Онлайн.
 
@@ -6,14 +6,14 @@ Addon to assist with Alchemy. Allods Online.
 
 ---
 
-### [v2.1.0](https://github.com/Alfa-ao/LibreAlchemy/releases/tag/v2.1.0)
+### [v2.1.0](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.1.0)
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Alfa-ao/LibreAlchemy/refs/heads/main/LibreAlchemyV2.png" width="300px">
+  <img src="https://raw.githubusercontent.com/Alfa-ao/LibreAlchemyV2/refs/heads/main/LibreAlchemyV2.png" width="300px">
 </p>
 
 + **Главное дополнение**: Изменение интерфейса и расположение кнопок.
   + Для возврата стандартного расположения кнопок, нужно:
-  + Открыть скрипт `LibreAlchemy\Scripts\Core\AlchemyConfig.lua`
+  + Открыть скрипт `LibreAlchemyV2\Scripts\Core\AlchemyConfig.lua`
   + Изменить атрибут `ENABLE_CUSTOM_LAYOUT = true` на `ENABLE_CUSTOM_LAYOUT = false` и перезагрузить игру.
 + Lua:
   + Абсолютно вся скриптовая часть была переписана с нуля.
@@ -30,7 +30,7 @@ Addon to assist with Alchemy. Allods Online.
 
 + **Известные ошибки**:
   1) При изменении масштаба интерфейса игры с минимального на стандартный после перезагрузки игры текст подсказки исчезает.
-  + Причина: координаты подсказки становятся отрицательными, и при следующем входе в игру текст прячется за экраном. Лечится удалением `Configs\LibreAlchemy\user.cfg`. 
+  + Причина: координаты подсказки становятся отрицательными, и при следующем входе в игру текст прячется за экраном. Лечится удалением `Configs\LibreAlchemyV2\user.cfg`. 
   + Ответственность за это несет библиотека `LibDnD.lua`. Она должна обнулять (или корректировать) отрицательные координаты.
 
 <details>
@@ -38,7 +38,7 @@ Addon to assist with Alchemy. Allods Online.
 
 + **Main addition**: UI changes and button layout.
   + To revert to the default button layout:
-  + Open the `LibreAlchemy\Scripts\Core\AlchemyConfig.lua` script.
+  + Open the `LibreAlchemyV2\Scripts\Core\AlchemyConfig.lua` script.
   + Change `ENABLE_CUSTOM_LAYOUT = true` to `ENABLE_CUSTOM_LAYOUT = false` and restart the game.
 + Lua:
   + The entire scripting codebase has been completely rewritten from scratch.
@@ -55,14 +55,14 @@ Addon to assist with Alchemy. Allods Online.
 
 + **Known issues**:
   1) When changing the game UI scale from minimum to default, the tooltip text disappears after restarting the game.
-  + Cause: The tooltip coordinates become negative, hiding the text off-screen on the next launch. Fix: Delete `Configs\LibreAlchemy\user.cfg`. 
+  + Cause: The tooltip coordinates become negative, hiding the text off-screen on the next launch. Fix: Delete `Configs\LibreAlchemyV2\user.cfg`. 
   + The `LibDnD.lua` library is responsible for this. It should reset (or correct) negative coordinates.
 
 </details>
 
 ---
 
-### [v1.2.1](https://github.com/Alfa-ao/LibreAlchemy/releases/tag/v1.2.1)
+### [v1.2.1](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v1.2.1)
 + Добавлена локализация: `ENG`, `RUS`. Все текстовые сообщения из lua перенесены.
 + Скриптовая часть переведена в кодировку `UTF-8 no BOM`.
 <details>
@@ -75,7 +75,7 @@ Addon to assist with Alchemy. Allods Online.
 
 ---
 
-### [v1.2.0](https://github.com/Alfa-ao/LibreAlchemy/releases/tag/v1.2.0)
+### [v1.2.0](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v1.2.0)
 + Добавлена библиотека (Drag&Drop) [LibDnD.lua](https://alloder.pro/files/file/248-libdnd/). Текст с подсказкой можно перемещать по всей области экрана (`MainForm`).
 + Lua:
   + Чистка неиспользуемых участков кода / функций.
@@ -126,7 +126,7 @@ Addon to assist with Alchemy. Allods Online.
 
 ---
 
-### [v1.1.4](https://github.com/Alfa-ao/LibreAlchemy/releases/tag/v1.1.4)
+### [v1.1.4](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v1.1.4)
 + Бэкап. Старая версия.
 + Last update: 2 июля, 2025
 <details>
