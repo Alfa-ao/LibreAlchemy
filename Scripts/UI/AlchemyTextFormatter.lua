@@ -5,19 +5,17 @@ Class( "AlchemyTextFormatter", {
 	_debug         = nil,
 } )
 
-function AlchemyTextFormatter:Init( widgetManager, debug )
+function AlchemyTextFormatter:Init( widgetManager, debug ) --- void
 	self._widgetManager = widgetManager
 	self._debug         = debug
 end
 
-function AlchemyTextFormatter:SetText( text )
+function AlchemyTextFormatter:SetText( text ) --- void
 	self._debug:LogGeneral( text )
-	local vt = common.CreateValuedText()
-	vt:SetFormat( userMods.ToWString( string.format( [[<html><log fontsize="20">%s</log></html>]], text ) ) )
 	
-	local ouTextWidget = self._widgetManager:GetWidget( "ouText" )
-    if ouTextWidget then
-        ouTextWidget:SetValuedText( vt )
+	local ouTextWrapper = self._widgetManager:GetWidgetWrapper( "ouText" )
+    if ouTextWrapper then
+		ouTextWrapper:SetVal( "content", text )
 		return
     end
 	
@@ -25,7 +23,7 @@ function AlchemyTextFormatter:SetText( text )
 end
 
 -- Форматирует список найденных рецептов для UI
-function AlchemyTextFormatter:FormatResults( found, maxDisplay, nDrums )
+function AlchemyTextFormatter:FormatResults( found, maxDisplay, nDrums ) --- string
 	table.sort( found, function( a, b )
 		if a.recipe.score == b.recipe.score then
 			return a.recipe.name > b.recipe.name
@@ -45,11 +43,11 @@ function AlchemyTextFormatter:FormatResults( found, maxDisplay, nDrums )
 		table.insert( parts, string.format( "%d: %s - %s", foundResult.recipe.score, shiftStr, foundResult.recipe.name ) )
 	end
 	
-	return table.concat( parts, "<br/>" )
+	return table.concat( parts, "\n" )
 end
 
 --- Форматирует для лога
-function AlchemyTextFormatter:FormatResultsForLog( found, maxDisplay, nDrums )
+function AlchemyTextFormatter:FormatResultsForLog( found, maxDisplay, nDrums ) --- string
 	local parts = {}
 	
 	for i = 1, math.min( #found, maxDisplay ) do

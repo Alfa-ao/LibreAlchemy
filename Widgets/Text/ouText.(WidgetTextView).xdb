@@ -15,12 +15,12 @@
 			<Sizing>WIDGET_SIZING_INTERNAL</Sizing>
 			
 			<!-- См. AlchemyWidgetManager:Init() -->
-			<Pos>135</Pos>
+			<Pos>160</Pos>
 		</Y>
 	</Placement>
 	<TextStyle>
 		<multiline>true</multiline>
-		<wrapText>false</wrapText>
+		<wrapText>true</wrapText>
 		<showClippedSymbol>false</showClippedSymbol>
 		<showClippedLine>false</showClippedLine>
 		<lineSpacing>0</lineSpacing>
@@ -29,4 +29,5 @@
 	<TransparentInput>false</TransparentInput>
 	<Visible>true</Visible>
 	<Enabled>true</Enabled>
+	<isHtmlEscaping>true</isHtmlEscaping>
 </WidgetTextView>
