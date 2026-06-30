@@ -3,7 +3,7 @@
 Class( "WidgetRollsBar", WidgetClassInterface() )
 
 -- Новый стиль окна с барабанами для Алхимии
-function WidgetRollsBar:InitCustomLayout()
+function WidgetRollsBar:InitCustomLayout() --- void
 	-- AlchemyV2.MainFrame.Alchemy.Game.View.Rolls
     local rolls = _G.stateMainForm:GetChildChecked( "AlchemyV2" ):GetChildChecked( "Rolls", true )
     
@@ -55,10 +55,10 @@ function WidgetRollsBar:InitCustomLayout()
     rolls:SetPlacementPlain( plcRolls )
 end
 
-function WidgetRollsBar:GetWidget()
+function WidgetRollsBar:GetNativeWidget() --- ?Widget
     return nil
 end
 
-function WidgetRollsBar:GetWidgetName()
+function WidgetRollsBar:GetWidgetName() --- string
     return "rollsBar"
 end

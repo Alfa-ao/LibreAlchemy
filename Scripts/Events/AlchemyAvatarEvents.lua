@@ -3,7 +3,7 @@
 
 Class( "AlchemyAvatarEvents", EventClassInterface() )
 
-function AlchemyAvatarEvents:Init( state, config, widgetMgr, textFmt, services )
+function AlchemyAvatarEvents:Init( state, config, widgetMgr, textFmt, services ) --- void
     self._state    = state
     self._config   = config
     self._ui       = widgetMgr
@@ -11,30 +11,30 @@ function AlchemyAvatarEvents:Init( state, config, widgetMgr, textFmt, services )
 	self._services = services
 end
 
-function AlchemyAvatarEvents:GetEventMap()
+function AlchemyAvatarEvents:GetEventMap() --- table
     return {
 		EVENT_AVATAR_CREATED    = self.OnAvatarCreated,
 		EVENT_AVATAR_ITEM_TAKEN = self.OnItemTaken,
     }
 end
 
-function AlchemyAvatarEvents:OnAvatarCreated()
+function AlchemyAvatarEvents:OnAvatarCreated() --- void
     self._services.locale:Init()
     
     if self._config.ENABLE_CUSTOM_LAYOUT then
-        self._ui:GetWidget( "rollsBar" ):InitCustomLayout()
+        self._ui:GetWidgetWrapper( "rollsBar" ):InitCustomLayout()
     end
     
-    local dndWidget = self._ui:GetWidget( "dnd" )
+    local dndWidgetWrapper = self._ui:GetWidgetWrapper( "dnd" )
     
-    if not dndWidget or not dndWidget:InitDragAndDrop() then
+    if not dndWidgetWrapper or not dndWidgetWrapper:InitDragAndDrop() then
         -- Сохраним до лучших времен:
         -- self._text:SetText( self._services.locale:Get( "INSTALL_LIB_DND" ) )
         -- self._state.messageType = self._config.MESSAGE_WARNING
     end
 end
 
-function AlchemyAvatarEvents:OnItemTaken( params )
+function AlchemyAvatarEvents:OnItemTaken( params ) --- void
     self._services.debug:LogGeneral( "EVENT_AVATAR_ITEM_TAKEN" )
 
     if params.actionType == "ENUM_TakeItemActionType_Craft" and self._state.reactionSuccess then

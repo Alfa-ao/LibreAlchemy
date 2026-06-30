@@ -2,24 +2,24 @@
 
 Class( "WidgetDnD", WidgetClassInterface() )
 
-function WidgetDnD:Init( widgetManager )
+function WidgetDnD:Init( widgetManager ) --- void
     self._widgetManager = widgetManager
 end
 
-function WidgetDnD:InitDragAndDrop()
-    local ouText = self._widgetManager:GetWidget( "ouText" ):GetWidget()
+function WidgetDnD:InitDragAndDrop() --- boolean
+    local ouTextWrapper = self._widgetManager:GetWidgetWrapper( "ouText" )
     
-    if rawget( _G, "DnD" ) then
-        _G.DnD.Init( ouText, nil, true )
+    if rawget( _G, "DnD" ) and ouTextWrapper then
+        _G.DnD.Init( ouTextWrapper:GetNativeWidget(), nil, true )
         return true
     end
     return false
 end
 
-function WidgetDnD:GetWidgetName()
+function WidgetDnD:GetWidgetName() --- string
     return "dnd"
 end
 
-function WidgetDnD:GetWidget()
+function WidgetDnD:GetNativeWidget() --- ?Widget
     return rawget( _G, "DnD" ) and _G.DnD or nil
 end

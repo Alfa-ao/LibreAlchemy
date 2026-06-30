@@ -5,11 +5,16 @@ Class( "AlchemyWidgetManager", {
     _widgets = {},
 } )
 
-function AlchemyWidgetManager:Init( ... )
+function AlchemyWidgetManager:Init( ... ) --- void
     self._mainForm = _G.mainForm
     self._widgets = {}
     
     local widgets = { ... }
+    
+    table.sort( widgets, function( widgetA, widgetB )
+		return widgetA:GetPriorityClass() > widgetB:GetPriorityClass()
+	end )
+    
     for _, widget in ipairs( widgets ) do
         if widget and InstanceOf( widget, _G.WidgetClassInterface ) then
             local widgetName = widget:GetWidgetName()
@@ -29,18 +34,16 @@ function AlchemyWidgetManager:Init( ... )
             ) )
         end
     end
-    
-    self:Hide()
 end
 
 -- Геттер для получения формы (чтобы виджеты не лазили в _mainForm напрямую)
-function AlchemyWidgetManager:GetMainForm()
+function AlchemyWidgetManager:GetMainForm() --- Widget
     return self._mainForm
 end
 
--- Геттер конкретного виджета по имени
-function AlchemyWidgetManager:GetWidget( widgetName )
-    return self._widgets[widgetName]
+-- Геттер конкретного виджета по имени (Выводит контроллер/класс/обвертку над нативным)
+function AlchemyWidgetManager:GetWidgetWrapper( widgetName ) --- ?WidgetClassInterface
+    return self._widgets[widgetName] or nil
 end
 
 function AlchemyWidgetManager:Show() self._mainForm:Show( true )  end
