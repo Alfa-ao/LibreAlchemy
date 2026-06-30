@@ -2,7 +2,7 @@
 
 Class( "WidgetOuText", WidgetClassInterface() )
 
-function WidgetOuText:Init( widgetManager )
+function WidgetOuText:Init( widgetManager ) --- void
     self._widget = widgetManager:GetMainForm():GetChildChecked( "ouText" )
     
     local pco = common.GetPosConverterParams()
@@ -10,18 +10,23 @@ function WidgetOuText:Init( widgetManager )
     plc.posX = pco.fullVirtualSizeX / 2 - 360
     plc.posY = pco.fullVirtualSizeY - plc.posY -- https://github.com/Alfa-ao/LibreAlchemy/issues/1
     self._widget:SetPlacementPlain( plc )
+    
+    self._widget:SetVal( 'content', "LibreAlchemyV2" ) -- Присваиваем стандартный текст для решения неких проблем.
 end
 
--- Метод установки текста
-function WidgetOuText:SetValuedText( valuedText )
-	self._widget:SetValuedText( valuedText )
+function WidgetOuText:GetPriorityClass() --- int
+	return 10
 end
 
--- Прямой геттер нативного виджета (если нужен для специфичных операций)
-function WidgetOuText:GetWidget()
+-- Метод присваивания значения
+function WidgetOuText:SetVal( tag, value ) --- void
+	self._widget:SetVal( tag, value )
+end
+
+function WidgetOuText:GetNativeWidget() --- ?Widget
     return self._widget
 end
 
-function WidgetOuText:GetWidgetName()
+function WidgetOuText:GetWidgetName() --- string
     return "ouText"
 end
