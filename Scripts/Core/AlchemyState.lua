@@ -12,7 +12,9 @@ Class( "AlchemyState", {
     drumShiftMap = nil,    -- Карта сдвигов: хранит компоненты в барабанах с учетом возможных сдвигов (индекс [барабан][сдвиг] = имя компонента).
     foundResults = nil,    -- Таблица найденных вариантов (рецепт + сдвиги барабанов).
     drumsCount = 0,        -- (Re: UIAddon) Кол-во слотов доступных в ступке.
-    maxCorrections = 6,    -- У нас сломан GetAlchemyDrumInfo( N ).maxCorrectionsPerColumn (-1 - не определено)
+    maxCorrections = 5,    -- GetAlchemyDrumInfo( 0 ).maxCorrectionsPerColumn 
+                           -- выводит 5 только тогда, когда пошёл процесс варки.
+                           -- Во всех остальных случаях (-1) - не определено.
 	
     place = {
         placed = nil,
