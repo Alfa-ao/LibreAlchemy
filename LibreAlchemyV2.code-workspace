@@ -2,18 +2,12 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "Z:/AllodsLogs/"
 		}
 	],
 	"settings": {
-		"files.autoGuessEncoding": false,
-		"[lua]": {
-			"files.encoding": "utf8"
-		},
-		"[xdb]": {
-			"files.encoding": "utf8"
-		},
-		"[txt]": {
-			"files.encoding": "utf16le"
-		}
+		"files.autoGuessEncoding": false
 	}
 }
