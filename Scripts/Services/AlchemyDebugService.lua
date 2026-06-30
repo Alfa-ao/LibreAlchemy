@@ -4,7 +4,7 @@ Class( "AlchemyDebugService", {
     _categories = {},
 })
 
-function AlchemyDebugService:Init( config )
+function AlchemyDebugService:Init( config ) --- void
     self._categories = {
         GENERAL  = config.DEBUG,           -- Общая логика
         REACTION = config.DEBUG_REACTION,  -- Дебаг реакции
@@ -12,19 +12,19 @@ function AlchemyDebugService:Init( config )
 end
 
 -- Включить/выключить конкретную категорию
-function AlchemyDebugService:SetEnabled( category, isEnabled )
+function AlchemyDebugService:SetEnabled( category, isEnabled ) --- void
     if self._categories[category] ~= nil then
         self._categories[category] = isEnabled
     end
 end
 
 -- Проверка включена ли категория
-function AlchemyDebugService:IsEnabled( category )
+function AlchemyDebugService:IsEnabled( category ) --- boolean
     return self._categories[category] == true
 end
 
 -- Базовый метод логирования.
-function AlchemyDebugService:Log( category, ... )
+function AlchemyDebugService:Log( category, ... ) --- void
     if not self:IsEnabled( category ) then return end
     
     local args = { ... }

@@ -5,12 +5,12 @@ Class( "SearchAlgorithmClassInterface", {
 	_mathUtils = nil,
 } )
 
-function SearchAlgorithmClassInterface:Init( evaluator, mathUtils )
+function SearchAlgorithmClassInterface:Init( evaluator, mathUtils ) --- void
 	self._evaluator = evaluator
 	self._mathUtils = mathUtils
 end
 
 -- Контракт метода. Должен быть переопределен в наследниках.
-function SearchAlgorithmClassInterface:Execute( ... )
+function SearchAlgorithmClassInterface:Execute( ... ) --- table
 	error( "SearchAlgorithm:Execute must be implemented by subclass" )
 end

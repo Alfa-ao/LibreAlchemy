@@ -4,7 +4,7 @@ Class( "RecipeEvaluator", {} )
 
 -- Ищет лучший рецепт для накопленных компонентов.
 -- Возвращает таблицу рецепта или nil.
-function RecipeEvaluator:FindBestRecipe( componentMap, filteredRecipes )
+function RecipeEvaluator:FindBestRecipe( componentMap, filteredRecipes ) --- ?table
 	if not filteredRecipes then return nil end
 	
 	local bestRecipe = nil

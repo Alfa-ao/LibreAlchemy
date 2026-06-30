@@ -4,13 +4,13 @@ Class( "AlchemyLocaleService", {
     _group = nil,
 })
 
-function AlchemyLocaleService:Init()
+function AlchemyLocaleService:Init() --- void
     self._group = common.GetAddonRelatedTextGroup(
         common.GetLocalization(), true
     ) or common.GetAddonRelatedTextGroup( "eng" )
 end
 
-function AlchemyLocaleService:Get( key )
+function AlchemyLocaleService:Get( key ) --- string
     if self._group and self._group:HasText( key ) then
         return userMods.FromWString( self._group:GetText( key ) )
     end

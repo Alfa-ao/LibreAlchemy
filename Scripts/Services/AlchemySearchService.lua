@@ -9,7 +9,7 @@ Class( "AlchemySearchService", {
 	_algorithm     = nil,
 } )
 
-function AlchemySearchService:Init( state, recipeService, mapper, algorithm )
+function AlchemySearchService:Init( state, recipeService, mapper, algorithm ) --- void
 	self._state         = state
 	self._recipeService = recipeService
 	self._mapper        = mapper
@@ -29,11 +29,12 @@ function AlchemySearchService:Init( state, recipeService, mapper, algorithm )
 end
 
 -- Главная точка входа.
-function AlchemySearchService:FindBestRecipes()
+function AlchemySearchService:FindBestRecipes() --- table
 	local alchemyInfo = avatar.GetAlchemyInfo()
 	
-	-- Обновляем максимальную коррекцию (СЛОМАНО - maxCorrectionsPerColumn всегда (-1))
+	-- Обновляем максимальную коррекцию
 	local firstDrumInfo = avatar.GetAlchemyDrumInfo( 0 )
+	--log(alchemyInfo)
 	if firstDrumInfo and firstDrumInfo.maxCorrectionsPerColumn and firstDrumInfo.maxCorrectionsPerColumn > 0 then
 		self._state.maxCorrections = firstDrumInfo.maxCorrectionsPerColumn
 	end

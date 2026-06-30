@@ -5,6 +5,6 @@ Class( "EventClassInterface", {
     _config = nil,
 } )
 
-function EventClassInterface:GetEventMap()
+function EventClassInterface:GetEventMap() --- table
     error( "EventClassInterface:GetEventMap must be implemented by subclass" )
 end

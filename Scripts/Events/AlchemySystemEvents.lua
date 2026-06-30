@@ -2,20 +2,20 @@
 
 Class( "AlchemySystemEvents", EventClassInterface() )
 
-function AlchemySystemEvents:Init( state, config, textFmt, services )
+function AlchemySystemEvents:Init( state, config, textFmt, services ) --- void
     self._state    = state
     self._config   = config
     self._text     = textFmt
 	self._services = services
 end
 
-function AlchemySystemEvents:GetEventMap()
+function AlchemySystemEvents:GetEventMap() --- table
     return {
 		EVENT_SECOND_TIMER = self.OnSecondTimer,
     }
 end
 
-function AlchemySystemEvents:OnSecondTimer()
+function AlchemySystemEvents:OnSecondTimer() --- void
     if self._state.active and self._state.place.placed == false and avatar.GetAlchemyInfo().active then
         if self._state.place.readyNotFoundMessage then
             self._text:SetText( self._services.locale:Get( "NOT_FOUND_RECIPLES" ) )

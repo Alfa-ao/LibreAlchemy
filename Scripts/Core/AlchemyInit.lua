@@ -12,6 +12,7 @@ local services = {
 	debug = AlchemyDebugService(),   -- Сервис для отладки (Debug)
 	locale = AlchemyLocaleService(), -- Сервис локализации ENG, RUS
 	recipe = AlchemyRecipeService(), -- Сервис рецепта
+	search = AlchemySearchService(), -- Сервис поиска возможных рецептов
 }
 
 services.debug:Init( config )
@@ -19,12 +20,10 @@ services.recipe:Init( state )
 
 ----------------------------------
 local drumShiftMapper = DrumShiftMapper()             -- Маппер сдвигов барабанов
-drumShiftMapper:Init( state, services.recipe, mathUtils )
-
 local searchAlgorithm = BacktrackingSearchAlgorithm() -- Алгоритм сервиса search
-searchAlgorithm:Init( RecipeEvaluator(), mathUtils )
 
-services.search = AlchemySearchService()              -- Сервис поиска возможных рецептов
+drumShiftMapper:Init( state, services.recipe, mathUtils )
+searchAlgorithm:Init( RecipeEvaluator(), mathUtils )
 services.search:Init( state, services.recipe, drumShiftMapper, searchAlgorithm )
 ----------------------------------
 

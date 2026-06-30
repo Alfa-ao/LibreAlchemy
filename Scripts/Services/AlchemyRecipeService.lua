@@ -9,12 +9,12 @@ Class( "AlchemyRecipeService", {
 } )
 
 -- Инициализация сервиса
-function AlchemyRecipeService:Init( state )
+function AlchemyRecipeService:Init( state ) --- void
     self._state = state
 end
 
--- Вспомогательный метод: получение человекочитаемого имени компонента по его ID с использованием кэша.
-function AlchemyRecipeService:GetComponentName( componentId )
+-- Вспомогательный метод: получение string имени компонента по его ID с использованием кэша.
+function AlchemyRecipeService:GetComponentName( componentId ) --- ?string
     -- componentId: userdata (ComponentPropertyId/ResourceId).
     
     -- Если имя уже запрашивалось, возвращаем его сразу
@@ -38,7 +38,7 @@ end
 
 -- Метод: Создает и кэширует полный список всех доступных игроку рецептов алхимии.
 -- Вызывается один раз при открытии окна алхимии или при изменении списка рецептов.
-function AlchemyRecipeService:CreateRecipeCache()
+function AlchemyRecipeService:CreateRecipeCache() --- void
     -- Если кэш уже создан
     if self._state.recipeCache ~= nil then return end
     
@@ -86,7 +86,7 @@ function AlchemyRecipeService:CreateRecipeCache()
 end
 
 -- Метод: Проверяет, соответствуют ли доступные компоненты требованиям конкретного рецепта.
-function AlchemyRecipeService:IsRecipeMatch( recipe, availableComponents, filledSlotsCount )
+function AlchemyRecipeService:IsRecipeMatch( recipe, availableComponents, filledSlotsCount ) --- boolean
     -- recipe: table - структура рецепта из кэша (содержит componentsCount, requiredComponents).
     -- availableComponents: table - хеш-таблица доступных компонентов { ["Имя"] = кол-во }.
     -- filledSlotsCount: number (int) - количество заполненных слотов (барабанов) в ступке.
@@ -109,7 +109,7 @@ end
 
 -- Метод: Фильтрует глобальный кэш рецептов, оставляя только те, которым соответствуют
 -- уникальные компоненты, лежащие в барабанах (без учета сдвигов/коррекций).
-function AlchemyRecipeService:FilterByComponents( availableComponents, filledDrumsCount )
+function AlchemyRecipeService:FilterByComponents( availableComponents, filledDrumsCount ) --- int
     -- availableComponents: table - { ["ИмяКомпонента"] = кол-во_слотов_с_этим_компонентом }.
     -- filledDrumsCount: number (int) - общее количество барабанов, в которые положены предметы.
     
@@ -130,7 +130,7 @@ function AlchemyRecipeService:FilterByComponents( availableComponents, filledDru
 end
 
 -- Метод: Подсчитывает количество потенциально возможных рецептов на основе того, какие предметы физически положены в слоты.
-function AlchemyRecipeService:CountPotential()
+function AlchemyRecipeService:CountPotential() --- ...[ int, int ]
     -- Проверяем чтобы кэш был
     self:CreateRecipeCache()
     

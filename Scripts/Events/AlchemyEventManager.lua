@@ -6,7 +6,7 @@ Class( "AlchemyEventManager", {
     _registeredEvents = {}, -- { eventName = { callback1, callback2, ... } }
 })
 
-function AlchemyEventManager:Init( ... )
+function AlchemyEventManager:Init( ... ) --- void
     local handlers = { ... }
     for id, handler in ipairs( handlers ) do
         if InstanceOf( handler, _G.EventClassInterface ) then
@@ -24,7 +24,7 @@ function AlchemyEventManager:Init( ... )
 end
 
 -- Регистрация всех событий
-function AlchemyEventManager:RegisterAll()
+function AlchemyEventManager:RegisterAll() --- void
     for _, handler in ipairs( self._handlers ) do
         local eventMap = handler:GetEventMap() 
         
@@ -40,7 +40,7 @@ function AlchemyEventManager:RegisterAll()
 end
 
 -- Регистрация одного события
-function AlchemyEventManager:Register( eventName, method )
+function AlchemyEventManager:Register( eventName, method ) --- void
     if not self._registeredEvents[eventName] then
         self._registeredEvents[eventName] = {}
     end
@@ -51,7 +51,7 @@ function AlchemyEventManager:Register( eventName, method )
 end
 
 -- Отмена регистрации всех событий
-function AlchemyEventManager:UnRegisterAll()
+function AlchemyEventManager:UnRegisterAll() --- void
     for eventName, handlers in pairs( self._registeredEvents ) do
         for _, method in ipairs( handlers ) do
             common.UnRegisterEventHandler( method, eventName )
@@ -61,7 +61,7 @@ function AlchemyEventManager:UnRegisterAll()
 end
 
 -- Отмена регистрации конкретного обработчика для события
-function AlchemyEventManager:UnRegister( eventName, method )
+function AlchemyEventManager:UnRegister( eventName, method ) --- void
     local handlers = self._registeredEvents[eventName]
     if not handlers then return end
 
@@ -80,7 +80,7 @@ function AlchemyEventManager:UnRegister( eventName, method )
     end
 end
 
-function AlchemyEventManager:Dispatch( eventName, ... )
+function AlchemyEventManager:Dispatch( eventName, ... ) --- void
     local handlers = self._registeredEvents[eventName]
     if handlers then
         for _, method in ipairs( handlers ) do

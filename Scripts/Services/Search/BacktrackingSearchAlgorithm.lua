@@ -2,12 +2,12 @@
 
 Class( "BacktrackingSearchAlgorithm", SearchAlgorithmClassInterface() )
 
-function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvailability )
+function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvailability ) --- table
 	local foundResults = {}
 	local foundSet = {}
 	
 	-- Локальная рекурсивная функция
-	local function recursiveSearch( drumIdx, shiftsLeft, currentShifts, lineZero, lineMinusOne, linePlusOne )
+	local function recursiveSearch( drumIdx, shiftsLeft, currentShifts, lineZero, lineMinusOne, linePlusOne ) --- void
 		local filteredRecipes = state.filteredRecipes
 		
 		-- Если мы уже нашли все возможные отфильтрованные рецепты, дальше искать нет смысла

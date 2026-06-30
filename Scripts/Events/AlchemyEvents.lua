@@ -11,7 +11,7 @@ function AlchemyEvents:Init( state, config, widgetMgr, textFmt, services )
 	self._services = services
 end
 
-function AlchemyEvents:GetEventMap()
+function AlchemyEvents:GetEventMap() --- table
     return {
         EVENT_ALCHEMY_STARTED           = self.OnStarted,
         EVENT_ALCHEMY_CANCELED          = self.OnCanceled,
@@ -22,13 +22,13 @@ function AlchemyEvents:GetEventMap()
 end
 
 -- Событие дергает только при открытии окна Алхимии.
-function AlchemyEvents:OnStarted()
+function AlchemyEvents:OnStarted() --- void
     self._services.debug:LogGeneral( "EVENT_ALCHEMY_STARTED" )
 	
     self._ui:Show()
     self._state.active = true
     
-    -- Более логично подготовить весь список зелий (249) при открытии Алхимии.
+    -- Более логично подготовить весь список зелий (250) при открытии Алхимии.
     -- Но и оставить в CountPotential(), если список поменялся во время работы.
     self._services.recipe:CreateRecipeCache()
 
@@ -39,7 +39,7 @@ function AlchemyEvents:OnStarted()
     end
 end
 
-function AlchemyEvents:OnCanceled( params )
+function AlchemyEvents:OnCanceled( params ) --- void
     self._services.debug:LogGeneral( "EVENT_ALCHEMY_CANCELED" )
     self._services.debug:LogGeneral( "isSuccess:", tostring( params.isSuccess ) )
 	
@@ -52,7 +52,7 @@ function AlchemyEvents:OnCanceled( params )
     end
 end
 
-function AlchemyEvents:OnItemPlaced( params )
+function AlchemyEvents:OnItemPlaced( params ) --- void
     self._services.debug:LogGeneral( "EVENT_ALCHEMY_ITEM_PLACED" )
     self._services.debug:LogGeneral( function () 
         if params.placed then 
@@ -86,7 +86,7 @@ function AlchemyEvents:OnItemPlaced( params )
     end
 end
 
-function AlchemyEvents:OnReactionFinished()
+function AlchemyEvents:OnReactionFinished() --- void
     self._services.debug:LogGeneral( "EVENT_ALCHEMY_REACTION_FINISHED" )
 
     local found = self._services.search:FindBestRecipes()
@@ -105,7 +105,7 @@ function AlchemyEvents:OnReactionFinished()
     end
 end
 
-function AlchemyEvents:OnRecipesChanged()
+function AlchemyEvents:OnRecipesChanged() --- void
     self._services.debug:LogGeneral( "EVENT_ALCHEMY_RECIPLES_CHANGED" )
 	
     self._state:ResetRecipeCache()

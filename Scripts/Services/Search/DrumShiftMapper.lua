@@ -6,7 +6,7 @@ Class( "DrumShiftMapper", {
 	_mathUtils     = nil,
 } )
 
-function DrumShiftMapper:Init( state, recipeService, mathUtils )
+function DrumShiftMapper:Init( state, recipeService, mathUtils ) --- void
 	self._state         = state
 	self._recipeService = recipeService
 	self._mathUtils     = mathUtils
@@ -14,7 +14,7 @@ end
 
 -- Метод: Строит карту возможных сдвигов для каждого барабана.
 -- Определяет, какие компоненты можно получить на каждом барабане при разных сдвигах.
-function DrumShiftMapper:BuildMap()
+function DrumShiftMapper:BuildMap() --- ...[ table, int ]
 	local drumRequiredComponents = {} -- Таблица { [имя_компонента] = количество_барабанов }. 
                                       -- Считает, в скольких барабанах встречается каждый уникальный компонент.
     self._state.drumShiftMap = {}     -- Инициализируем карту сдвигов в состоянии. 
