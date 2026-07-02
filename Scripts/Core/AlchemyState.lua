@@ -1,40 +1,58 @@
+--------------------------------------------------------------------------------
 -- Core/AlchemyState.lua
 -- Хранилище изменяемого состояния аддона.
+-- Содержит флаги активности, кэши рецептов, данные о барабанах и состояние слотов.
+--------------------------------------------------------------------------------
 
 Class( "AlchemyState", {
-    active = false,
-    reactionSuccess = false,
-    messageType = 0,       -- См. в AlchemyConfig.
+    -- Флаги состояния
+    active = false,             -- boolean - Активно ли окно алхимии.
+    reactionSuccess = false,    -- boolean - Была ли реакция успешной (найден рецепт).
+    messageType = 0,            -- number (int) - Тип отображаемого сообщения (см. AlchemyConfig.MESSAGE_*).
 
-    -- Кэш данных
-    recipeCache = nil,     -- Кэш списка всех доступных рецептов алхимии.
-    filteredRecipes = nil, -- Отфильтрованный список рецептов.
-    drumShiftMap = nil,    -- Карта сдвигов: хранит компоненты в барабанах с учетом возможных сдвигов (индекс [барабан][сдвиг] = имя компонента).
-    foundResults = nil,    -- Таблица найденных вариантов (рецепт + сдвиги барабанов).
-    drumsCount = 0,        -- (Re: UIAddon) Кол-во слотов доступных в ступке.
-    maxCorrections = 5,    -- GetAlchemyDrumInfo( 0 ).maxCorrectionsPerColumn 
-                           -- выводит 5 только тогда, когда пошёл процесс варки.
-                           -- Во всех остальных случаях (-1) - не определено.
-	
+    -- Кэш данных и результаты поиска
+    recipeCache = nil,          -- ?table - Кэш списка всех доступных игроку рецептов алхимии.
+    filteredRecipes = nil,      -- ?table - Отфильтрованный список рецептов (по компонентам в барабанах).
+    drumShiftMap = nil,         -- ?table - Карта сдвигов: [индекс_барабана][сдвиг] = "имя_компонента".
+    foundResults = nil,         -- ?table - Таблица найденных вариантов (рецепт + сдвиги барабанов).
+    
+    -- Параметры ступки (барабанов)
+    drumsCount = 0,             -- number (int) - Кол-во слотов (барабанов), доступных в ступке.
+    maxCorrections = 5,         -- number (int) - Максимальная коррекция (сдвиг) в колбе. 
+                                -- GetAlchemyDrumInfo( 0 ).maxCorrectionsPerColumn выводит 5 
+                                -- только тогда, когда пошёл процесс варки. Во всех остальных случаях (-1).
+    
+    -- Состояние слотов (place)
     place = {
-        placed = nil,
-        readyNotFoundMessage = false,
-        count = 0,
+        placed = nil,           -- ?boolean - Флаг изменения состояния слота (true - положен, false - вынут).
+        readyNotFoundMessage = false, -- boolean - Флаг для отложенного вывода сообщения "Тут нет рецептов".
+        count = 0,              -- number (int) - Текущее количество заполненных слотов.
     },
 } )
 
-function AlchemyState:ResetPlace()
+--------------------------------------------------------------------------------
+-- Методы сброса состояния
+--------------------------------------------------------------------------------
+
+-- Сброс состояния слотов (place) к начальным значениям.
+function AlchemyState:ResetPlace() --- void
     self.place.placed = nil
     self.place.readyNotFoundMessage = false
     self.place.count = 0
 end
 
-function AlchemyState:ResetSearchCache()
+--------------------------------------------------------------------------------
+
+-- Сброс кэша поиска (отфильтрованные рецепты, карта сдвигов, найденные результаты).
+function AlchemyState:ResetSearchCache() --- void
     self.filteredRecipes = nil
     self.drumShiftMap = nil
     self.foundResults = nil
 end
 
-function AlchemyState:ResetRecipeCache()
+--------------------------------------------------------------------------------
+
+-- Сброс кэша всех доступных рецептов.
+function AlchemyState:ResetRecipeCache() --- void
     self.recipeCache = nil
 end

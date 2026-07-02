@@ -1,18 +1,33 @@
+--------------------------------------------------------------------------------
 -- Services/Search/RecipeEvaluator.lua
+-- Оценщик рецептов (RecipeEvaluator).
+-- Отвечает за выбор наиболее приоритетного (с максимальным score) рецепта
+-- из списка отфильтрованных, на основе накопленной карты компонентов.
+--------------------------------------------------------------------------------
 
 Class( "RecipeEvaluator", {} )
 
--- Ищет лучший рецепт для накопленных компонентов.
--- Возвращает таблицу рецепта или nil.
+--------------------------------------------------------------------------------
+-- Найти лучший (наиболее приоритетный) рецепт для накопленных компонентов.
+-- Лучшим считается рецепт, который полностью собирается из доступных компонентов
+-- и имеет максимальный уровень умения (score).
+--------------------------------------------------------------------------------
 function RecipeEvaluator:FindBestRecipe( componentMap, filteredRecipes ) --- ?table
-	if not filteredRecipes then return nil end
+	-- componentMap: table - хеш-таблица накопленных компонентов { ["Имя"] = кол-во }.
+	-- filteredRecipes: table or nil - массив структур рецептов для проверки.
+	
+	if not filteredRecipes then
+		return nil
+	end
 	
 	local bestRecipe = nil
 	local bestScore = -1
 
+	-- Перебираем все подходящие по базовым компонентам рецепты
 	for _, recipe in pairs( filteredRecipes ) do
 		local isMatch = true
 		
+		-- Проверяем, хватает ли накопленных компонентов для данного рецепта
 		for componentName, requiredCount in pairs( recipe.requiredComponents ) do
 			if ( componentMap[ componentName ] or 0 ) < requiredCount then
 				isMatch = false
@@ -20,6 +35,7 @@ function RecipeEvaluator:FindBestRecipe( componentMap, filteredRecipes ) --- ?ta
 			end
 		end
 		
+		-- Если рецепт полностью собирается и его score выше текущего максимума, сохраняем его
 		if isMatch and recipe.score > bestScore then
 			bestRecipe = recipe
 			bestScore = recipe.score

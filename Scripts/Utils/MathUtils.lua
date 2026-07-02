@@ -17,22 +17,6 @@ end
 function MathUtils.shallowCopy( tbl ) --- table
 	if type( tbl ) ~= "table" then return {} end
 	
-	--[[ {
-		[1] => number(-0)
-		[2] => number(-1)
-		[3] => number(-1)
-		[4] => number(0)
-		[5] => number(0)
-    }
-	
-	{
-      	[Биоморфичность] => number(1)
-		[Повреждение] => number(1)
-		[Призрачность] => number(1)
-		[Равновесие] => number(1)
-		[Технологичность] => number(1)
-    } ]]
-		
 	local copy = {}
 	for k, v in pairs( tbl ) do
 		copy[ k ] = v

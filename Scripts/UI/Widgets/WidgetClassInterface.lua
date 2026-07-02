@@ -1,20 +1,33 @@
+--------------------------------------------------------------------------------
 -- UI/Widgets/WidgetClassInterface.lua
+-- Базовый интерфейс (абстрактный класс) для оберток над нативными виджетами.
+-- Определяет контракт, который должны реализовать конкретные классы виджетов
+-- для корректной работы с менеджером виджетов (AlchemyWidgetManager).
+--------------------------------------------------------------------------------
 
 Class( "WidgetClassInterface", {
-    _widgetManager = nil,
+	_widgetManager = nil, -- Ссылка на менеджер виджетов (AlchemyWidgetManager).
 } )
 
--- Прямой геттер нативного виджета (если нужен для специфичных операций)
+--------------------------------------------------------------------------------
+-- Получить прямой геттер нативного виджета (RawWidget).
+-- Используется для специфичных операций, требующих работы с API.
+--------------------------------------------------------------------------------
 function WidgetClassInterface:GetNativeWidget() --- ?Widget
-    error( "WidgetClassInterface:GetNativeWidget must be implemented by subclass" )
+	error( "WidgetClassInterface:GetNativeWidget must be implemented by subclass" )
 end
 
+--------------------------------------------------------------------------------
+-- Получить системное имя виджета, используемое для регистрации в менеджере.
+--------------------------------------------------------------------------------
 function WidgetClassInterface:GetWidgetName() --- string
-    error( "WidgetClassInterface:GetWidgetName must be implemented by subclass" )
+	error( "WidgetClassInterface:GetWidgetName must be implemented by subclass" )
 end
 
--- Стандартный приоритет инициализации. 
+--------------------------------------------------------------------------------
+-- Получить стандартный приоритет инициализации.
 -- Чем больше число, тем раньше виджет будет инициализирован менеджером.
+--------------------------------------------------------------------------------
 function WidgetClassInterface:GetPriorityClass() --- int
 	return 0
 end
