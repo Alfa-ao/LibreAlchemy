@@ -27,7 +27,7 @@
 	<elementsInterval>2</elementsInterval>
 	
 	<TransparentInput>false</TransparentInput>
-	<PickChildrenOnly>false</PickChildrenOnly>
+	<PickChildrenOnly>true</PickChildrenOnly>
 	<Visible>true</Visible>
 	<Enabled>true</Enabled>
 </WidgetTextContainer>
