@@ -57,5 +57,9 @@
 			<name>RESULT_GIBBERISH</name>
 			<resource href="RESULT_GIBBERISH.txt"/>
 		</Item>
+		<Item>
+			<name>RECIPE_LINE</name>
+			<resource href="RECIPE_LINE.txt"/>
+		</Item>
 	</items>
 </UIRelatedTexts>
