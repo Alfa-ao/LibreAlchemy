@@ -16,7 +16,11 @@ function DnD.Init( wtMovable, wtReacting, fUseCfg, fLockedToParentArea, Padding,
 		wtReacting, wtMovable, fUseCfg, fLockedToParentArea, Padding, KbFlag, Cursor, oldParam1 =
 		           wtReacting, fUseCfg, fLockedToParentArea, Padding, KbFlag, Cursor, oldParam1, oldParam2
 	end
-	if type(wtMovable) ~= "userdata" then return end
+	
+	if not ( common.IsWidget( wtMovable ) or rawget( _G, "IsTWidget" ) and IsTWidget( wtMovable ) ) then
+		error( "FATAL: Widget expected, got " .. apitype( wtMovable ) )
+	end
+	
 	if not DnD.Widgets then
 		DnD.Widgets = {}
 		DnD.Screen = common.GetPosConverterParams()
