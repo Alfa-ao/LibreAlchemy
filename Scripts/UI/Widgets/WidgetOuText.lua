@@ -1,32 +1,63 @@
+--------------------------------------------------------------------------------
 -- UI/Widgets/WidgetOuText.lua
+-- Обертка над нативным текстовым контейнером (ouText).
+--------------------------------------------------------------------------------
 
 Class( "WidgetOuText", WidgetClassInterface() )
 
+--------------------------------------------------------------------------------
+-- Инициализация виджета.
+--------------------------------------------------------------------------------
 function WidgetOuText:Init( widgetManager ) --- void
-    self._widget = widgetManager:GetMainForm():GetChildChecked( "ouText" )
+    self._widgetManager = widgetManager
     
-    local pco = common.GetPosConverterParams()
-    local plc = self._widget:GetPlacementPlain()
-    plc.posX = pco.fullVirtualSizeX / 2 - 360
-    plc.posY = pco.fullVirtualSizeY - plc.posY -- https://github.com/Alfa-ao/LibreAlchemy/issues/1
-    self._widget:SetPlacementPlain( plc )
+    -- ouText является дочерним элементом Panel
+    local panel = widgetManager:GetMainForm():GetChildChecked( "Panel" )
+    self._widget = panel:GetChildChecked( "ouText" )
+end
+
+--------------------------------------------------------------------------------
+-- Реализация методов интерфейса WidgetClassInterface.
+--------------------------------------------------------------------------------
+function WidgetOuText:GetPriorityClass() --- int 
+    return 10 
+end
+
+function WidgetOuText:GetNativeWidget() --- ?Widget 
+    return self._widget 
+end
+
+function WidgetOuText:GetWidgetName() --- string 
+    return "ouText" 
+end
+
+--------------------------------------------------------------------------------
+-- Методы-обертки для работы с содержимым текстового контейнера.
+--------------------------------------------------------------------------------
+function WidgetOuText:PushBackText( text ) --- void
+    self._widget:PushBackText( text )
+end
+
+function WidgetOuText:RemoveAt( pos ) --- void
+    self._widget:RemoveAt( pos )
+end
+
+function WidgetOuText:RemoveItems() --- void
+    self._widget:RemoveItems()
+end
+
+function WidgetOuText:ForceReposition() --- void
+    self._widget:ForceReposition()
+end
+
+--------------------------------------------------------------------------------
+-- Возвращает точную пиксельную высоту текущего текстового контента.
+-- Использует внутренний __Content.
+--------------------------------------------------------------------------------
+function WidgetOuText:GetExactTextHeight() --- number
+    self:ForceReposition()
     
-    self._widget:SetVal( 'content', "LibreAlchemyV2" ) -- Присваиваем стандартный текст для решения неких проблем.
-end
-
-function WidgetOuText:GetPriorityClass() --- int
-	return 10
-end
-
--- Метод присваивания значения
-function WidgetOuText:SetVal( tag, value ) --- void
-	self._widget:SetVal( tag, value )
-end
-
-function WidgetOuText:GetNativeWidget() --- ?Widget
-    return self._widget
-end
-
-function WidgetOuText:GetWidgetName() --- string
-    return "ouText"
+    local content = self._widget:GetChildChecked( "__Content", true )
+    local contentPlc = content:GetPlacementPlain()
+    return contentPlc.posY + contentPlc.sizeY
 end
