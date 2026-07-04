@@ -11,7 +11,7 @@ Class( "WidgetClassInterface", {
 
 --------------------------------------------------------------------------------
 -- Получить прямой геттер нативного виджета (RawWidget).
--- Используется для специфичных операций, требующих работы с API.
+-- Используется для специфичных операций.
 --------------------------------------------------------------------------------
 function WidgetClassInterface:GetNativeWidget() --- ?Widget
 	error( "WidgetClassInterface:GetNativeWidget must be implemented by subclass" )
