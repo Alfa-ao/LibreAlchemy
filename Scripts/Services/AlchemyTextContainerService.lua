@@ -6,14 +6,14 @@
 --------------------------------------------------------------------------------
 
 Class( "AlchemyTextContainerService", {
-	_widgetWrapper = nil, -- Обертка над нативным текстовым виджетом (WidgetOuText).
+	_widgetManager = nil, -- Ссылка на менеджер виджетов для доступа к Panel и OuText
 } )
 
 --------------------------------------------------------------------------------
 -- Инициализация сервиса.
 --------------------------------------------------------------------------------
-function AlchemyTextContainerService:Init( widgetWrapper ) --- void
-	self._widgetWrapper = widgetWrapper
+function AlchemyTextContainerService:Init( widgetManager ) --- void
+	self._widgetManager = widgetManager
 end
 
 --------------------------------------------------------------------------------
@@ -28,8 +28,11 @@ function AlchemyTextContainerService:SetLines( linesArray ) --- void
 		linesArray = { linesArray }
 	end
 	
-	-- Очистка всего, что было добавлено ранее
-	self._widgetWrapper:RemoveItems()
+	local ouTextWrapper = self._widgetManager:GetWidgetWrapper( "ouText" )
+    local panelWrapper = self._widgetManager:GetWidgetWrapper( "panel" )
+
+    -- Очистка всего, что было добавлено ранее
+    ouTextWrapper:RemoveItems()
 	
 	-- Последовательно добавляем (пушим) строки в контейнер
 	for _, line in ipairs( linesArray ) do
@@ -37,11 +40,12 @@ function AlchemyTextContainerService:SetLines( linesArray ) --- void
             line = userMods.ToWString( line )
         end
         
-		self._widgetWrapper:PushBackText( line )
+		ouTextWrapper:PushBackText( line )
 	end
 	
-	-- Принудительно вызываем репозицию для немедленного обновления размеров и layout
-	self._widgetWrapper:ForceReposition()
+	-- Узнаем точную высоту текста и заставляем Panel подстроиться
+    local exactHeight = ouTextWrapper:GetExactTextHeight()
+    panelWrapper:UpdateSize( exactHeight )
 end
 
 --------------------------------------------------------------------------------
@@ -57,8 +61,12 @@ end
 -- Полностью очистить текстовый контейнер от всех строк.
 --------------------------------------------------------------------------------
 function AlchemyTextContainerService:ClearAllLines() --- void
-	self._widgetWrapper:RemoveItems()
-	
-	-- Принудительная репозиция после очистки для корректного схлопывания контейнера
-	self._widgetWrapper:ForceReposition()
+    local ouTextWrapper = self._widgetManager:GetWidgetWrapper( "ouText" )
+    local panelWrapper = self._widgetManager:GetWidgetWrapper( "panel" )
+
+    ouTextWrapper:RemoveItems()
+    ouTextWrapper:ForceReposition()
+    
+    -- При очистке высота текста равна 0
+    panelWrapper:UpdateSize( 0 )
 end
