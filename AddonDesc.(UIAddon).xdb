@@ -2,9 +2,16 @@
 <UIAddon>
 	<Name>LibreAlchemyV2</Name>
 	<AutoStart>true</AutoStart>
-	<localizedNameFileRef href="name.txt" />
-	<localizedDescFileRef href="desc.txt" />
-	<Form href="Widgets/Main.(WidgetForm).xdb" />
+	<Form href="Widgets/LibreAlchemyV2.(WidgetForm).xdb" />
+	<userAddonInfo>
+		<name href="AddonName.txt" />
+		<description href="AddonDescription.txt" />
+		<author>Alfa</author>
+		<version>2.1.1</version>
+		<apiVersion>18000000</apiVersion>
+		<buildTime>0</buildTime>
+		<useCommonScripts>false</useCommonScripts>
+	</userAddonInfo>
 	<ScriptFileRefs>
 		<!-- Фасад над API -->
 		<Item href="/Mods/Facade/Facade.lua" />
@@ -27,14 +34,16 @@
 		<!-- FrameWork: Создание класса / Инструменты для работы с классом -->
 		<Item href="/Mods/SampleCommon/CoreScripts/ClassesImplementation.lua" />
 		
-		<!-- Drag&Drop -->
+		<!-- Facade -->
+		<Item href="Scripts/Facade.lua" />
+		
+		<!-- Drag & Drop -->
 		<Item href="Libs/LibDnD.lua" />
 		
 		<!-- Utils (Утилиты) -->
 		<Item href="Scripts/Utils/MathUtils.lua" />
 		
 		<!-- LibreAlchemy -->
-		<Item href="Scripts/Facade.lua" />
 		<Item href="Scripts/Core/AlchemyConfig.lua" />
 		<Item href="Scripts/Core/AlchemyState.lua" />
 		
@@ -43,18 +52,20 @@
 		<Item href="Scripts/Services/Search/RecipeEvaluator.lua" />
 		<Item href="Scripts/Services/Search/DrumShiftMapper.lua" />
 		<Item href="Scripts/Services/Search/BacktrackingSearchAlgorithm.lua" />
-
+		
 		<!-- Services (Сервисы) -->
 		<Item href="Scripts/Services/AlchemyDebugService.lua" />
 		<Item href="Scripts/Services/AlchemyLocaleService.lua" />
 		<Item href="Scripts/Services/AlchemyRecipeService.lua" />
 		<Item href="Scripts/Services/AlchemySearchService.lua" />
+		<Item href="Scripts/Services/AlchemyTextContainerService.lua" />
 		
 		<!-- UI -->
 		<Item href="Scripts/UI/Widgets/WidgetClassInterface.lua" />
+		<Item href="Scripts/UI/Widgets/WidgetPanel.lua" />
 		<Item href="Scripts/UI/Widgets/WidgetDnD.lua" />
 		<Item href="Scripts/UI/Widgets/WidgetOuText.lua" />
-		<Item href="Scripts/UI/Widgets/WidgetRollsBar.lua" />
+		<Item href="Scripts/UI/Widgets/WidgetAlchemyV2.lua" />
 		<Item href="Scripts/UI/AlchemyWidgetManager.lua" />
 		<Item href="Scripts/UI/AlchemyTextFormatter.lua" />
 		
