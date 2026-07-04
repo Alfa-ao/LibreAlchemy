@@ -1,3 +1,4 @@
 *.cmd
 exclude*
 out*.txt
+test
