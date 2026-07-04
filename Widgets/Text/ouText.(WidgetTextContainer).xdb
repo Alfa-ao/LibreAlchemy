@@ -2,21 +2,18 @@
 <WidgetTextContainer>
 	<Name>ouText</Name>
 	<Priority>0</Priority>
-	<BackLayer href="BackBlack.(WidgetLayerSimpleTexture).xdb" />
-	
 	<formatFileRef href="ContainerFormat.txt" />
 	<defaultTag>text</defaultTag>
-	
 	<Placement>
 		<X>
-			<!-- Фиксируем ширину, чтобы текст красиво переносился, если не влезает -->
 			<Sizing>WIDGET_SIZING_DEFAULT</Sizing>
-            <Size>650</Size>
+            <Size>570</Size>
+			<Pos>15</Pos>
 		</X>
 		<Y>
 			<!-- Авторесайзинг по Y -->
 			<Sizing>WIDGET_SIZING_INTERNAL</Sizing>
-			<Pos>160</Pos>
+			<Pos>15</Pos>
 		</Y>
 	</Placement>
 	
@@ -24,9 +21,20 @@
 	<clipContent>false</clipContent>
 	
 	<widgetsArrangement>WIDGETS_ARRANGEMENT_T2B</widgetsArrangement>
-	<elementsInterval>2</elementsInterval>
+	<!-- 
+	<widgetsArrangement>WIDGETS_ARRANGEMENT_T2B</widgetsArrangement>
+	WidgetsArrangement - это enum, указывающий направление или порядок расположения элементов 
+		в различных свойствах скроллируемых контейнерах и т.п. виджетах.
+	Значения:
+    	WIDGETS_ARRANGEMENT_T2B - сверху вниз
+    	WIDGETS_ARRANGEMENT_L2R - слева направо
+    	WIDGETS_ARRANGEMENT_B2T - снизу вверх
+    	WIDGETS_ARRANGEMENT_R2L - справа налево 
+	-->
 	
-	<TransparentInput>false</TransparentInput>
+	<elementsInterval>0</elementsInterval>
+	
+	<TransparentInput>true</TransparentInput>
 	<PickChildrenOnly>true</PickChildrenOnly>
 	<Visible>true</Visible>
 	<Enabled>true</Enabled>
