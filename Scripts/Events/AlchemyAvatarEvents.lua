@@ -8,10 +8,8 @@
 Class( "AlchemyAvatarEvents", EventClassInterface() )
 
 --------------------------------------------------------------------------------
--- Инициализация и настройка зависимостей
+-- Инициализация
 --------------------------------------------------------------------------------
-
--- Инициализация класса с передачей необходимых сервисов и менеджеров.
 function AlchemyAvatarEvents:Init( state, config, widgetMgr, textFmt, services ) --- void
     self._state    = state      -- AlchemyState - глобальное состояние аддона.
     self._config   = config     -- AlchemyConfig - конфигурация аддона.
@@ -45,11 +43,11 @@ function AlchemyAvatarEvents:OnAvatarCreated() --- void
     
     -- Применение кастомного расположения элементов окна алхимии (если включено в конфиге).
     if self._config.ENABLE_CUSTOM_LAYOUT then
-        self._ui:GetWidgetWrapper( "rollsBar" ):InitCustomLayout()
+        self._ui:GetWidgetWrapper( "AlchemyV2" ):InitCustomLayout()
     end
     
     -- Попытка инициализации библиотеки Drag&Drop для перетаскивания окна.
-    local dndWidgetWrapper = self._ui:GetWidgetWrapper( "dnd" )
+    local dndWidgetWrapper = self._ui:GetWidgetWrapper( "Drag&Drop" )
     
     if not dndWidgetWrapper or not dndWidgetWrapper:InitDragAndDrop() then
         -- Сохраним до лучших времен:
@@ -77,6 +75,9 @@ function AlchemyAvatarEvents:OnItemTaken( params ) --- void
         local count = itemLib.GetStackInfo( params.itemObject:GetId() ).count
         
         -- Формируем и выводим локализованное сообщение о получении предмета.
-        self._text:SetText( string.format( self._services.locale:Get( "AVATAR_ITEM_TAKEN" ), potionName, count ) )
+        self._text:SetText( {
+            self._services.locale:Get( "AVATAR_ITEM_TAKEN" ),
+            string.format( "[%s]x%d", potionName, count ),
+        } )
     end
 end
