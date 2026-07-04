@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<WidgetPanel>
+    <Name>Panel</Name>
+    <Priority>0</Priority>
+    <Children>
+        <Item href="Text/ouText.(WidgetTextContainer).xdb" />
+    </Children>
+    <BackLayer href="Text/Textures/Tooltip.(WidgetLayerTiledTexture).xdb" />
+    <Placement>
+        <X>
+            <Sizing>WIDGET_SIZING_DEFAULT</Sizing>
+            <Size>600</Size> <!-- Начальный размер, потом пересчитаем в Lua -->
+        </X>
+        <Y>
+            <Sizing>WIDGET_SIZING_DEFAULT</Sizing>
+            <Size>100</Size> <!-- Начальный размер, потом пересчитаем в Lua -->
+            <Pos>160</Pos> <!-- Начальный отступ, потом пересчитаем в Lua -->
+        </Y>
+    </Placement>
+    <Visible>true</Visible>
+	<Enabled>true</Enabled>
+	<PickChildrenOnly>false</PickChildrenOnly> <!-- Блокируем -->
+	<TransparentInput>false</TransparentInput>
+</WidgetPanel>
