@@ -18,7 +18,7 @@
 		</Y>
 	</Placement>
 	
-	<Visible>true</Visible>
+	<Visible>false</Visible>
 	<!-- 
 	<Visible>true</Visible> (Видимость)
 	Тип: boolean (по умолчанию true).
