@@ -10,19 +10,19 @@ Class( "AlchemyTextContainerService", {
 } )
 
 --------------------------------------------------------------------------------
--- Инициализация сервиса.
+--- Инициализация сервиса.
+--- @param widgetManager AlchemyWidgetManager - менеджер виджетов.
 --------------------------------------------------------------------------------
 function AlchemyTextContainerService:Init( widgetManager ) --- void
 	self._widgetManager = widgetManager
 end
 
 --------------------------------------------------------------------------------
--- Установить набор строк в текстовый контейнер.
--- Полностью очищает контейнер перед добавлением новых строк.
+--- Установить набор строк в текстовый контейнер.
+--- Полностью очищает контейнер перед добавлением новых строк.
+--- @param linesArray string | table - массив строк, объектов ValuedText/WString или одиночная строка.
 --------------------------------------------------------------------------------
 function AlchemyTextContainerService:SetLines( linesArray ) --- void
-	-- linesArray: string | table - массив строк, объектов ValuedText/WString или одиночная строка.
-	
 	-- Если передана одиночная строка, оборачиваем её в таблицу
 	if type( linesArray ) ~= "table" then
 		linesArray = { linesArray }
@@ -49,16 +49,16 @@ function AlchemyTextContainerService:SetLines( linesArray ) --- void
 end
 
 --------------------------------------------------------------------------------
--- Установить одну строку в текстовый контейнер.
--- Является оберткой над SetLines для удобства работы с одиночными сообщениями.
+--- Установить одну строку в текстовый контейнер.
+--- Является оберткой над SetLines для удобства работы с одиночными сообщениями.
+--- @param text string | WString | ValuedText - текст для отображения.
 --------------------------------------------------------------------------------
 function AlchemyTextContainerService:SetSingleLine( text ) --- void
-	-- text: string | WString | ValuedText - текст для отображения.
 	self:SetLines( text )
 end
 
 --------------------------------------------------------------------------------
--- Полностью очистить текстовый контейнер от всех строк.
+--- Полностью очистить текстовый контейнер от всех строк.
 --------------------------------------------------------------------------------
 function AlchemyTextContainerService:ClearAllLines() --- void
     local ouTextWrapper = self._widgetManager:GetWidgetWrapper( "ouText" )
