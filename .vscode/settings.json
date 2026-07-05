@@ -3,5 +3,8 @@
 		{
 			"path": "."
 		}
+	],
+	"Lua.diagnostics.disable": [
+		"undefined-global"
 	]
 }
