@@ -1,53 +1,101 @@
+--------------------------------------------------------------------------------
 -- Core/AlchemyInit.lua
+-- Главный скрипт инициализации аддона LibreAlchemyV2.
+-- Здесь происходит создание экземпляров всех классов, их связывание (внедрение зависимостей)
+-- и первичный запуск. Порядок инициализации строго важен, так как классы зависят друг от друга.
+--------------------------------------------------------------------------------
 
+-- Создание и настройка базовых объектов состояния и конфигурации.
+-- Конфигурация хранит константы и настройки, состояние - изменяемые данные во время работы.
 local config = AlchemyConfig()
 local state  = AlchemyState()
+-- Устанавливаем начальное состояние UI: при первом входе показываем приветственное сообщение
 state.messageType = config.MESSAGE_GREETINGS
 
--- Инструменты
+-- Инициализация вспомогательных утилит.
+-- Математические и табличные функции, используемые в сервисах и алгоритмах.
 local mathUtils = MathUtils()
 
--- Сервисы
+--------------------------------------------------------------------------------
+-- Создание и регистрация основных сервисов аддона.
+--------------------------------------------------------------------------------
 local services = { 
-	debug = AlchemyDebugService(),   -- Сервис для отладки (Debug)
-	locale = AlchemyLocaleService(), -- Сервис локализации ENG, RUS
-	recipe = AlchemyRecipeService(), -- Сервис рецепта
-	search = AlchemySearchService(), -- Сервис поиска возможных рецептов
+    -- Сервис для отладки и логирования. Принимает настройки из конфига.
+    debug = AlchemyDebugService(),                 
+    -- Сервис локализации. Отвечает за получение текстов на нужном языке (ENG, RUS).
+    locale = AlchemyLocaleService(),               
+    -- Сервис работы с рецептами. Кэширует, фильтрует и подсчитывает возможные рецепты.
+    recipe = AlchemyRecipeService(),               
+    -- Сервис поиска возможных рецептов с учетом сдвигов барабанов (коррекций).
+    search = AlchemySearchService(),               
+    -- Сервис для управления текстовым контейнером (вывод строк в UI).
+    textContainer = AlchemyTextContainerService(), 
 }
 
 services.debug:Init( config )
 services.recipe:Init( state )
 
-----------------------------------
-local drumShiftMapper = DrumShiftMapper()             -- Маппер сдвигов барабанов
-local searchAlgorithm = BacktrackingSearchAlgorithm() -- Алгоритм сервиса search
+--------------------------------------------------------------------------------
+-- Инициализация подсистемы поиска (Search Subsystem).
+-- Включает в себя маппер сдвигов и конкретный алгоритм поиска (поиск с возвратом).
+--------------------------------------------------------------------------------
 
+-- Маппер сдвигов барабанов: определяет, какие компоненты доступны при разных сдвигах.
+local drumShiftMapper = DrumShiftMapper()             
+-- Алгоритм поиска: реализация через бэктрекинг (Backtracking).
+local searchAlgorithm = BacktrackingSearchAlgorithm() 
+
+-- Связывание компонентов подсистемы поиска.
 drumShiftMapper:Init( state, services.recipe, mathUtils )
+-- Оценщик рецептов (RecipeEvaluator) и утилиты передаются в алгоритм.
 searchAlgorithm:Init( RecipeEvaluator(), mathUtils )
+-- Инициализация главного сервиса поиска со всеми его зависимостями.
 services.search:Init( state, services.recipe, drumShiftMapper, searchAlgorithm )
-----------------------------------
 
--- Интерфейс
+--------------------------------------------------------------------------------
+-- Инициализация пользовательского интерфейса (UI).
+--------------------------------------------------------------------------------
+
+-- Менеджер виджетов управляет отображением, скрытием и получением нативных виджетов игры.
 local widgetManager = AlchemyWidgetManager()
-widgetManager:Init( WidgetOuText(), WidgetDnD(), WidgetRollsBar() ) 
+-- Передаем обертки над нативными виджетами: текстовый контейнер, Drag&Drop зона, барабаны алхимии.
+-- Менеджер сам вызовет их внутренние методы Init.
+widgetManager:Init( WidgetOuText(), WidgetDnD(), WidgetAlchemyV2(), WidgetPanel() ) 
 
+-- Форматировщик текста: подготавливает данные для вывода в UI, форматирует строки рецептов.
 local textFormatter = AlchemyTextFormatter()
-textFormatter:Init( widgetManager, services.debug )
+textFormatter:Init( config, widgetManager, services )
 
--- Обработчики событий
-local systemEvents = AlchemySystemEvents()
-local alchemyEvents = AlchemyEvents()      -- EVENT_ALCHEMY_*
-local avatarEvents = AlchemyAvatarEvents() -- EVENT_AVATAR_*
+--------------------------------------------------------------------------------
+-- Создание и инициализация обработчиков системных и игровых событий.
+-- Каждый класс обработчиков отвечает за свою группу событий (EVENT_*).
+--------------------------------------------------------------------------------
+
+-- Обработчик системных событий (например, EVENT_SECOND_TIMER для таймера и обновления UI).
+local systemEvents = AlchemySystemEvents() 
+-- Обработчик событий алхимии (EVENT_ALCHEMY_*: открытие окна, крафт, отмена, изменение рецептов).
+local alchemyEvents = AlchemyEvents()      
+-- Обработчик событий аватара (EVENT_AVATAR_*: создание персонажа, получение предмета).
+local avatarEvents = AlchemyAvatarEvents() 
+
+-- Инициализация обработчиков событий (передача необходимых зависимостей: состояние, конфиг, UI, сервисы).
 systemEvents:Init( state, config, textFormatter, services )
 alchemyEvents:Init( state, config, widgetManager, textFormatter, services )
 avatarEvents:Init( state, config, widgetManager, textFormatter, services )
 
--- Регистрация событий
+--------------------------------------------------------------------------------
+-- Централизованный менеджер событий.
+--------------------------------------------------------------------------------
+
+-- Регистрирует все обработчики в движке игры через common.RegisterEventHandler.
 local eventManager = AlchemyEventManager()
 eventManager:Init( systemEvents, alchemyEvents, avatarEvents )
 eventManager:RegisterAll()
 
--- Инициализация
+--------------------------------------------------------------------------------
+
+-- Инициализация и запуск аддона (Bootstrap).
+-- Бутстрап отвечает за первичный запуск и проверку начального состояния игры (существует ли аватар).
 local bootstrap = AlchemyBootstrap()
 bootstrap:Init( eventManager )
 bootstrap:Run()
