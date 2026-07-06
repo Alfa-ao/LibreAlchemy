@@ -15,9 +15,10 @@ Class( "EventClassInterface", {
 -- Абстрактные методы (должны быть реализованы в дочерних классах)
 --------------------------------------------------------------------------------
 
--- Возвращает таблицу соответствия имен игровых событий методам-обработчикам.
--- Формат: { [EVENT_NAME] = self.MethodName, ... }
--- Используется AlchemyEventManager для автоматической регистрации через common.RegisterEventHandler.
-function EventClassInterface:GetEventMap() --- table
+--- Возвращает таблицу соответствия имен игровых событий методам-обработчикам.
+--- Формат: { [EVENT_NAME] = self.MethodName, ... }
+--- Используется AlchemyEventManager для автоматической регистрации через common.RegisterEventHandler.
+--- @return table
+function EventClassInterface:GetEventMap()
     error( "EventClassInterface:GetEventMap must be implemented by subclass" )
 end
