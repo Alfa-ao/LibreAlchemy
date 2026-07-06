@@ -7,16 +7,18 @@
 Class( "WidgetDnD", WidgetClassInterface() )
 
 --------------------------------------------------------------------------------
--- Инициализация виджета.
+--- Инициализация виджета.
+--- @param widgetManager table - экземпляр класса AlchemyWidgetManager
 --------------------------------------------------------------------------------
 function WidgetDnD:Init( widgetManager ) --- void
 	self._widgetManager = widgetManager
 end
 
 --------------------------------------------------------------------------------
--- Инициализировать механизм Drag & Drop для текстового контейнера (ouText).
+--- Инициализировать механизм Drag & Drop для текстового контейнера (ouText).
+--- @return boolean
 --------------------------------------------------------------------------------
-function WidgetDnD:InitDragAndDrop() --- boolean
+function WidgetDnD:InitDragAndDrop()
     -- Получаем обертку над Panel через менеджер
     local panelWrapper = self._widgetManager:GetWidgetWrapper( "panel" )
 
@@ -29,17 +31,19 @@ function WidgetDnD:InitDragAndDrop() --- boolean
 end
 
 --------------------------------------------------------------------------------
--- Получить системное имя виджета для регистрации в менеджере.
+--- Получить системное имя виджета для регистрации в менеджере.
+--- @return string
 --------------------------------------------------------------------------------
-function WidgetDnD:GetWidgetName() --- string
+function WidgetDnD:GetWidgetName()
 	return "Drag&Drop"
 end
 
 --------------------------------------------------------------------------------
--- Получить ссылку на связанный объект.
--- В данном случае возвращает глобальную таблицу библиотеки LibDnD, если она загружена.
+--- Получить ссылку на связанный объект.
+--- В данном случае возвращает глобальную таблицу библиотеки LibDnD, если она загружена.
+--- @return userdata | table | nil
 --------------------------------------------------------------------------------
-function WidgetDnD:GetNativeWidget() --- ?table
-	-- Примечание: возвращает таблицу библиотеки DnD, а не стандартный RawWidget
+function WidgetDnD:GetNativeWidget()
+	-- возвращает таблицу библиотеки DnD, а не стандартный RawWidget
 	return rawget( _G, "DnD" ) and _G.DnD or nil
 end
