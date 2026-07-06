@@ -8,7 +8,8 @@
 Class( "WidgetPanel", WidgetClassInterface() )
 
 --------------------------------------------------------------------------------
--- Инициализация виджета.
+--- Инициализация виджета.
+--- @param widgetManager table - экземпляр класса AlchemyWidgetManager
 --------------------------------------------------------------------------------
 function WidgetPanel:Init( widgetManager ) --- void
     self._widgetManager = widgetManager
@@ -30,22 +31,26 @@ end
 --------------------------------------------------------------------------------
 -- Реализация методов интерфейса WidgetClassInterface.
 --------------------------------------------------------------------------------
-function WidgetPanel:GetPriorityClass() --- int
-    -- Инициализируем раньше OuText и DnD, чтобы они могли безопасно получить ссылку на Panel
-    return 20 
+--- @return number
+function WidgetPanel:GetPriorityClass()
+    -- Инициализируем раньше OuText и DnD
+    return 20
 end
 
-function WidgetPanel:GetNativeWidget() --- ?Widget
+--- @return userdata | table | nil
+function WidgetPanel:GetNativeWidget()
     return self._widget
 end
 
-function WidgetPanel:GetWidgetName() --- string
+--- @return string
+function WidgetPanel:GetWidgetName()
     return "panel"
 end
 
 --------------------------------------------------------------------------------
--- Динамически подстраивает размер Panel под переданную высоту текста + отступы.
--- Вызывается сервисом после обновления текста.
+--- Динамически подстраивает размер Panel под переданную высоту текста + отступы.
+--- Вызывается сервисом после обновления текста.
+--- @param textHeight number
 --------------------------------------------------------------------------------
 function WidgetPanel:UpdateSize( textHeight ) --- void
     local padding = 15
