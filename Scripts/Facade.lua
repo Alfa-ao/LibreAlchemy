@@ -3,5 +3,11 @@ if rawget( _G, "Facade" ) then
 	
 	local userMods = Facade.AO.userMods
 else
-	Global( "log", function( ... ) end )
+	Global( "log", function( ... )
+		local args = { ... }
+		
+		for i = 1, #args do
+			common.LogInfo( "common", tostring( args[i] ) )
+		end
+	end )
 end
