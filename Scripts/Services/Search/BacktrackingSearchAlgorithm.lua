@@ -1,7 +1,14 @@
+--------------------------------------------------------------------------------
 -- Services/Search/BacktrackingSearchAlgorithm.lua
+--------------------------------------------------------------------------------
 
 Class( "BacktrackingSearchAlgorithm", SearchAlgorithmClassInterface() )
 
+--------------------------------------------------------------------------------
+--- @param state table 
+--- @param totalCorrections number
+--- @param linesAvailability table
+--------------------------------------------------------------------------------
 function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvailability ) --- table
 	local foundResults = {}
 	local foundSet = {}
