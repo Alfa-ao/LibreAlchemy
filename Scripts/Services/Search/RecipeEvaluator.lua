@@ -8,14 +8,14 @@
 Class( "RecipeEvaluator", {} )
 
 --------------------------------------------------------------------------------
--- Найти лучший (наиболее приоритетный) рецепт для накопленных компонентов.
--- Лучшим считается рецепт, который полностью собирается из доступных компонентов
--- и имеет максимальный уровень умения (score).
+--- Найти лучший (наиболее приоритетный) рецепт для накопленных компонентов.
+--- Лучшим считается рецепт, который полностью собирается из доступных компонентов
+--- и имеет максимальный уровень умения (score).
+--- @param componentMap table хеш-таблица накопленных компонентов { ["Имя"] = кол-во }.
+--- @param filteredRecipes table | nil массив структур рецептов для проверки.
+--- @return table | nil -- { score: number, requiredComponents: table, name: string }
 --------------------------------------------------------------------------------
-function RecipeEvaluator:FindBestRecipe( componentMap, filteredRecipes ) --- ?table
-	-- componentMap: table - хеш-таблица накопленных компонентов { ["Имя"] = кол-во }.
-	-- filteredRecipes: table or nil - массив структур рецептов для проверки.
-	
+function RecipeEvaluator:FindBestRecipe( componentMap, filteredRecipes )
 	if not filteredRecipes then
 		return nil
 	end
