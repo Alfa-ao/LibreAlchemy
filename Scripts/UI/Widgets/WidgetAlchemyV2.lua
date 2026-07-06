@@ -8,7 +8,8 @@
 Class( "WidgetAlchemyV2", WidgetClassInterface() )
 
 --------------------------------------------------------------------------------
--- Инициализация виджета
+--- Инициализация виджета
+--- @param widgetManager table - экземпляр класса AlchemyWidgetManager
 --------------------------------------------------------------------------------
 function WidgetAlchemyV2:Init( widgetManager ) --- void
     self._widgetManager = widgetManager
@@ -78,9 +79,9 @@ function WidgetAlchemyV2:InitCustomLayout() --- void
 end
 
 --------------------------------------------------------------------------------
--- Получить имя рецепта, выбранного в AlchemyV2.
+--- @return string -- Получить имя рецепта, выбранного в AlchemyV2.
 --------------------------------------------------------------------------------
-function WidgetAlchemyV2:GetCurrentRecipeName() --- string
+function WidgetAlchemyV2:GetCurrentRecipeName()
     local nameWidget = _G.stateMainForm:
         GetChildChecked( "AlchemyV2" ):
         GetChildChecked( "MainFrame" ):
@@ -96,10 +97,12 @@ end
 --------------------------------------------------------------------------------
 -- Реализация методов интерфейса WidgetClassInterface.
 --------------------------------------------------------------------------------
-function WidgetAlchemyV2:GetNativeWidget() --- ?Widget
+--- @return userdata | table | nil
+function WidgetAlchemyV2:GetNativeWidget()
     return nil
 end
 
-function WidgetAlchemyV2:GetWidgetName() --- string
+--- @return string
+function WidgetAlchemyV2:GetWidgetName()
     return "AlchemyV2"
 end
