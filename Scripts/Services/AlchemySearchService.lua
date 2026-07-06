@@ -15,8 +15,12 @@ Class( "AlchemySearchService", {
 } )
 
 --------------------------------------------------------------------------------
--- Инициализация сервиса поиска.
--- Проверяет, что переданный алгоритм реализует требуемый интерфейс.
+--- Инициализация сервиса поиска.
+--- Проверяет, что переданный алгоритм реализует требуемый интерфейс.
+--- @param state table AlchemyState
+--- @param recipeService table AlchemyRecipeService
+--- @param mapper table DrumShiftMapper
+--- @param algorithm table SearchAlgorithmClassInterface
 --------------------------------------------------------------------------------
 function AlchemySearchService:Init( state, recipeService, mapper, algorithm ) --- void
 	self._state         = state
@@ -39,11 +43,12 @@ function AlchemySearchService:Init( state, recipeService, mapper, algorithm ) --
 end
 
 --------------------------------------------------------------------------------
--- Главная точка входа для поиска лучших рецептов.
--- Собирает актуальные данные из API, строит карту сдвигов, фильтрует рецепты
--- и запускает алгоритм поиска для нахождения оптимальных комбинаций.
+--- Главная точка входа для поиска лучших рецептов.
+--- Собирает актуальные данные из API, строит карту сдвигов, фильтрует рецепты
+--- и запускает алгоритм поиска для нахождения оптимальных комбинаций.
+--- @return table -- найдено список рецептов
 --------------------------------------------------------------------------------
-function AlchemySearchService:FindBestRecipes() --- table
+function AlchemySearchService:FindBestRecipes()
 	local alchemyInfo = avatar.GetAlchemyInfo()
 	
 	-- Обновляем максимальную коррекцию (сдвиг) на основе данных первого барабана
