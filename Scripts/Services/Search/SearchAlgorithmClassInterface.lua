@@ -10,7 +10,9 @@ Class( "SearchAlgorithmClassInterface", {
 } )
 
 --------------------------------------------------------------------------------
--- Инициализация алгоритма поиска.
+--- Инициализация алгоритма поиска.
+--- @param evaluator table RecipeEvaluator
+--- @param mathUtils table MathUtils
 --------------------------------------------------------------------------------
 function SearchAlgorithmClassInterface:Init( evaluator, mathUtils ) --- void
 	self._evaluator = evaluator
@@ -18,9 +20,11 @@ function SearchAlgorithmClassInterface:Init( evaluator, mathUtils ) --- void
 end
 
 --------------------------------------------------------------------------------
--- Контракт метода выполнения поиска.
--- Должен быть переопределен в классах-наследниках.
+--- Контракт метода выполнения поиска.
+--- Должен быть переопределен в классах-наследниках.
+--- @param ... any
+--- @return table
 --------------------------------------------------------------------------------
-function SearchAlgorithmClassInterface:Execute( ... ) --- table
+function SearchAlgorithmClassInterface:Execute( ... )
 	error( "SearchAlgorithmClassInterface:Execute must be implemented by subclass" )
 end
