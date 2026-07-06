@@ -8,7 +8,12 @@
 Class( "AlchemyEvents", EventClassInterface() )
 
 --------------------------------------------------------------------------------
--- Инициализация
+--- Инициализация
+--- @param state table AlchemyState
+--- @param config table AlchemyConfig
+--- @param widgetMgr table AlchemyWidgetManager
+--- @param textFmt table AlchemyTextFormatter
+--- @param services table Services
 --------------------------------------------------------------------------------
 function AlchemyEvents:Init( state, config, widgetMgr, textFmt, services ) --- void
     self._state    = state      -- AlchemyState - глобальное состояние аддона.
@@ -19,12 +24,12 @@ function AlchemyEvents:Init( state, config, widgetMgr, textFmt, services ) --- v
 end
 
 --------------------------------------------------------------------------------
--- Маппинг событий
+--- Маппинг событий.
+--- Возвращает таблицу соответствия имен событий методам-обработчикам.
+--- Используется AlchemyEventManager для автоматической регистрации.
+--- @return table
 --------------------------------------------------------------------------------
-
--- Возвращает таблицу соответствия имен событий методам-обработчикам.
--- Используется AlchemyEventManager для автоматической регистрации.
-function AlchemyEvents:GetEventMap() --- table
+function AlchemyEvents:GetEventMap()
     return {
         EVENT_ALCHEMY_STARTED           = self.OnStarted,           -- Открытие окна алхимии.
         EVENT_ALCHEMY_CANCELED          = self.OnCanceled,          -- Отмена или неудачное завершение варки.
@@ -38,15 +43,19 @@ end
 -- Обработчики событий
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
 -- Обработчик события EVENT_ALCHEMY_STARTED.
 -- Срабатывает при открытии окна алхимии. Инициализирует UI и кэширует рецепты.
+--------------------------------------------------------------------------------
 function AlchemyEvents:OnStarted() --- void
+    ----------------------------------------
     self._services.debug:LogGeneral( "EVENT_ALCHEMY_STARTED" )
-    
+    ----------------------------------------
+
     -- Показываем окно аддона и помечаем состояние как активное
     self._ui:Show()
     self._state.active = true
-    
+
     -- Создаем кэш всех доступных рецептов.
     -- Более логично подготовить весь список зелий (около 250) именно при открытии Алхимии,
     -- чтобы не делать это при каждом размещении компонента.
@@ -62,14 +71,17 @@ function AlchemyEvents:OnStarted() --- void
 end
 
 --------------------------------------------------------------------------------
-
--- Обработчик события EVENT_ALCHEMY_CANCELED.
--- Срабатывает при закрытии окна алхимии или отмене варки.
+--- Обработчик события EVENT_ALCHEMY_CANCELED.
+--- Срабатывает при закрытии окна алхимии или отмене варки.
+--- @param params table { isSuccess: boolean }
+--------------------------------------------------------------------------------
 function AlchemyEvents:OnCanceled( params ) --- void
-    self._services.debug:LogGeneral( "EVENT_ALCHEMY_CANCELED" )
-    self._services.debug:LogGeneral( "isSuccess:", tostring( params.isSuccess ) )
-    
+    ----------------------------------------
+    self._services.debug:LogGeneral( "EVENT_ALCHEMY_CANCELED", "isSuccess:", params.isSuccess )
+    ----------------------------------------
+
     -- Если варка не удалась или окно просто закрыли (isSuccess == false)
+    -- Fix: 17.0.01.37
     if params.isSuccess == false or params.isSuccess == 0 or params.isSuccess == nil then
         self._ui:Hide()
         self._state:ResetPlace()            -- Сбрасываем состояние слотов
@@ -81,21 +93,23 @@ function AlchemyEvents:OnCanceled( params ) --- void
 end
 
 --------------------------------------------------------------------------------
-
--- Обработчик события EVENT_ALCHEMY_ITEM_PLACED.
--- Срабатывает при размещении или извлечении предмета из барабана (ступки).
+--- Обработчик события EVENT_ALCHEMY_ITEM_PLACED.
+--- Срабатывает при размещении или извлечении предмета из барабана (ступки).
+--- @param params table { placed: boolean, slot: number }
+--------------------------------------------------------------------------------
 function AlchemyEvents:OnItemPlaced( params ) --- void
-    self._services.debug:LogGeneral( "EVENT_ALCHEMY_ITEM_PLACED" )
-    
+    ----------------------------------------
     -- Логируем действие (положен или вынут предмет)
-    self._services.debug:LogGeneral( function () 
-        if params.placed then 
-            return self._services.locale:Get( "DEBUG_INSERT_BAR" )
+    self._services.debug:LogGeneral( "EVENT_ALCHEMY_ITEM_PLACED", function ()
+        if params.placed then
+            return userMods.FromWString( self._services.locale:Get( "DEBUG_INSERT_BAR" ) )
         end
-        return self._services.locale:Get( "DEBUG_REMOVED_BAR" ) 
+        
+        return userMods.FromWString( self._services.locale:Get( "DEBUG_REMOVED_BAR" ) )
     end )
-    self._services.debug:LogGeneral( tostring( params.slot ) )
-    
+    self._services.debug:LogGeneral( params.slot )
+    ----------------------------------------
+
     -- Обновляем состояние слотов
     self._state.place.placed = params.placed
     self._state.place.readyNotFoundMessage = false
@@ -112,15 +126,18 @@ function AlchemyEvents:OnItemPlaced( params ) --- void
 
     -- Если сейчас не стандартный режим отображения, не обновляем текст
     if self._state.messageType ~= self._config.MESSAGE_NORMAL then return end
-    
+
     -- Если реакция еще не завершилась успешно, пытаемся оценить потенциальные рецепты
     if not self._state.reactionSuccess then
         -- Получаем кол-во потенциальных рецептов (countRecipe) и кол-во заполненных слотов (filledDrumsCount)
         local countRecipe, filledDrumsCount = self._services.recipe:CountPotential()
-        
+
         -- Если все слоты заполнены и есть подходящие рецепты
         if countRecipe > 0 --[[and self._state.place.count == filledDrumsCount]] then
-            self._text:SetText( string.format( self._services.locale:Get( "COUNT_RECIPLES" ), countRecipe ) )
+            -- Конвертируем шаблон в локальную строку.
+            -- "Возможно, есть рецепты: %d шт."
+            local templateCountRecipes = userMods.FromWString( self._services.locale:Get( "COUNT_RECIPES" ) )
+            self._text:SetText( string.format( templateCountRecipes, countRecipe ) )
         -- Если все слоты заполнены, но подходящих рецептов нет (компоненты не те)
         elseif self._state.place.count == filledDrumsCount then
             self._text:SetText( self._services.locale:Get( "COMPONENTS_NOT_READY" ) )
@@ -129,45 +146,54 @@ function AlchemyEvents:OnItemPlaced( params ) --- void
 end
 
 --------------------------------------------------------------------------------
-
 -- Обработчик события EVENT_ALCHEMY_REACTION_FINISHED.
 -- Срабатывает после завершения процесса варки (нажатия кнопки "Создать").
 -- Запускает поиск лучших рецептов с учетом сдвигов барабанов.
+--------------------------------------------------------------------------------
 function AlchemyEvents:OnReactionFinished() --- void
+    ----------------------------------------
     self._services.debug:LogGeneral( "EVENT_ALCHEMY_REACTION_FINISHED" )
-
+    ----------------------------------------
+    
     -- Запускаем алгоритм поиска подходящих рецептов
     local found = self._services.search:FindBestRecipes()
 
     -- Если ничего не найдено (получилась "бормотуха")
     if #found == 0 then
+        ----------------------------------------
         self._services.debug:LogReaction( "EVENT_ALCHEMY_REACTION_FINISHED:{empty}" )
+        ----------------------------------------
+        
         self._text:SetText( self._services.locale:Get( "RESULT_GIBBERISH" ) )
         self._state.reactionSuccess = false
     else
-        -- Логируем найденные варианты (сдвиги и названия)
-        self._services.debug:LogReaction( function() 
-            return self._text:FormatResultsForLog( found, self._config.MAX_DISPLAY_RESULTS, self._state.drumsCount ) 
+        ----------------------------------------
+        -- Логируем найденные варианты (лвл, сдвиги и названия)
+        self._services.debug:LogReaction( function()
+            return self._text:FormatResultsForLog( found, self._config.MAX_DISPLAY_RESULTS, self._state.drumsCount )
         end )
+        ----------------------------------------
         
         -- Выводим ТОП-N результатов в UI
         self._text:DisplayResults( found, self._config.MAX_DISPLAY_RESULTS, self._state.drumsCount )
-        
+
         -- Помечаем реакцию как успешную (чтобы при получении предмета показать поздравление)
         self._state.reactionSuccess = true
     end
 end
 
 --------------------------------------------------------------------------------
-
 -- Обработчик события EVENT_ALCHEMY_RECIPES_CHANGED.
 -- Срабатывает, когда игрок изучает новый рецепт алхимии.
+--------------------------------------------------------------------------------
 function AlchemyEvents:OnRecipesChanged() --- void
+    ----------------------------------------
     self._services.debug:LogGeneral( "EVENT_ALCHEMY_RECIPES_CHANGED" )
+    ----------------------------------------
     
     -- Сбрасываем кэш рецептов, чтобы при следующем открытии он обновился
     self._state:ResetRecipeCache()
-    
+
     -- Поздравляем игрока и устанавливаем флаг для вывода "С возвращением!" при следующем входе
     self._text:SetText( self._services.locale:Get( "CONGRATULATION" ) )
     self._state.messageType = self._config.MESSAGE_WELCOME_BACK
