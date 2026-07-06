@@ -21,12 +21,14 @@ function AlchemyLocaleService:Init() --- void
 end
 
 --------------------------------------------------------------------------------
-
--- Получить локализованную строку по ключу.
--- Конвертирует внутреннее представление WString в обычную Lua-строку.
-function AlchemyLocaleService:Get( key ) --- string
+--- Получить локализованную строку по ключу.
+--- Конвертирует внутреннее представление WString в обычную Lua-строку.
+--- @param key string
+--- @return userdata -- ссылка на текстовый ресурс
+--------------------------------------------------------------------------------
+function AlchemyLocaleService:Get( key )
 	if self._group and self._group:HasText( key ) then
-		return userMods.FromWString( self._group:GetText( key ) )
+		return self._group:GetText( key )
 	end
 	
 	-- Если ключ не найден, выбрасываем ошибку с указанием отсутствующего ключа
