@@ -10,6 +10,10 @@ Addon to assist with Alchemy. Allods Online.
 
 ---
 
+### [v2.1.2-alpha](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.1.2-alpha)
+
+---
+
 ### [v2.1.0](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.1.0)
 
 + **Главное дополнение**: Изменение интерфейса и расположение кнопок.
