@@ -6,13 +6,16 @@
 --------------------------------------------------------------------------------
 
 Class( "AlchemyTextFormatter", {
-	_config        = nil, -- Ссылка на конфигурацию аддона (AlchemyConfig).
+	_config        = nil,
 	_services      = nil, -- Ссылка на контейнер сервисов (debug, locale, textContainer).
-	_widgetManager = nil, -- Ссылка на менеджер виджетов (AlchemyWidgetManager).
+	_widgetManager = nil,
 } )
 
 --------------------------------------------------------------------------------
--- Инициализация форматировщика.
+--- Инициализация форматировщика.
+--- @param config table AlchemyConfig
+--- @param widgetManager table AlchemyWidgetManager
+--- @param services table Services
 --------------------------------------------------------------------------------
 function AlchemyTextFormatter:Init( config, widgetManager, services ) --- void
     self._config        = config
@@ -21,21 +24,31 @@ function AlchemyTextFormatter:Init( config, widgetManager, services ) --- void
     
     -- Передаем весь менеджер виджетов в сервис текстового контейнера
     self._services.textContainer:Init( widgetManager )
-	-- Выводим имя аддона как текст по умолчанию
+	-- Выводим в контейнер имя аддона как текст по умолчанию
 	self._services.textContainer:SetSingleLine( common.GetAddonName() )
 end
 
 --------------------------------------------------------------------------------
--- Установить произвольный текст в контейнер и продублировать его в общий лог.
+--- Установить произвольный текст в контейнер и продублировать его в общий лог.
+--- @param text string | WString | table
 --------------------------------------------------------------------------------
 function AlchemyTextFormatter:SetText( text ) --- void
+	----------------------------------------
 	self._services.debug:LogGeneral( text )
+	----------------------------------------
+	
 	self._services.textContainer:SetLines( text )
 end
 
 --------------------------------------------------------------------------------
--- Отобразить список найденных рецептов в текстовом контейнере.
--- Выполняет форматирование и передает готовые ValuedText в сервис контейнера.
+--- Отобразить список найденных рецептов в текстовом контейнере.
+--- Выполняет форматирование и передает готовые ValuedText в сервис контейнера.
+--- @param found table { 
+---		recipe: table = { score: number, requiredComponents: table, name: string },
+---		shifts: table = { 1,-1, 0, 0, 0 },
+---		components: table }
+--- @param maxDisplay number MAX_DISPLAY_RESULTS
+--- @param nDrums number 2-5
 --------------------------------------------------------------------------------
 function AlchemyTextFormatter:DisplayResults( found, maxDisplay, nDrums ) --- void
 	local linesData = self:FormatResults( found, maxDisplay, nDrums )
@@ -43,14 +56,14 @@ function AlchemyTextFormatter:DisplayResults( found, maxDisplay, nDrums ) --- vo
 end
 
 --------------------------------------------------------------------------------
--- Отформатировать список найденных рецептов в массив объектов ValuedText.
--- Результаты сортируются по убыванию уровня умения (score), при равенстве - по имени.
+--- Отформатировать список найденных рецептов в массив объектов ValuedText.
+--- Результаты сортируются по убыванию уровня умения (score), при равенстве - по имени.
+--- @param found table массив найденных результатов (содержит recipe и shifts).
+--- @param maxDisplay number максимальное количество строк для отображения (ТОП-N).
+--- @param nDrums number количество барабанов (для вывода сдвигов).
+--- @return table linesData { ValuedText, ... }
 --------------------------------------------------------------------------------
-function AlchemyTextFormatter:FormatResults( found, maxDisplay, nDrums ) --- table
-	-- found: table - массив найденных результатов (содержит recipe и shifts).
-	-- maxDisplay: number (int) - максимальное количество строк для отображения (ТОП-N).
-	-- nDrums: number (int) - количество барабанов (для вывода сдвигов).
-	
+function AlchemyTextFormatter:FormatResults( found, maxDisplay, nDrums )
 	-- Сортировка: сначала по уровню (score) убывания, затем по имени (name) убывания
 	table.sort( found, function( a, b )
 		if a.recipe.score == b.recipe.score then
@@ -114,10 +127,14 @@ function AlchemyTextFormatter:FormatResults( found, maxDisplay, nDrums ) --- tab
 end
 
 --------------------------------------------------------------------------------
--- Разультат варки со сдвигами барабанов в одну строку для лога.
--- Формат записи: score,shift1,shift2,shift3,shift4,shift5,name|score,shift1,...
+--- Разультат варки со сдвигами барабанов в одну строку для лога.
+--- Формат записи: score,shift1,shift2,shift3,shift4,shift5,name|score,shift1,...
+--- @param found table массив найденных результатов (содержит recipe и shifts).
+--- @param maxDisplay number максимальное количество строк для отображения (ТОП-N).
+--- @param nDrums number количество барабанов (для вывода сдвигов).
+--- @return string -- EVENT_ALCHEMY_REACTION_FINISHED:123,1,-1,0,0,0,зелье|123,...
 --------------------------------------------------------------------------------
-function AlchemyTextFormatter:FormatResultsForLog( found, maxDisplay, nDrums ) --- string
+function AlchemyTextFormatter:FormatResultsForLog( found, maxDisplay, nDrums )
 	local parts = {}
 	
 	for i = 1, math.min( #found, maxDisplay ) do
