@@ -6,12 +6,12 @@
 --------------------------------------------------------------------------------
 
 Class( "AlchemyTextContainerService", {
-	_widgetManager = nil, -- Ссылка на менеджер виджетов для доступа к Panel и OuText
+	_widgetManager = nil,
 } )
 
 --------------------------------------------------------------------------------
 --- Инициализация сервиса.
---- @param widgetManager AlchemyWidgetManager - менеджер виджетов.
+--- @param widgetManager table - экземпляр класса AlchemyWidgetManager
 --------------------------------------------------------------------------------
 function AlchemyTextContainerService:Init( widgetManager ) --- void
 	self._widgetManager = widgetManager
@@ -20,7 +20,7 @@ end
 --------------------------------------------------------------------------------
 --- Установить набор строк в текстовый контейнер.
 --- Полностью очищает контейнер перед добавлением новых строк.
---- @param linesArray string | table - массив строк, объектов ValuedText/WString или одиночная строка.
+--- @param linesArray string | WString | table - ( массив строк, объектов ValuedText/WString ) или одиночная строка.
 --------------------------------------------------------------------------------
 function AlchemyTextContainerService:SetLines( linesArray ) --- void
 	-- Если передана одиночная строка, оборачиваем её в таблицу
