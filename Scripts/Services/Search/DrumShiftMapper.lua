@@ -1,4 +1,6 @@
+--------------------------------------------------------------------------------
 -- Services/Search/DrumShiftMapper.lua
+--------------------------------------------------------------------------------
 
 Class( "DrumShiftMapper", {
 	_state         = nil,
@@ -6,15 +8,24 @@ Class( "DrumShiftMapper", {
 	_mathUtils     = nil,
 } )
 
+--------------------------------------------------------------------------------
+--- @param state table AlchemyState
+--- @param recipeService table AlchemyRecipeService
+--- @param mathUtils table MathUtils
+--------------------------------------------------------------------------------
 function DrumShiftMapper:Init( state, recipeService, mathUtils ) --- void
 	self._state         = state
 	self._recipeService = recipeService
 	self._mathUtils     = mathUtils
 end
 
--- Метод: Строит карту возможных сдвигов для каждого барабана.
--- Определяет, какие компоненты можно получить на каждом барабане при разных сдвигах.
-function DrumShiftMapper:BuildMap() --- ...[ table, int ]
+--------------------------------------------------------------------------------
+--- Метод: Строит карту возможных сдвигов для каждого барабана.
+--- Определяет, какие компоненты можно получить на каждом барабане при разных сдвигах.
+--- @return table drumRequiredComponents таблица уникальных компонентов по барабанам
+--- @return number totalDrumsCount общее кол-во заполненных барабанов
+--------------------------------------------------------------------------------
+function DrumShiftMapper:BuildMap()
 	local drumRequiredComponents = {} -- Таблица { [имя_компонента] = количество_барабанов }. 
                                       -- Считает, в скольких барабанах встречается каждый уникальный компонент.
     self._state.drumShiftMap = {}     -- Инициализируем карту сдвигов в состоянии. 
