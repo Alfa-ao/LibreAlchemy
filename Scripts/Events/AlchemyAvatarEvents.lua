@@ -8,7 +8,12 @@
 Class( "AlchemyAvatarEvents", EventClassInterface() )
 
 --------------------------------------------------------------------------------
--- Инициализация
+--- Инициализация
+--- @param state table AlchemyState
+--- @param config table AlchemyConfig
+--- @param widgetMgr table AlchemyWidgetManager
+--- @param textFmt table AlchemyTextFormatter
+--- @param services table Services
 --------------------------------------------------------------------------------
 function AlchemyAvatarEvents:Init( state, config, widgetMgr, textFmt, services ) --- void
     self._state    = state      -- AlchemyState - глобальное состояние аддона.
@@ -19,12 +24,12 @@ function AlchemyAvatarEvents:Init( state, config, widgetMgr, textFmt, services )
 end
 
 --------------------------------------------------------------------------------
--- Маппинг событий
+--- Маппинг событий
+--- Возвращает таблицу соответствия имен событий методам-обработчикам.
+--- Используется AlchemyEventManager для автоматической регистрации.
+--- @return table
 --------------------------------------------------------------------------------
-
--- Возвращает таблицу соответствия имен событий методам-обработчикам.
--- Используется AlchemyEventManager для автоматической регистрации.
-function AlchemyAvatarEvents:GetEventMap() --- table
+function AlchemyAvatarEvents:GetEventMap()
     return {
         EVENT_AVATAR_CREATED    = self.OnAvatarCreated, -- Событие создания/входа персонажа.
         EVENT_AVATAR_ITEM_TAKEN = self.OnItemTaken,     -- Событие получения предмета в инвентарь.
@@ -35,8 +40,10 @@ end
 -- Обработчики событий
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
 -- Обработчик события EVENT_AVATAR_CREATED.
 -- Выполняется при входе персонажа в мир. Инициализирует локализацию и кастомный UI.
+--------------------------------------------------------------------------------
 function AlchemyAvatarEvents:OnAvatarCreated() --- void
     -- Инициализация сервиса локализации (подгрузка нужного языкового пакета).
     self._services.locale:Init()
@@ -57,15 +64,16 @@ function AlchemyAvatarEvents:OnAvatarCreated() --- void
 end
 
 --------------------------------------------------------------------------------
-
--- Обработчик события EVENT_AVATAR_ITEM_TAKEN.
--- Срабатывает при получении предмета. Если это результат крафта (алхимии),
--- и реакция была успешной, выводит поздравление с названием и количеством зелий.
+--- Обработчик события EVENT_AVATAR_ITEM_TAKEN.
+--- Срабатывает при получении предмета. Если это результат крафта (алхимии),
+--- и реакция была успешной, выводит поздравление с названием и количеством зелий.
+--- @param params table { actionType: string, itemObject: ValuedObject }
+--------------------------------------------------------------------------------
 function AlchemyAvatarEvents:OnItemTaken( params ) --- void
     self._services.debug:LogGeneral( "EVENT_AVATAR_ITEM_TAKEN" )
 
     -- params.actionType == "ENUM_TakeItemActionType_Craft" означает, что предмет создан (скрафчен).
-    -- self._state.reactionSuccess гарантирует, что мы находимся в процессе/результате алхимии.
+    -- self._state.reactionSuccess мы находимся в процессе/результате алхимии.
     if params.actionType == "ENUM_TakeItemActionType_Craft" and self._state.reactionSuccess then
         -- Получаем информацию о созданном предмете по его ID.
         local info = itemLib.GetItemInfo( params.itemObject:GetId() )
