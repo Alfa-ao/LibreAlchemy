@@ -10,24 +10,27 @@ Class( "WidgetClassInterface", {
 } )
 
 --------------------------------------------------------------------------------
--- Получить прямой геттер нативного виджета (RawWidget).
--- Используется для специфичных операций.
+--- Получить прямой геттер нативного виджета (RawWidget).
+--- Используется для специфичных операций.
+--- @return userdata | table | nil
 --------------------------------------------------------------------------------
-function WidgetClassInterface:GetNativeWidget() --- ?Widget
+function WidgetClassInterface:GetNativeWidget()
 	error( "WidgetClassInterface:GetNativeWidget must be implemented by subclass" )
 end
 
 --------------------------------------------------------------------------------
--- Получить системное имя виджета, используемое для регистрации в менеджере.
+--- Получить системное имя виджета, используемое для регистрации в менеджере.
+--- @return string
 --------------------------------------------------------------------------------
-function WidgetClassInterface:GetWidgetName() --- string
+function WidgetClassInterface:GetWidgetName()
 	error( "WidgetClassInterface:GetWidgetName must be implemented by subclass" )
 end
 
 --------------------------------------------------------------------------------
--- Получить стандартный приоритет инициализации.
--- Чем больше число, тем раньше виджет будет инициализирован менеджером.
+--- Получить стандартный приоритет инициализации.
+--- Чем больше число, тем раньше виджет будет инициализирован менеджером.
+--- @return number
 --------------------------------------------------------------------------------
-function WidgetClassInterface:GetPriorityClass() --- int
+function WidgetClassInterface:GetPriorityClass()
 	return 0
 end
