@@ -14,8 +14,8 @@
 			<resource href="CONGRATULATION.txt"/>
 		</Item>
 		<Item>
-			<name>COUNT_RECIPLES</name>
-			<resource href="COUNT_RECIPLES.txt"/>
+			<name>COUNT_RECIPES</name>
+			<resource href="COUNT_RECIPES.txt"/>
 		</Item>
 		<Item>
 			<name>DEBUG_COUNT_COMPONENTS</name>
@@ -50,8 +50,8 @@
 			<resource href="WELCOME_BACK.txt"/>
 		</Item>
 		<Item>
-			<name>NOT_FOUND_RECIPLES</name>
-			<resource href="NOT_FOUND_RECIPLES.txt"/>
+			<name>NOT_FOUND_RECIPES</name>
+			<resource href="NOT_FOUND_RECIPES.txt"/>
 		</Item>
 		<Item>
 			<name>RESULT_GIBBERISH</name>
