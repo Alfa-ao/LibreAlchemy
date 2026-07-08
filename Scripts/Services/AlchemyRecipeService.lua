@@ -2,13 +2,12 @@
 -- Services/AlchemyRecipeService.lua
 -- Сервис для работы с рецептами алхимии.
 -- Отвечает за кэширование списка всех доступных рецептов, фильтрацию по
--- имеющимся компонентам и подсчет потенциально возможных рецептов с учетом
--- физически положенных в барабаны предметов.
+-- имеющимся компонентам и подсчет возможных рецептов.
 --------------------------------------------------------------------------------
 
 Class( "AlchemyRecipeService", {
-	_state = nil,               -- Ссылка на глобальный объект состояния аддона (AlchemyState).
-	_componentNamesCache = {},  -- Кэш имен компонентов для оптимизации обращений к API.
+	_state = nil,               -- AlchemyState.
+	_componentNamesCache = {},  -- Кэш имен компонентов для оптимизации.
 	                            -- Структура: { [ComponentId (userdata)] = "ИмяКомпонента (string)" }.
 } )
 
@@ -22,7 +21,7 @@ end
 
 --------------------------------------------------------------------------------
 --- Получить строковое имя компонента по его ID.
---- Использует внутренний кэш для минимизации обращений к API.
+--- Использует внутренний кэш.
 --- @param componentId userdata (ComponentPropertyId/ResourceId).
 --- @return nil | string name выводит имя
 --------------------------------------------------------------------------------
@@ -47,7 +46,7 @@ function AlchemyRecipeService:GetComponentName( componentId )
 end
 
 --------------------------------------------------------------------------------
---- Создать и закешировать полный список всех доступных игроку рецептов алхимии.
+--- Создать и сохранить в кэш полный список всех доступных рецептов алхимии.
 --- Выполняется один раз при открытии окна алхимии или при изменении списка рецептов.
 --------------------------------------------------------------------------------
 function AlchemyRecipeService:CreateRecipeCache()
@@ -56,15 +55,30 @@ function AlchemyRecipeService:CreateRecipeCache()
 		return
 	end
 	
+	--[[
+	{
+		{
+			"componentsCount" => 5,
+			"name" => "Сильное зелье исцеления",
+			"requiredComponents" => {
+				"Время" => 2
+				"Исцеление" => 2
+				"Оглушение" => 1
+			},
+			"score" => 41
+		},
+		...
+	}
+	]]
 	self._state.recipeCache = {}
 	
-	-- alchemyInfo: table. Содержит drumsCount, correctionCount, recipes (массив RecipeId) и т.д.
+	-- alchemyInfo: table = { drumsCount, correctionCount, recipes (массив RecipeId) и т.д }.
 	local alchemyInfo = avatar.GetAlchemyInfo()
 	
 	-- Сохраняем актуальное количество слотов (барабанов) в состояние
 	self._state.drumsCount = alchemyInfo.drumsCount
 
-	-- Проходим по всем доступным игроку рецептам
+	-- Проходим по всем доступным рецептам
 	-- recipeId: userdata (RecipeId) - идентификатор ресурса рецепта
 	for _, recipeId in pairs( alchemyInfo.recipes ) do
 		-- recipeInfo: table. Содержит name (WString), score (int), components (массив ComponentId) и т.д.
@@ -128,7 +142,7 @@ end
 --- @return integer count кол-во рецептов с подходящими компонентами
 --------------------------------------------------------------------------------
 function AlchemyRecipeService:FilterByComponents( availableComponents, filledDrumsCount )
-	-- Гарантируем, что кэш рецептов создан
+	-- Проверяем кэш.
 	self:CreateRecipeCache()
 	
 	self._state.filteredRecipes = {}
@@ -145,8 +159,8 @@ function AlchemyRecipeService:FilterByComponents( availableComponents, filledDru
 end
 
 --------------------------------------------------------------------------------
---- Подсчитать количество потенциально возможных рецептов на основе того, какие
---- предметы физически положены в слоты (без учета сдвигов).
+--- Подсчитать количество возможных рецептов на основе того, какие
+--- предметы положены в слоты (без учета сдвигов).
 --- @return integer potentialCount количество возможных рецептов
 --- @return integer filledDrumsCount количество заполненных слотов
 --------------------------------------------------------------------------------
@@ -158,8 +172,9 @@ function AlchemyRecipeService:CountPotential()
 	local filledDrumsCount = 0
 	local availableComponents = {}
 
-	-- Проходим по всем слотам (барабанам). Нумерация в API начинается с 0.
+	-- Проходим по всем слотам (барабанам).
 	for drumIdx = 1, self._state.drumsCount do
+		-- Нумерация в GetAlchemyDrumInfo начинается с 0.
 		-- drumInfo: table or nil. Содержит itemId, components (массив ComponentId), position и др.
 		local drumInfo = avatar.GetAlchemyDrumInfo( drumIdx - 1 )
 		
@@ -167,9 +182,9 @@ function AlchemyRecipeService:CountPotential()
 		if drumInfo and drumInfo.itemId ~= nil then
 			filledDrumsCount = filledDrumsCount + 1
 
-			-- Если в барабане есть компоненты (предмет не пустой)
+			-- Если в слотах есть компоненты
 			if drumInfo.components then
-				-- Хеш-таблица для учета УНИКАЛЬНЫХ компонентов внутри ОДНОГО барабана.
+				-- Хеш-таблица для учета УНИКАЛЬНЫХ компонентов внутри (ОДНОГО) барабана.
 				local seenInDrum = {}
 				
 				-- Собираем все уникальные компоненты этого барабана
