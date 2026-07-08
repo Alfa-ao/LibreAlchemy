@@ -4,19 +4,15 @@
 --------------------------------------------------------------------------------
 
 Class( "AlchemyDebugService", {
-	_categories = {}, -- Таблица состояния категорий логирования (ключ - имя категории, значение - boolean).
+	_categories = {}, -- Таблица состояния категорий логирования (category - имя категории, значение - boolean).
 } )
 
 --------------------------------------------------------------------------------
 --- Инициализация сервиса отладки.
---- @param config table AlchemyConfig
+--- @param categories table
 --------------------------------------------------------------------------------
-function AlchemyDebugService:Init( config ) --- void
-	-- (ВНИМАНИЕ) В будующем переместить таблицу и убрать отсюда вспомогательные методы (расширяемость)
-	self._categories = {
-		GENERAL  = config.DEBUG,           -- Общая логика аддона.
-		REACTION = config.DEBUG_REACTION,  -- Логирование событий и реакций.
-	}
+function AlchemyDebugService:Init( categories ) --- void
+	self._categories = categories
 end
 
 --------------------------------------------------------------------------------
@@ -41,7 +37,6 @@ end
 
 --------------------------------------------------------------------------------
 --- Формирует строку сообщения и выводит её в лог.
---- Если в аргументах передана функция, она будет вызвана для получения значения.
 --- @param category string категория логирования
 --- @param ... any
 --------------------------------------------------------------------------------
@@ -52,20 +47,16 @@ function AlchemyDebugService:Log( category, ... ) --- void
 	
 	local args = { ... }
 	
-	-- Логируем
 	for i, v in ipairs( args ) do
 		if type( v ) == "function" then
-			-- Если передана функция, вызываем её
+			-- Если функция, вызываем её
 			args[i] = v()
+		elseif apitype( v ) == "WString" then
+			-- Если WString, конвертируем в строку
+			args[i] = string.format( "WString( %s )", userMods.FromWString( v ) )
 		end
+		-- :ToWString()
 	end
 	
 	log( table.unpack( args ) )
 end
-
---------------------------------------------------------------------------------
--- Вспомогательные методы для логирования в предустановленные категории.
---------------------------------------------------------------------------------
-
-function AlchemyDebugService:LogGeneral( ... )  self:Log( "GENERAL", ... )  end
-function AlchemyDebugService:LogReaction( ... ) self:Log( "REACTION", ... ) end
