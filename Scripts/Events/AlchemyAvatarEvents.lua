@@ -1,8 +1,8 @@
 --------------------------------------------------------------------------------
 -- Events/AlchemyAvatarEvents.lua
 -- Класс, отвечающий за обработку глобальных событий персонажа (EVENT_AVATAR_*).
--- Реализует реакцию на создание аватара (инициализация UI, локализации)
--- и получение предметов (отображение сообщения о успешном создании зелья).
+-- Реализует реакцию на создание аватара и получение предметов 
+-- (отображение сообщения о успешном создании зелья).
 --------------------------------------------------------------------------------
 
 Class( "AlchemyAvatarEvents", EventClassInterface() )
@@ -20,7 +20,7 @@ function AlchemyAvatarEvents:Init( state, config, widgetMgr, textFmt, services )
     self._config   = config     -- AlchemyConfig - конфигурация аддона.
     self._ui       = widgetMgr  -- AlchemyWidgetManager - менеджер UI виджетов.
     self._text     = textFmt    -- AlchemyTextFormatter - форматировщик текста.
-    self._services = services   -- table - набор сервисов (debug, locale, recipe и т.д.).
+    self._services = services   -- table - сервисы.
 end
 
 --------------------------------------------------------------------------------
@@ -42,10 +42,11 @@ end
 
 --------------------------------------------------------------------------------
 -- Обработчик события EVENT_AVATAR_CREATED.
--- Выполняется при входе персонажа в мир. Инициализирует локализацию и кастомный UI.
+-- Выполняется при входе персонажа в игру. 
+-- Инициализирует локализацию и кастомный UI.
 --------------------------------------------------------------------------------
 function AlchemyAvatarEvents:OnAvatarCreated() --- void
-    -- Инициализация сервиса локализации (подгрузка нужного языкового пакета).
+    -- Инициализация сервиса локализации.
     self._services.locale:Init()
     
     -- Применение кастомного расположения элементов окна алхимии (если включено в конфиге).
@@ -65,27 +66,30 @@ end
 
 --------------------------------------------------------------------------------
 --- Обработчик события EVENT_AVATAR_ITEM_TAKEN.
---- Срабатывает при получении предмета. Если это результат крафта (алхимии),
+--- Срабатывает при получении предмета. Если это действие (крафта),
 --- и реакция была успешной, выводит поздравление с названием и количеством зелий.
 --- @param params table { actionType: string, itemObject: ValuedObject }
 --------------------------------------------------------------------------------
 function AlchemyAvatarEvents:OnItemTaken( params ) --- void
     self._services.debug:LogGeneral( "EVENT_AVATAR_ITEM_TAKEN" )
 
-    -- params.actionType == "ENUM_TakeItemActionType_Craft" означает, что предмет создан (скрафчен).
-    -- self._state.reactionSuccess мы находимся в процессе/результате алхимии.
+    -- params.actionType == "ENUM_TakeItemActionType_Craft" предмет (скрафчен).
+    -- self._state.reactionSuccess результат варки успешен ?
     if params.actionType == "ENUM_TakeItemActionType_Craft" and self._state.reactionSuccess then
         -- Получаем информацию о созданном предмете по его ID.
         local info = itemLib.GetItemInfo( params.itemObject:GetId() )
-        local potionName = userMods.FromWString( info.name ) -- Конвертируем WString в Lua string.
+        local potionName = userMods.FromWString( info.name )
         
         -- Получаем количество предметов в стаке.
         local count = itemLib.GetStackInfo( params.itemObject:GetId() ).count
         
         -- Формируем и выводим локализованное сообщение о получении предмета.
-        self._text:SetText( {
-            self._services.locale:Get( "AVATAR_ITEM_TAKEN" ),
-            string.format( "[%s]x%d", potionName, count ),
-        } )
+        self._text:SetText( self._services.locale:Get( "AVATAR_ITEM_TAKEN" ),
+            string.format( "[%s]x%d", potionName, count )
+        )
+        
+        -- reactionSuccess = false не нужен.
+        -- Иначе конфликт между получением и возможных рецептов при:
+        -- EVENT_ALCHEMY_ITEM_PLACED
     end
 end
