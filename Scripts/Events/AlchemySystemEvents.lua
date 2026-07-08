@@ -17,7 +17,7 @@ function AlchemySystemEvents:Init( state, config, textFmt, services ) --- void
     self._state    = state      -- AlchemyState - глобальное состояние аддона.
     self._config   = config     -- AlchemyConfig - конфигурация аддона.
     self._text     = textFmt    -- AlchemyTextFormatter - форматировщик текста.
-    self._services = services   -- table - набор сервисов (debug, locale и т.д.).
+    self._services = services   -- table - сервисы.
 end
 
 --------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ end
 --------------------------------------------------------------------------------
 function AlchemySystemEvents:GetEventMap()
     return {
-        EVENT_SECOND_TIMER = self.OnSecondTimer, -- Срабатывает каждую секунду (игровой таймер).
+        EVENT_SECOND_TIMER = self.OnSecondTimer, -- Срабатывает каждую секунду.
     }
 end
 
@@ -37,11 +37,15 @@ end
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Обработчик события EVENT_SECOND_TIMER.
--- Выполняется каждую секунду. Используется для отложенного вывода сообщения
--- "Тут нет рецептов", чтобы дать нативному UI время обновить состояние слотов.
+--- Обработчик события EVENT_SECOND_TIMER.
+--- Выполняется каждую секунду.
+--- Используется для отложенного вывода сообщения "Тут нет рецептов", 
+--- чтобы дать нативному UI время обновить состояние слотов.
+--- timeMs - сколько миллисекунд прошло после начала отсчета (1 января 1970 года).
+--- elapsedMs - сколько миллисекунд прошло после последнего события EVENT_SECOND_TIMER.
+--- @param params table { timeMs: number, elapsedMs: number }
 --------------------------------------------------------------------------------
-function AlchemySystemEvents:OnSecondTimer() --- void
+function AlchemySystemEvents:OnSecondTimer( params ) --- void
     -- Проверяем условия:
         -- Было зафиксировано открытие окна Алхимии событием.
         -- Из слота был извлечен предмет (placed == false, а не nil).
@@ -56,7 +60,7 @@ function AlchemySystemEvents:OnSecondTimer() --- void
         -- Если флаг готов к выводу сообщения (прошла 1 секунда после извлечения)
         if self._state.place.readyNotFoundMessage then
             -- Выводим сообщение об отсутствии подходящих рецептов
-            self._text:SetText( self._services.locale:Get( "NOT_FOUND_RECIPLES" ) )
+            self._text:SetText( self._services.locale:Get( "NOT_FOUND_RECIPES" ) )
             
             -- Сбрасываем флаги, чтобы сообщение не выводилось повторно каждый тик таймера
             self._state.place.placed = nil
