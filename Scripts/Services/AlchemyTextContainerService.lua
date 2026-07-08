@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 -- Scripts/Services/AlchemyTextContainerService.lua
 -- Сервис для управления текстовым контейнером (TextContainer).
--- Предоставляет унифицированный интерфейс для очистки, добавления и вывода
+-- Предоставляет интерфейс для очистки, добавления и вывода
 -- текста в виджете-обертке (реализующем WidgetClassInterface).
 --------------------------------------------------------------------------------
 
@@ -20,21 +20,18 @@ end
 --------------------------------------------------------------------------------
 --- Установить набор строк в текстовый контейнер.
 --- Полностью очищает контейнер перед добавлением новых строк.
---- @param linesArray string | WString | table - ( массив строк, объектов ValuedText/WString ) или одиночная строка.
+--- @param ... ValuedText | WString | string 
 --------------------------------------------------------------------------------
-function AlchemyTextContainerService:SetLines( linesArray ) --- void
-	-- Если передана одиночная строка, оборачиваем её в таблицу
-	if type( linesArray ) ~= "table" then
-		linesArray = { linesArray }
-	end
-	
+function AlchemyTextContainerService:SetLines( ... ) --- void
+	local linesArray = { ... }
+
 	local ouTextWrapper = self._widgetManager:GetWidgetWrapper( "ouText" )
     local panelWrapper = self._widgetManager:GetWidgetWrapper( "panel" )
 
-    -- Очистка всего, что было добавлено ранее
+    -- Чистка
     ouTextWrapper:RemoveItems()
 	
-	-- Последовательно добавляем (пушим) строки в контейнер
+	-- Последовательно добавляем строки в контейнер
 	for _, line in ipairs( linesArray ) do
         if type( line ) == "string" then
             line = userMods.ToWString( line )
@@ -43,6 +40,7 @@ function AlchemyTextContainerService:SetLines( linesArray ) --- void
 		ouTextWrapper:PushBackText( line )
 	end
 	
+    -- Дополнительно:
 	-- Узнаем точную высоту текста и заставляем Panel подстроиться
     local exactHeight = ouTextWrapper:GetExactTextHeight()
     panelWrapper:UpdateSize( exactHeight )
@@ -50,8 +48,8 @@ end
 
 --------------------------------------------------------------------------------
 --- Установить одну строку в текстовый контейнер.
---- Является оберткой над SetLines для удобства работы с одиночными сообщениями.
---- @param text string | WString | ValuedText - текст для отображения.
+--- Является оберткой над SetLines.
+--- @param text string | WString | ValuedText
 --------------------------------------------------------------------------------
 function AlchemyTextContainerService:SetSingleLine( text ) --- void
 	self:SetLines( text )
