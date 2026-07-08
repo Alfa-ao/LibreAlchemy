@@ -45,11 +45,11 @@ function DrumShiftMapper:BuildMap()
             
             -- Защита от барабанов без компонентов (предмет есть, но компонентов нет)
 			if componentCount > 0 then
-				local basePos = drumInfo.position or 0 -- number (int). Текущая базовая позиция барабана (индекс компонента, который сейчас "в окне").
+				local basePos = drumInfo.position or 0 -- number (int). Текущая позиция барабана (индекс компонента, который сейчас "в окне").
 				
 				-- Перебираем все возможные сдвиги от -maxCorrections до +maxCorrections
 				for shift = -self._state.maxCorrections, self._state.maxCorrections do
-					-- Вычисляем целевой индекс компонента с учетом сдвига и зацикленности барабана
+					-- Вычисляем индекс компонента с учетом сдвига и зацикленности барабана
                     local targetIndex = self._mathUtils.safeModulo( basePos + shift, componentCount )
 					
                     local componentId = drumInfo.components[ targetIndex ] -- ID компонента (userdata/ResourceId)
@@ -60,7 +60,7 @@ function DrumShiftMapper:BuildMap()
 						if componentName then
 							-- Записываем в карту сдвигов: какой компонент получится при данном сдвиге
                             self._state.drumShiftMap[ drumIndex ][ shift ] = componentName
-                            -- Отмечаем компонент как уникальный для этого барабана
+                            -- ОтМечаем компонент как уникальный для этого барабана
                             uniqueDrumComponents[ componentName ] = 1
 						end
 					end
