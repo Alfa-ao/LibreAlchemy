@@ -22,7 +22,7 @@ function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvai
 			return 
 		end
 		
-		-- Базовый случай рекурсии или переход к следующему барабану
+		-- Обработка нескольких барабанов рекурсивно, если они есть
 		if drumIdx > 0 then
 			-- Если для текущего барабана нет возможных сдвигов (он пустой или не инициализирован)
 			if next( state.drumShiftMap[ drumIdx ] ) == nil then
@@ -33,7 +33,7 @@ function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvai
 				return
 			end
 			
-			-- Вычисляем максимальный сдвиг для текущего барабана (ограничен оставшимися очками и глобальным лимитом)
+			-- Вычисляем максимальный сдвиг для текущего барабана
 			local maxShift = math.min( shiftsLeft, state.maxCorrections )
 			
 			-- Перебираем все возможные сдвиги для текущего барабана
@@ -45,7 +45,7 @@ function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvai
 				
 				-- Обработка линии 0 (текущая позиция)
 				if lineZero then
-					local comp = state.drumShiftMap[ drumIdx ][ shift ] -- Имя компонента при сдвиге `shift`
+					local comp = state.drumShiftMap[ drumIdx ][ shift ] -- Имя компонента при сдвиге "shift"
 					if comp then
 						lineZero[ comp ] = ( lineZero[ comp ] or 0 ) + 1 -- Увеличиваем счетчик компонента в линии
 						addedZero = comp
@@ -54,7 +54,7 @@ function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvai
 				
 				-- Обработка линии -1 (сдвиг на 1 влево от текущего)
 				if lineMinusOne then
-					local comp = state.drumShiftMap[ drumIdx ][ shift - 1 ] -- Имя компонента при сдвиге `shift - 1`
+					local comp = state.drumShiftMap[ drumIdx ][ shift - 1 ] -- Имя компонента при сдвиге "shift - 1"
 					if comp then
 						lineMinusOne[ comp ] = ( lineMinusOne[ comp ] or 0 ) + 1
 						addedMinus = comp
@@ -63,7 +63,7 @@ function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvai
 				
 				-- Обработка линии +1 (сдвиг на 1 вправо от текущего)
 				if linePlusOne then
-					local comp = state.drumShiftMap[ drumIdx ][ shift + 1 ] -- Имя компонента при сдвиге `shift + 1`
+					local comp = state.drumShiftMap[ drumIdx ][ shift + 1 ] -- Имя компонента при сдвиге "shift + 1"
 					if comp then
 						linePlusOne[ comp ] = ( linePlusOne[ comp ] or 0 ) + 1
 						addedPlus = comp
