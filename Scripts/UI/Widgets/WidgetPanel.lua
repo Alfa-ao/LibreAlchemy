@@ -2,7 +2,7 @@
 -- UI/Widgets/WidgetPanel.lua
 -- Обертка над нативной панелью (Panel).
 -- Отвечает за фоновую текстуру, глобальное позиционирование, 
--- динамическое изменение размеров и интеграцию с Drag & Drop.
+-- динамическое изменение размеров и подключение для Drag & Drop.
 --------------------------------------------------------------------------------
 
 Class( "WidgetPanel", WidgetClassInterface() )
@@ -15,11 +15,11 @@ function WidgetPanel:Init( widgetManager ) --- void
     self._widgetManager = widgetManager
     self._widget = widgetManager:GetMainForm():GetChildChecked( "Panel" )
 
-    -- Получаем параметры виртуального экрана для первичного позиционирования
+    -- Получаем параметры виртуального экрана
     local pco = common.GetPosConverterParams()
     local plc = self._widget:GetPlacementPlain()
 
-    -- Центрируем панель по горизонтали (с учетом отступов)
+    -- Центрируем панель по горизонтали
     plc.posX = pco.fullVirtualSizeX / 2 - 360 - 15
     -- Инвертируем координату Y для корректного отображения относительно верха экрана
     -- Подробности: https://github.com/Alfa-ao/LibreAlchemy/issues/1
@@ -49,7 +49,7 @@ end
 
 --------------------------------------------------------------------------------
 --- Динамически подстраивает размер Panel под переданную высоту текста + отступы.
---- Вызывается сервисом после обновления текста.
+--- Вызывается сервисом (AlchemyTextContainerService) после обновления текста.
 --- @param textHeight number
 --------------------------------------------------------------------------------
 function WidgetPanel:UpdateSize( textHeight ) --- void
