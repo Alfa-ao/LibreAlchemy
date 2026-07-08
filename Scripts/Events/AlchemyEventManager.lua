@@ -12,7 +12,7 @@ Class( "AlchemyEventManager", {
 
 --------------------------------------------------------------------------------
 --- Инициализация и валидация зависимостей.
---- Принимает произвольное количество инстансов классов-обработчиков.
+--- Принимает произвольное количество классов-обработчиков.
 --- Проверяет, что каждый переданный объект реализует интерфейс EventClassInterface.
 --- @param ... table EventClassInterface
 --------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ function AlchemyEventManager:Init( ... ) --- void
         if InstanceOf( handler, _G.EventClassInterface ) then
             self._handlers[id] = handler
         else
-            -- Если интерфейс не реализован, выбрасываем критическую ошибку
+            -- Если интерфейс не реализован, выбрасываем ошибку
             local objectClass = GetParentClass( handler )
             local className = GetClassName( objectClass )
             
@@ -39,16 +39,15 @@ end
 -- Массовая регистрация / дерегистрация событий
 --------------------------------------------------------------------------------
 
--- Проходит по всем инициализированным обработчикам, извлекает их карты событий
--- и регистрирует их в нативном API.
+-- Проходит по всем инициализированным обработчикам и регистрирует.
 function AlchemyEventManager:RegisterAll() --- void
     for _, handler in ipairs( self._handlers ) do
-        -- Получаем таблицу соответствия { [EVENT_NAME] = handlerMethod }
+        -- Получаем таблицу { [EVENT_NAME] = handlerMethod, ... }
         local eventMap = handler:GetEventMap() 
         
         for eventName, method in pairs( eventMap ) do
-            -- Создаем замыкание (closure), чтобы "запомнить" контекст (handler) 
-            -- для корректного вызова метода с нужным self.
+            -- Создаем замыкание, чтобы "запомнить" контекст (handler) 
+            -- для возможности вызова метода с нужным self.
             local callback = function( ... )
                 return method( handler, ... )
             end
@@ -67,7 +66,7 @@ function AlchemyEventManager:UnRegisterAll() --- void
             common.UnRegisterEventHandler( method, eventName )
         end
     end
-    -- Полная очистка трекера
+    -- Очистка
     self._registeredEvents = {}
 end
 
@@ -75,14 +74,14 @@ end
 -- Работа с отдельными событиями
 --------------------------------------------------------------------------------
 
--- Регистрирует один конкретный обработчик события в нативном API и сохраняет его в трекер.
+-- Регистрирует один конкретный обработчик события и сохраняет его в трекер.
 function AlchemyEventManager:Register( eventName, method ) --- void
     -- Инициализируем массив для события, если его еще нет
     if not self._registeredEvents[eventName] then
         self._registeredEvents[eventName] = {}
     end
     
-    -- Сохраняем ссылку на callback для возможности последующей дерегистрации
+    -- Сохраняем ссылку на callback для возможности дерегистрации
     table.insert( self._registeredEvents[eventName], method )
     
     -- Регистрация
