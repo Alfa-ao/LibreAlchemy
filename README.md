@@ -2,13 +2,23 @@
 
 Аддон для помощи в Алхимии. Аллоды Онлайн.
 
-Addon to assist with Alchemy. Allods Online.
+Addon for help with Alchemy. Allods Online.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/Alfa-ao/LibreAlchemyV2/refs/heads/main/LibreAlchemyV2.png" width="300px">
 </p>
 
 ---
+
+### [v2.1.2-alpha.2](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.1.2-alpha.2)
++ **Изменения/Исправления**:
+  + Исправлена опечатка в имени локализации `NOT_FOUND_RECIPLES` на `NOT_FOUND_RECIPES`.
+  + Исправлена логика счётчиков заполненных слотов в обработчике события `EVENT_ALCHEMY_ITEM_PLACED`.
+  + Изменен `Debug`:
+    + Facade.lua - global function `log` - теперь корректно работает без `/Mods/Facade`.
+    + Счётчик слотов события `EVENT_ALCHEMY_ITEM_PLACED` дополнен логированием.
+    + Вынесены фасад-методы из класса в AlchemyInit.
+
 
 ### [v2.1.2-alpha](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.1.2-alpha)
 
