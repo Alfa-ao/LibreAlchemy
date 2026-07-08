@@ -2,11 +2,11 @@
 -- Scripts/UI/AlchemyTextFormatter.lua
 -- Форматировщик текста для вывода результатов алхимии.
 -- Отвечает за подготовку, сортировку и форматирование списка найденных рецептов
--- перед их выводом в текстовый контейнер (ouText) и в лог.
+-- перед их выводом в текстовый контейнер (ouText).
 --------------------------------------------------------------------------------
 
 Class( "AlchemyTextFormatter", {
-	_config        = nil,
+	_config        = nil, -- ? не используем тут
 	_services      = nil, -- Ссылка на контейнер сервисов (debug, locale, textContainer).
 	_widgetManager = nil,
 } )
@@ -29,36 +29,33 @@ function AlchemyTextFormatter:Init( config, widgetManager, services ) --- void
 end
 
 --------------------------------------------------------------------------------
---- Установить произвольный текст в контейнер и продублировать его в общий лог.
---- @param text string | WString | table
+--- Установить текст в контейнер.
+--- @param ... string | WString | ValuedText
 --------------------------------------------------------------------------------
-function AlchemyTextFormatter:SetText( text ) --- void
+function AlchemyTextFormatter:SetText( ... ) --- void
 	----------------------------------------
-	self._services.debug:LogGeneral( text )
+	self._services.debug:LogGeneral( ... )
 	----------------------------------------
 	
-	self._services.textContainer:SetLines( text )
+	self._services.textContainer:SetLines( ... )
 end
 
 --------------------------------------------------------------------------------
 --- Отобразить список найденных рецептов в текстовом контейнере.
 --- Выполняет форматирование и передает готовые ValuedText в сервис контейнера.
---- @param found table { 
----		recipe: table = { score: number, requiredComponents: table, name: string },
----		shifts: table = { 1,-1, 0, 0, 0 },
----		components: table }
+--- @param found table см. AlchemySearchService:FindBestRecipes
 --- @param maxDisplay number MAX_DISPLAY_RESULTS
 --- @param nDrums number 2-5
 --------------------------------------------------------------------------------
 function AlchemyTextFormatter:DisplayResults( found, maxDisplay, nDrums ) --- void
 	local linesData = self:FormatResults( found, maxDisplay, nDrums )
-	self._services.textContainer:SetLines( linesData )
+	self._services.textContainer:SetLines( table.unpack( linesData ) )
 end
 
 --------------------------------------------------------------------------------
 --- Отформатировать список найденных рецептов в массив объектов ValuedText.
 --- Результаты сортируются по убыванию уровня умения (score), при равенстве - по имени.
---- @param found table массив найденных результатов (содержит recipe и shifts).
+--- @param found table массив найденных результатов (см. AlchemySearchService:FindBestRecipes).
 --- @param maxDisplay number максимальное количество строк для отображения (ТОП-N).
 --- @param nDrums number количество барабанов (для вывода сдвигов).
 --- @return table linesData { ValuedText, ... }
@@ -72,7 +69,7 @@ function AlchemyTextFormatter:FormatResults( found, maxDisplay, nDrums )
 		return a.recipe.score > b.recipe.score
 	end )
 	
-	-- Получаем имя текущего рецепта через обертку виджета AlchemyV2
+	-- Получаем имя рецепта через обертку виджета AlchemyV2
     local currentRecipeName = self._widgetManager:
 		GetWidgetWrapper( "AlchemyV2" ):
 		GetCurrentRecipeName()
@@ -90,7 +87,7 @@ function AlchemyTextFormatter:FormatResults( found, maxDisplay, nDrums )
         local levelValue = foundResult.recipe.score
         local nameValue  = userMods.ToWString( foundResult.recipe.name )
 		
-		-- Красим только строку с соответсвующим зельем.
+		-- Красим только строку с нужным зельем.
         -- Если строка подходит под условие, оборачиваем значения в ValuedText с желтым цветом
         if currentRecipeName == foundResult.recipe.name then
 			-- Уровень зелья
@@ -129,7 +126,7 @@ end
 --------------------------------------------------------------------------------
 --- Разультат варки со сдвигами барабанов в одну строку для лога.
 --- Формат записи: score,shift1,shift2,shift3,shift4,shift5,name|score,shift1,...
---- @param found table массив найденных результатов (содержит recipe и shifts).
+--- @param found table массив найденных результатов (recipe и shifts).
 --- @param maxDisplay number максимальное количество строк для отображения (ТОП-N).
 --- @param nDrums number количество барабанов (для вывода сдвигов).
 --- @return string -- EVENT_ALCHEMY_REACTION_FINISHED:123,1,-1,0,0,0,зелье|123,...
