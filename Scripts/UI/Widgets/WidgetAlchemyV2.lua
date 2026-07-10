@@ -12,22 +12,20 @@ Class( "WidgetAlchemyV2", WidgetClassInterface() )
 --------------------------------------------------------------------------------
 function WidgetAlchemyV2:Init( widgetManager ) --- void
     self._widgetManager = widgetManager
+    self._widget        = common.GetAddonMainForm( self:GetWidgetName() )
 end
 
 --------------------------------------------------------------------------------
 -- Новый стиль окна с барабанами для Алхимии
 --------------------------------------------------------------------------------
 function WidgetAlchemyV2:InitCustomLayout() --- void
-    
-    local widget = _G.stateMainForm:
-        GetChildChecked( "AlchemyV2" ):
-        GetChildChecked( "RecipeList", true ):
-        GetChildChecked( "View" )
-    
 	-- AlchemyV2.MainFrame.Alchemy.Game.View.Rolls
-    local rolls = _G.stateMainForm:
-        GetChildChecked( "AlchemyV2" ):
-        GetChildChecked( "Rolls", true )
+    local rolls = self:GetNativeWidget():
+        GetChildChecked( "MainFrame" ):
+        GetChildChecked( "Alchemy" ):
+        GetChildChecked( "Game" ):
+        GetChildChecked( "View" ):
+        GetChildChecked( "Rolls" )
     
     local bars = {
         rolls:GetChildChecked( "Bar01" ),
@@ -81,8 +79,7 @@ end
 --- @return string -- Получить имя рецепта, выбранного в AlchemyV2 (в меню варки).
 --------------------------------------------------------------------------------
 function WidgetAlchemyV2:GetCurrentRecipeName()
-    local nameWidget = _G.stateMainForm:
-        GetChildChecked( "AlchemyV2" ):
+    local nameWidget = self:GetNativeWidget():
         GetChildChecked( "MainFrame" ):
         GetChildChecked( "Alchemy" ):
         GetChildChecked( "Game" ):
@@ -98,7 +95,7 @@ end
 --------------------------------------------------------------------------------
 --- @return userdata | table | nil
 function WidgetAlchemyV2:GetNativeWidget()
-    return nil
+    return self._widget
 end
 
 --- @return string
