@@ -58,13 +58,14 @@ end
 
 --------------------------------------------------------------------------------
 --- Возвращает точную пиксельную высоту текстового контента.
---- Использует внутренний __Content.
+--- Использует внутренний __Border -> __Content.
 --- @return number
 --------------------------------------------------------------------------------
 function WidgetOuText:GetExactTextHeight()
     self:ForceReposition()
     
-    local content = self._widget:GetChildChecked( "__Content", true )
+    local content = self._widget:GetChildChecked( "__Border" ):
+        GetChildChecked( "__Content" )
     local contentPlc = content:GetPlacementPlain()
     return contentPlc.posY + contentPlc.sizeY
 end
