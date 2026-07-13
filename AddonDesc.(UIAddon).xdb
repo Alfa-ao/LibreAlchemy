@@ -34,6 +34,10 @@
 		<!-- FrameWork: Создание класса / Инструменты для работы с классом -->
 		<Item href="/Mods/SampleCommon/CoreScripts/ClassesImplementation.lua" />
 		
+		<!-- Enum -->
+		<Item href="Libs/Enum/src/EnumFactory.lua" />
+		<Item href="Libs/Enum/src/Definitions/TakeItemActionType.lua" />
+		
 		<!-- Facade -->
 		<Item href="Scripts/Facade.lua" />
 		
