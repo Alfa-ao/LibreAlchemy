@@ -75,7 +75,7 @@ function AlchemyAvatarEvents:OnItemTaken( params ) --- void
 
     -- params.actionType == "ENUM_TakeItemActionType_Craft" предмет (скрафчен).
     -- self._state.reactionSuccess результат варки успешен ?
-    if params.actionType == "ENUM_TakeItemActionType_Craft" and self._state.reactionSuccess then
+    if params.actionType == EnumTakeItemActionType.CRAFT and self._state.reactionSuccess then
         -- Получаем информацию о созданном предмете по его ID.
         local info = itemLib.GetItemInfo( params.itemObject:GetId() )
         local potionName = userMods.FromWString( info.name )
