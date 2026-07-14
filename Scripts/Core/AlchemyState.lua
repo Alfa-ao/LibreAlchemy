@@ -24,9 +24,10 @@ Class( "AlchemyState", {
     -- Состояние слотов
     place = {
         placed = nil,           -- ?boolean - Флаг изменения состояния слота (true - положен, false - вынут).
-        readyNotFoundMessage = false, -- boolean - Флаг для отложенного вывода сообщения "Тут нет рецептов".
         count = 0,              -- number (int) - Текущее количество заполненных слотов.
     },
+    
+    taskRefs = {}               -- table - Хранилище ссылок на запланированные отложенные вызовы.
 } )
 
 --------------------------------------------------------------------------------
@@ -36,7 +37,6 @@ Class( "AlchemyState", {
 -- Сброс состояния слотов к начальным значениям.
 function AlchemyState:ResetPlace() --- void
     self.place.placed = nil
-    self.place.readyNotFoundMessage = false
     self.place.count = 0
 end
 --------------------------------------------------------------------------------
@@ -45,6 +45,8 @@ end
 function AlchemyState:ResetActive() --- void
     self.reactionSuccess = false -- Сбрасываем флаг успешной реакции
     self.active = false          -- Помечаем аддон как неактивный
+    
+    self:CancelAllDelayedCalls()
 end
 
 --------------------------------------------------------------------------------
@@ -61,4 +63,18 @@ end
 -- Сброс кэша всех доступных рецептов.
 function AlchemyState:ResetRecipeCache() --- void
     self.recipeCache = nil
+end
+
+--------------------------------------------------------------------------------
+-- Отмена всех запланированных отложенных вызовов и очистка хранилища ссылок.
+--------------------------------------------------------------------------------
+function AlchemyState:CancelAllDelayedCalls() --- void
+    for _, functionRef in pairs( self.taskRefs ) do
+        if functionRef ~= nil then
+            common.CancelDelayedCall( functionRef )
+        end
+    end
+    
+    -- Полная очистка таблицы ссылок
+    self.taskRefs = {}
 end
