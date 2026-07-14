@@ -81,15 +81,12 @@ textFormatter:Init( config, widgetManager, services )
 -- Каждый класс обработчиков отвечает за свою группу событий (EVENT_*).
 --------------------------------------------------------------------------------
 
--- Обработчик системных событий (EVENT_SECOND_TIMER).
-local systemEvents = AlchemySystemEvents() 
 -- Обработчик событий алхимии (EVENT_ALCHEMY_*).
 local alchemyEvents = AlchemyEvents()      
 -- Обработчик событий аватара (EVENT_AVATAR_*).
 local avatarEvents = AlchemyAvatarEvents() 
 
 -- Инициализация обработчиков событий.
-systemEvents:Init( state, config, textFormatter, services )
 alchemyEvents:Init( state, config, widgetManager, textFormatter, services )
 avatarEvents:Init( state, config, widgetManager, textFormatter, services )
 
@@ -97,7 +94,7 @@ avatarEvents:Init( state, config, widgetManager, textFormatter, services )
 -- Централизованный менеджер событий.
 --------------------------------------------------------------------------------
 local eventManager = AlchemyEventManager()
-eventManager:Init( systemEvents, alchemyEvents, avatarEvents )
+eventManager:Init( alchemyEvents, avatarEvents )
 eventManager:RegisterAll()
 
 --------------------------------------------------------------------------------
