@@ -10,6 +10,14 @@ Addon for help with Alchemy. Allods Online.
 
 ---
 
+### [v2.1.2-alpha.3](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.1.2-alpha.3)
++ Добавление запланированных задач `common.DelayedCall`, означает:
+  + `AlchemySystemEvents` - Полностью удалён. Вся логическая ответственность перешла и упрощена в `AlchemyEvents`.
+  + `AlchemyState` - Добавлена полная очистка запланированных вызовов.
+
++ Добавлена библиотека `EnumFactory`.
+---
+
 ### [v2.1.2-alpha.2](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.1.2-alpha.2)
 + **Изменения/Исправления**:
   + Исправлена опечатка в имени локализации `NOT_FOUND_RECIPLES` на `NOT_FOUND_RECIPES`.
