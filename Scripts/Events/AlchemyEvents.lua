@@ -68,6 +68,14 @@ function AlchemyEvents:OnStarted() --- void
     elseif self._state.messageType == self._config.MESSAGE_GREETINGS then
         self._text:SetText( self._services.locale:Get( "GREETINGS" ) )
     end
+    
+    self._state.taskRefs.funcAlchemyStarted = common.DelayedCall( 100, function()
+        if self._state.active then
+            self._state.messageType = self._config.MESSAGE_NORMAL
+        end
+        
+        self._state.taskRefs.funcAlchemyStarted = nil
+    end )
 end
 
 --------------------------------------------------------------------------------
@@ -113,49 +121,57 @@ function AlchemyEvents:OnItemPlaced( params ) --- void
         return userMods.FromWString( self._services.locale:Get( "DEBUG_REMOVED_BAR" ) )
     end, "Slot:", params.slot )
     ----------------------------------------
-
+    
     -- Обновляем состояние слотов
     self._state.place.placed = params.placed
-    self._state.place.readyNotFoundMessage = false
 
-    -- Если предмет вынут, сбрасываем счетчики и выходим
-    if not params.placed then
+    -- Логика подсчета заполненных слотов
+    if params.placed then
+        self._state.place.count = self._state.place.count + 1
+    else
         self._state.reactionSuccess = false
         self._state.place.count = self._state.place.count - 1
-        ----------------------------------------
-        self._services.debug:LogGeneral( "Count place:", self._state.place.count )
-        ----------------------------------------
-        
-        return
     end
     
-    -- Увеличиваем счетчик заполненных слотов
-    self._state.place.count = self._state.place.count + 1
     ----------------------------------------
     self._services.debug:LogGeneral( "Count place:", self._state.place.count )
     ----------------------------------------
-    ---
+    
     -- Если сейчас не стандартный режим отображения, не обновляем текст
+    -- Автоматически переключится. См. (AlchemyEvents:OnStarted)
     if self._state.messageType ~= self._config.MESSAGE_NORMAL then return end
-
-    -- Если мы не варим, пытаемся оценить возможные рецепты
-    if not self._state.reactionSuccess then
-        -- Получаем кол-во возможных рецептов (countRecipe) и кол-во требуемых слотов (filledDrumsCount)
-        local countRecipe, filledDrumsCount = self._services.recipe:CountPotential()
+    
+    
+    local funcGetMessage = function()
+        self._state.taskRefs.funcAlchemyItemPlaced = nil
         
-        
-        
-        -- Если все слоты заполнены и есть подходящие рецепты
-        if countRecipe > 0 and self._state.place.count == filledDrumsCount then
-            -- Конвертируем шаблон в локальную строку.
-            -- "Возможно, есть рецепты: %d шт."
-            local templateCountRecipes = userMods.FromWString( self._services.locale:Get( "COUNT_RECIPES" ) )
-            self._text:SetText( string.format( templateCountRecipes, countRecipe ) )
-        -- Если все слоты пройдены, но подходящих рецептов нет
-        elseif self._state.place.count == filledDrumsCount then
-            self._text:SetText( self._services.locale:Get( "COMPONENTS_NOT_READY" ) )
+        -- Если мы не варим, пытаемся оценить возможные рецепты
+        if not self._state.reactionSuccess then
+            -- Получаем кол-во возможных рецептов (countRecipe) и кол-во требуемых слотов (filledDrumsCount)
+            local countRecipe, filledDrumsCount = self._services.recipe:CountPotential()
+            
+            -- Если все слоты заполнены и есть подходящие рецепты
+            if countRecipe > 0 then
+                -- Конвертируем шаблон в строку для форматирования. "Возможно, есть рецепты: %d шт."
+                local templateCountRecipes = userMods.FromWString( self._services.locale:Get( "COUNT_RECIPES" ) )
+                self._text:SetText( string.format( templateCountRecipes, countRecipe ) )
+            -- Если до сих пор рецептов нет, но слоты частично заполнены
+            elseif self._state.place.count > 0 then
+                self._text:SetText( self._services.locale:Get( "COMPONENTS_NOT_READY" ) )
+            -- Ни одного слота не заполнено
+            else
+                self._text:SetText( self._services.locale:Get( "NOT_FOUND_RECIPES" ) )
+            end
         end
     end
+    
+    -- Отменяем предыдущий таймер, если он уже был запланирован
+    if self._state.taskRefs.funcAlchemyItemPlaced ~= nil then
+        common.CancelDelayedCall( self._state.taskRefs.funcAlchemyItemPlaced )
+    end
+
+    -- Планируем новый отложенный вызов и сохраняем его идентификатор
+    self._state.taskRefs.funcAlchemyItemPlaced = common.DelayedCall( 100, funcGetMessage )
 end
 
 --------------------------------------------------------------------------------
