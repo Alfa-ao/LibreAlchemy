@@ -34,7 +34,7 @@ function AlchemyTextContainerService:SetLines( ... ) --- void
 	-- Последовательно добавляем строки в контейнер
 	for _, line in ipairs( linesArray ) do
         if type( line ) == "string" then
-            line = userMods.ToWString( line )
+            -- line = userMods.ToWString( line ) -- Deprecated Более не юзабелен в аддоне
         end
         
 		ouTextWrapper:PushBackText( line )
