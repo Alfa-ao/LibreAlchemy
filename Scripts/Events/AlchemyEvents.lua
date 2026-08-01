@@ -152,9 +152,13 @@ function AlchemyEvents:OnItemPlaced( params ) --- void
             
             -- Если все слоты заполнены и есть подходящие рецепты
             if countRecipe > 0 then
-                -- Конвертируем шаблон в строку для форматирования. "Возможно, есть рецепты: %d шт."
-                local templateCountRecipes = userMods.FromWString( self._services.locale:Get( "COUNT_RECIPES" ) )
-                self._text:SetText( string.format( templateCountRecipes, countRecipe ) )
+                -- Сопоставляется локализованный шаблон со значением и пушится в текстовый контейнер
+                local vtCountRecipes = common.CreateValuedText{
+                    format = self._services.locale:Get( "COUNT_RECIPES" ),
+                    count = countRecipe,
+                }
+                
+                self._text:SetText( vtCountRecipes )
             -- Если до сих пор рецептов нет, но слоты частично заполнены
             elseif self._state.place.count > 0 then
                 self._text:SetText( self._services.locale:Get( "COMPONENTS_NOT_READY" ) )
