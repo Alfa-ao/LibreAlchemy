@@ -43,12 +43,9 @@ end
 --------------------------------------------------------------------------------
 -- Обработчик события EVENT_AVATAR_CREATED.
 -- Выполняется при входе персонажа в игру. 
--- Инициализирует локализацию и кастомный UI.
+-- Инициализирует кастомный UI.
 --------------------------------------------------------------------------------
 function AlchemyAvatarEvents:OnAvatarCreated() --- void
-    -- Инициализация сервиса локализации.
-    self._services.locale:Init()
-    
     -- Применение кастомного расположения элементов окна алхимии (если включено в конфиге).
     if self._config.ENABLE_CUSTOM_LAYOUT then
         self._ui:GetWidgetWrapper( "AlchemyV2" ):InitCustomLayout()
@@ -84,7 +81,8 @@ function AlchemyAvatarEvents:OnItemTaken( params ) --- void
         local count = itemLib.GetStackInfo( params.itemObject:GetId() ).count
         
         -- Формируем и выводим локализованное сообщение о получении предмета.
-        self._text:SetText( self._services.locale:Get( "AVATAR_ITEM_TAKEN" ),
+        self._text:SetText( 
+            self._services.locale:Get( "AVATAR_ITEM_TAKEN" ), -- WString("Поздравляю! Вы получаете:")
             string.format( "[%s]x%d", potionName, count )
         )
         
