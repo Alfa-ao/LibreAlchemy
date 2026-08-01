@@ -29,22 +29,27 @@ local mathUtils = MathUtils()
 --------------------------------------------------------------------------------
 local services = { 
     -- Сервис для отладки и логирования. Принимает настройки из конфига.
-    debug = AlchemyDebugService(),                 
+    debug = AlchemyDebugService(),
     -- Сервис локализации. Отвечает за получение текстов на нужном языке (ENG, RUS).
-    locale = AlchemyLocaleService(),               
+    locale = AlchemyLocaleService(),
+    -- Сервис шаблонов. Отвечает за получение шаблоных блоков HTML.
+    template = AlchemyTemplateService(),
     -- Сервис работы с рецептами. Кэширует, фильтрует и подсчитывает возможные рецепты.
-    recipe = AlchemyRecipeService(),               
+    recipe = AlchemyRecipeService(),
     -- Сервис поиска возможных рецептов с учетом сдвигов барабанов (коррекций).
-    search = AlchemySearchService(),               
+    search = AlchemySearchService(),
     -- Сервис для управления текстовым контейнером.
     textContainer = AlchemyTextContainerService(), 
 }
 
+-- Инициализация сервисов.
 services.debug:Init( {
     GENERAL  = config.DEBUG,           -- Общая логика аддона.
     REACTION = config.DEBUG_REACTION,  -- Логирование реакций.
 } )
 services.recipe:Init( state )
+services.locale:Init()
+services.template:Init()
 
 --------------------------------------------------------------------------------
 -- Инициализация подсистемы поиска.
@@ -74,7 +79,7 @@ widgetManager:Init( WidgetOuText(), WidgetDnD(), WidgetAlchemyV2(), WidgetPanel(
 
 -- Форматировщик текста: подготавливает данные для вывода в UI, форматирует строки рецептов.
 local textFormatter = AlchemyTextFormatter()
-textFormatter:Init( config, widgetManager, services )
+textFormatter:Init( widgetManager, services )
 
 --------------------------------------------------------------------------------
 -- Создание и инициализация обработчиков системных и игровых событий.
