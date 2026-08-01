@@ -59,6 +59,7 @@
 		
 		<!-- Services (Сервисы) -->
 		<Item href="Scripts/Services/AlchemyDebugService.lua" />
+		<Item href="Scripts/Services/AlchemyTemplateService.lua" />
 		<Item href="Scripts/Services/AlchemyLocaleService.lua" />
 		<Item href="Scripts/Services/AlchemyRecipeService.lua" />
 		<Item href="Scripts/Services/AlchemySearchService.lua" />
@@ -89,11 +90,15 @@
 	<textsGroups>
 		<Item>
 			<groupName>rus</groupName>
-			<texts href="Locales/rus/Locale.(UIRelatedTexts).xdb"/>
+			<texts href="Locales/lang/rus/Locale.(UIRelatedTexts).xdb"/>
 		</Item>
 		<Item>
 			<groupName>eng</groupName>
-			<texts href="Locales/eng/Locale.(UIRelatedTexts).xdb"/>
+			<texts href="Locales/lang/eng/Locale.(UIRelatedTexts).xdb"/>
+		</Item>
+		<Item>
+			<groupName>template</groupName>
+			<texts href="Locales/template/Locale.(UIRelatedTexts).xdb"/>
 		</Item>
 	</textsGroups>
 </UIAddon>
