@@ -21,7 +21,7 @@ function AlchemyTextFormatter:Init( widgetManager, services ) --- void
     
     -- Передаем весь менеджер виджетов в сервис текстового контейнера
     self._services.textContainer:Init( widgetManager )
-	-- Выводим в контейнер имя аддона как текст по умолчанию
+	-- Вывод в контейнер имя аддона как текст по умолчанию
 	self._services.textContainer:SetSingleLine( common.GetAddonName() )
 end
 
@@ -87,7 +87,7 @@ function AlchemyTextFormatter:FormatResults( found, maxDisplay, drumsCount )
         local levelValue = foundResult.recipe.score
         local nameValue  = userMods.ToWString( foundResult.recipe.name )
 		
-		-- Красим только строку с нужным зельем.
+		-- Красим только строку с конкретным зельем.
         -- Если строка подходит под условие, оборачиваем значения в ValuedText с желтым цветом
         if currentRecipeName == foundResult.recipe.name then
 			-- Уровень зелья
@@ -112,7 +112,7 @@ function AlchemyTextFormatter:FormatResults( found, maxDisplay, drumsCount )
         
         -- Заполняем параметры сдвигов для каждого барабана (bulb1, bulb2, ...)
         for drumIndex = 1, drumsCount do
-			-- Инвертируем сдвиг для отображения и форматируем "% d"
+			-- Форматируем сдвиг для отображения "% d"
             textValues[ "bulb" .. drumIndex ] = userMods.ToWString( string.format( "% d", -foundResult.shifts[ drumIndex ] ) )
         end
 
