@@ -57,9 +57,9 @@ services.template:Init()
 --------------------------------------------------------------------------------
 
 -- Маппер сдвигов барабанов: определяет, какие компоненты доступны при разных сдвигах.
-local drumShiftMapper = DrumShiftMapper()             
+local drumShiftMapper = DrumShiftMapper()
 -- Алгоритм поиска (Backtracking).
-local searchAlgorithm = BacktrackingSearchAlgorithm() 
+local searchAlgorithm = BacktrackingSearchAlgorithm()
 
 -- Связывание компонентов подсистемы поиска.
 drumShiftMapper:Init( state, services.recipe, mathUtils )
@@ -75,7 +75,7 @@ services.search:Init( state, services.recipe, drumShiftMapper, searchAlgorithm )
 -- Менеджер виджетов управляет отображением, скрытием и получением нативных виджетов.
 local widgetManager = AlchemyWidgetManager()
 -- Передаем обертки над нативными виджетами: текстовый контейнер, Drag&Drop зона, барабаны алхимии.
-widgetManager:Init( WidgetOuText(), WidgetDnD(), WidgetAlchemyV2(), WidgetPanel() ) 
+widgetManager:Init( WidgetOuText(), WidgetDnD(), WidgetAlchemyV2(), WidgetPanel() )
 
 -- Форматировщик текста: подготавливает данные для вывода в UI, форматирует строки рецептов.
 local textFormatter = AlchemyTextFormatter()
@@ -87,9 +87,9 @@ textFormatter:Init( widgetManager, services )
 --------------------------------------------------------------------------------
 
 -- Обработчик событий алхимии (EVENT_ALCHEMY_*).
-local alchemyEvents = AlchemyEvents()      
+local alchemyEvents = AlchemyEvents()
 -- Обработчик событий аватара (EVENT_AVATAR_*).
-local avatarEvents = AlchemyAvatarEvents() 
+local avatarEvents = AlchemyAvatarEvents()
 
 -- Инициализация обработчиков событий.
 alchemyEvents:Init( state, config, widgetManager, textFormatter, services )
