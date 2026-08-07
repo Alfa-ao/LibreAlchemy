@@ -5,20 +5,21 @@
 
 Class( "AlchemyWidgetManager", {
 	_mainForm = nil,  -- Ссылка на главную форму аддона (mainForm).
-	_widgets = {},    -- Хеш-таблица зарегистрированных виджетов-оберток { ["widgetName"] = WidgetClassInterface }.
+	_widgets = nil,   -- Хеш-таблица зарегистрированных виджетов-оберток { ["widgetName"] = WidgetClassInterface }.
+	_services = nil   -- Сервисы
 } )
 
 --------------------------------------------------------------------------------
 --- Инициализация менеджера виджетов.
 --- Принимает произвольное количество экземпляров виджетов, сортирует их по
 --- приоритету инициализации и регистрирует в менеджере.
---- @param ... table WidgetClassInterface
+--- @param widgets table WidgetClassInterface
+--- @param services table Сервисы
 --------------------------------------------------------------------------------
-function AlchemyWidgetManager:Init( ... ) --- void
+function AlchemyWidgetManager:Init( widgets, services ) --- void
 	self._mainForm = _G.mainForm
 	self._widgets = {}
-	
-	local widgets = { ... }
+	self._services = services
 	
 	-- Сортировка виджетов по убыванию приоритета (чем больше число, тем раньше инициализируется)
 	table.sort( widgets, function( widgetA, widgetB )
@@ -46,6 +47,14 @@ function AlchemyWidgetManager:Init( ... ) --- void
 			) )
 		end
 	end
+end
+
+--------------------------------------------------------------------------------
+--- Получить сервисы.
+--- @return table
+--------------------------------------------------------------------------------
+function AlchemyWidgetManager:GetServices()
+	return self._services
 end
 
 --------------------------------------------------------------------------------
