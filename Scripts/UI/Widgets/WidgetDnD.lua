@@ -12,6 +12,7 @@ Class( "WidgetDnD", WidgetClassInterface() )
 --------------------------------------------------------------------------------
 function WidgetDnD:Init( widgetManager ) --- void
 	self._widgetManager = widgetManager
+    self._services = self._widgetManager:GetServices()
 end
 
 --------------------------------------------------------------------------------
@@ -21,12 +22,13 @@ end
 function WidgetDnD:InitDragAndDrop()
     -- Получаем обертку над Panel через менеджер
     local panelWrapper = self._widgetManager:GetWidgetWrapper( "panel" )
-
-    if rawget( _G, "DnD" ) and panelWrapper then
-        -- Инициализируем Drag & Drop для Panel
-        _G.DnD.Init( panelWrapper:GetNativeWidget() )
+    
+    if self._services.dnd then
+        self._services.dnd:Register( panelWrapper:GetNativeWidget(), { Cursor = "drag" } )
+        
         return true
     end
+    
     return false
 end
 
