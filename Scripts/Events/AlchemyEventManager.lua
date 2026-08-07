@@ -6,24 +6,26 @@
 --------------------------------------------------------------------------------
 
 Class( "AlchemyEventManager", {
-    _handlers = {},          -- table - Массив зарегистрированных обработчиков (инстансов EventClassInterface).
-    _registeredEvents = {},  -- table - Трекер зарегистрированных событий. Структура: { [eventName] = { callback1, callback2, ... } }.
+    _handlers         = {}, -- table - Массив зарегистрированных обработчиков (инстансов EventClassInterface).
+    _registeredEvents = {}, -- table - Трекер зарегистрированных событий. Структура: { [eventName] = { callback1, callback2, ... } }.
 })
 
 --------------------------------------------------------------------------------
 --- Инициализация и валидация зависимостей.
 --- Принимает произвольное количество классов-обработчиков.
 --- Проверяет, что каждый переданный объект реализует интерфейс EventClassInterface.
---- @param ... table EventClassInterface
+--- @param handlers table EventClassInterface
+--- @param context table { state, config, widgetManager, textFormatter, services }
 --------------------------------------------------------------------------------
-function AlchemyEventManager:Init( ... ) --- void
-    local handlers = { ... }
+function AlchemyEventManager:Init( handlers, context )
     for id, handler in ipairs( handlers ) do
         -- Проверка на реализацию интерфейса
         if InstanceOf( handler, _G.EventClassInterface ) then
+            handler:Init( table.unpack( context ) )
+            
             self._handlers[id] = handler
         else
-            -- Если интерфейс не реализован, выбрасываем ошибку
+            -- Если интерфейс не реализован, выбрасывает ошибку
             local objectClass = GetParentClass( handler )
             local className = GetClassName( objectClass )
             
@@ -42,11 +44,11 @@ end
 -- Проходит по всем инициализированным обработчикам и регистрирует.
 function AlchemyEventManager:RegisterAll() --- void
     for _, handler in ipairs( self._handlers ) do
-        -- Получаем таблицу { [EVENT_NAME] = handlerMethod, ... }
+        -- Получает таблицу { [EVENT_NAME] = handlerMethod, ... }
         local eventMap = handler:GetEventMap() 
         
         for eventName, method in pairs( eventMap ) do
-            -- Создаем замыкание, чтобы "запомнить" контекст (handler) 
+            -- Создает замыкание, чтобы "запомнить" контекст (handler) 
             -- для возможности вызова метода с нужным self.
             local callback = function( ... )
                 return method( handler, ... )
@@ -76,12 +78,12 @@ end
 
 -- Регистрирует один конкретный обработчик события и сохраняет его в трекер.
 function AlchemyEventManager:Register( eventName, method ) --- void
-    -- Инициализируем массив для события, если его еще нет
+    -- Инициализирует массив для события, если его еще нет
     if not self._registeredEvents[eventName] then
         self._registeredEvents[eventName] = {}
     end
     
-    -- Сохраняем ссылку на callback для возможности дерегистрации
+    -- Сохраняет ссылку на callback для возможности дерегистрации
     table.insert( self._registeredEvents[eventName], method )
     
     -- Регистрация
@@ -95,7 +97,7 @@ function AlchemyEventManager:UnRegister( eventName, method ) --- void
     local handlers = self._registeredEvents[eventName]
     if not handlers then return end
 
-    -- Ищем обработчик в массиве и удаляем его
+    -- Ищет обработчик в массиве и удаляет его
     for i = #handlers, 1, -1 do
         if handlers[i] == method then
             table.remove( handlers, i )
