@@ -18,7 +18,7 @@ function AlchemyDebugService:LogReaction( ... ) self:Log( "REACTION", ... ) end
 -- Конфигурация хранит константы и настройки, состояние - изменяемые данные во время работы.
 local config = AlchemyConfig()
 local state  = AlchemyState()
--- Устанавливаем начальное состояние UI: при первом входе показываем приветственное сообщение
+-- Устанавливает начальное состояние UI: при первом входе показывает приветственное сообщение
 state.messageType = config.MESSAGE_GREETINGS
 
 -- Инициализация вспомогательных утилит.
@@ -39,7 +39,9 @@ local services = {
     -- Сервис поиска возможных рецептов с учетом сдвигов барабанов (коррекций).
     search = AlchemySearchService(),
     -- Сервис для управления текстовым контейнером.
-    textContainer = AlchemyTextContainerService(), 
+    textContainer = AlchemyTextContainerService(),
+    -- Drag&Drop менеджер.
+    dnd = DnDManager(),
 }
 
 -- Инициализация сервисов.
@@ -50,6 +52,7 @@ services.debug:Init( {
 services.recipe:Init( state )
 services.locale:Init()
 services.template:Init()
+services.dnd:Init( { autoRegisterEvents = false } ) -- autoRegisterEvents = false отменяет автоматическую регистрацию, в пользу ручного.
 
 --------------------------------------------------------------------------------
 -- Инициализация подсистемы поиска.
@@ -74,32 +77,21 @@ services.search:Init( state, services.recipe, drumShiftMapper, searchAlgorithm )
 
 -- Менеджер виджетов управляет отображением, скрытием и получением нативных виджетов.
 local widgetManager = AlchemyWidgetManager()
--- Передаем обертки над нативными виджетами: текстовый контейнер, Drag&Drop зона, барабаны алхимии.
-widgetManager:Init( WidgetOuText(), WidgetDnD(), WidgetAlchemyV2(), WidgetPanel() )
+-- Передача обертки над нативными виджетами: текстовый контейнер, Drag&Drop зона, барабаны алхимии.
+widgetManager:Init( { WidgetOuText(), WidgetDnD(), WidgetAlchemyV2(), WidgetPanel() }, services )
 
 -- Форматировщик текста: подготавливает данные для вывода в UI, форматирует строки рецептов.
 local textFormatter = AlchemyTextFormatter()
 textFormatter:Init( widgetManager, services )
 
 --------------------------------------------------------------------------------
--- Создание и инициализация обработчиков системных и игровых событий.
--- Каждый класс обработчиков отвечает за свою группу событий (EVENT_*).
---------------------------------------------------------------------------------
-
--- Обработчик событий алхимии (EVENT_ALCHEMY_*).
-local alchemyEvents = AlchemyEvents()
--- Обработчик событий аватара (EVENT_AVATAR_*).
-local avatarEvents = AlchemyAvatarEvents()
-
--- Инициализация обработчиков событий.
-alchemyEvents:Init( state, config, widgetManager, textFormatter, services )
-avatarEvents:Init( state, config, widgetManager, textFormatter, services )
-
---------------------------------------------------------------------------------
 -- Централизованный менеджер событий.
 --------------------------------------------------------------------------------
 local eventManager = AlchemyEventManager()
-eventManager:Init( alchemyEvents, avatarEvents )
+eventManager:Init( 
+    { AlchemyEvents(), AlchemyAvatarEvents(), AlchemyPosEvents(), AlchemyDNDEvents() },
+    { state, config, widgetManager, textFormatter, services }
+)
 eventManager:RegisterAll()
 
 --------------------------------------------------------------------------------
