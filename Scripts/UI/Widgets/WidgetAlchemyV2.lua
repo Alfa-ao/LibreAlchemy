@@ -76,7 +76,7 @@ function WidgetAlchemyV2:InitCustomLayout() --- void
 end
 
 --------------------------------------------------------------------------------
---- @return string -- Получить имя рецепта, выбранного в AlchemyV2 (в меню варки).
+--- @return WString -- Получить имя рецепта, выбранного в AlchemyV2 (в меню варки).
 --------------------------------------------------------------------------------
 function WidgetAlchemyV2:GetCurrentRecipeName()
     local nameWidget = self:GetNativeWidget():
@@ -87,7 +87,7 @@ function WidgetAlchemyV2:GetCurrentRecipeName()
         GetChildChecked( "Recipe" ):
         GetChildChecked( "Name" )
 
-    return nameWidget and userMods.FromWString( nameWidget:GetWString() ) or ""
+    return nameWidget and nameWidget:GetWString() or userMods.ToWString( "" )
 end
 
 --------------------------------------------------------------------------------
