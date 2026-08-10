@@ -89,7 +89,7 @@ function AlchemyTextFormatter:FormatResults( found, maxDisplay, drumsCount )
 		
 		-- Красим только строку с конкретным зельем.
         -- Если строка подходит под условие, оборачиваем значения в ValuedText с желтым цветом
-        if currentRecipeName == foundResult.recipe.name then
+        if currentRecipeName == nameValue then
 			-- Уровень зелья
             levelValue = common.CreateValuedText( {
                 format = colorYellowtextFormat,
