@@ -52,7 +52,7 @@ function AlchemyAvatarEvents:OnAvatarCreated() --- void
     end
     
     -- Попытка инициализации библиотеки Drag&Drop для перетаскивания окна.
-    local dndWidgetWrapper = self._ui:GetWidgetWrapper( "Drag&Drop" )
+    local dndWidgetWrapper = self._ui:GetWidgetWrapper( "dnd" )
     
     if not dndWidgetWrapper or not dndWidgetWrapper:InitDragAndDrop() then
         -- Сохраним до лучших времен:
