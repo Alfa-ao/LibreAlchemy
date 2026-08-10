@@ -24,7 +24,7 @@ function WidgetDnD:InitDragAndDrop()
     local panelWrapper = self._widgetManager:GetWidgetWrapper( "panel" )
     
     if self._services.dnd then
-        self._services.dnd:Register( panelWrapper:GetNativeWidget(), { Cursor = "drag" } )
+        self._services.dnd:Register( panelWrapper:GetNativeWidget(), { cursor = "drag" } )
         
         return true
     end
@@ -37,15 +37,13 @@ end
 --- @return string
 --------------------------------------------------------------------------------
 function WidgetDnD:GetWidgetName()
-	return "Drag&Drop"
+	return "dnd"
 end
 
 --------------------------------------------------------------------------------
 --- Получить ссылку на связанный объект.
---- В данном случае возвращает глобальную таблицу библиотеки LibDnD, если она загружена.
 --- @return userdata | table | nil
 --------------------------------------------------------------------------------
 function WidgetDnD:GetNativeWidget()
-	-- возвращает таблицу библиотеки DnD, а не стандартный RawWidget
-	return rawget( _G, "DnD" ) and _G.DnD or nil
+	return nil
 end
