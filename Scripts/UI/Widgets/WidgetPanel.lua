@@ -1,18 +1,18 @@
 --------------------------------------------------------------------------------
 -- UI/Widgets/WidgetPanel.lua
 -- Обертка над нативной панелью (Panel).
--- Отвечает за фоновую текстуру, глобальное позиционирование, динамическое изменение размеров.
+-- Отвечает за позиционирование, динамическое изменение размеров.
 --------------------------------------------------------------------------------
 
 Class( "WidgetPanel", WidgetClassInterface() )
 
 --------------------------------------------------------------------------------
 --- Инициализация виджета.
---- @param widgetManager table - экземпляр класса AlchemyWidgetManager
+--- @param context table - экземпляр класса AlchemyContext
 --------------------------------------------------------------------------------
-function WidgetPanel:Init( widgetManager ) --- void
-    self._widgetManager = widgetManager
-    self._widget = widgetManager:GetMainForm():GetChildChecked( "Panel" )
+function WidgetPanel:Init( context ) --- void
+    self._widgetManager = context:GetWidgetManager()
+    self._widget = self._widgetManager:GetMainForm():GetChildChecked( "Panel" )
 
     -- Получаем параметры виртуального экрана
     local pco = common.GetPosConverterParams()
