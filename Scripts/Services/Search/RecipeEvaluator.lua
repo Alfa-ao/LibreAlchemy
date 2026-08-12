@@ -23,11 +23,11 @@ function RecipeEvaluator:FindBestRecipe( componentMap, filteredRecipes )
 	local bestRecipe = nil
 	local bestScore = -1
 
-	-- Перебираем все подходящие по базовым компонентам рецепты
+	-- Перебирает все подходящие по базовым компонентам рецепты
 	for _, recipe in pairs( filteredRecipes ) do
 		local isMatch = true
 		
-		-- Проверяем, хватает ли накопленных компонентов для данного рецепта
+		-- Проверяет, хватает ли накопленных компонентов для данного рецепта
 		for componentName, requiredCount in pairs( recipe.requiredComponents ) do
 			if ( componentMap[ componentName ] or 0 ) < requiredCount then
 				isMatch = false
@@ -35,7 +35,7 @@ function RecipeEvaluator:FindBestRecipe( componentMap, filteredRecipes )
 			end
 		end
 		
-		-- Если рецепт полностью собирается и его score выше текущего максимума, сохраняем его
+		-- Если рецепт полностью собирается и его score выше текущего максимума, сохраняет его
 		if isMatch and recipe.score > bestScore then
 			bestRecipe = recipe
 			bestScore = recipe.score
