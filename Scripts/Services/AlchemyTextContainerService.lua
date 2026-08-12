@@ -40,8 +40,7 @@ function AlchemyTextContainerService:SetLines( ... ) --- void
 		ouTextWrapper:PushBackText( line )
 	end
 	
-    -- Дополнительно:
-	-- Узнаем точную высоту текста и заставляем Panel подстроиться
+	-- Узнает точную высоту текста и заставляем Panel подстроиться
     local exactHeight = ouTextWrapper:GetExactTextHeight()
     panelWrapper:UpdateSize( exactHeight )
 end
