@@ -1,18 +1,17 @@
 --------------------------------------------------------------------------------
 -- UI/Widgets/WidgetDnD.lua
 -- Обертка над виджетом для интеграции с библиотекой Drag & Drop (LibDnD).
--- Отвечает за инициализацию механизма перетаскивания для окна с подсказкой.
 --------------------------------------------------------------------------------
 
 Class( "WidgetDnD", WidgetClassInterface() )
 
 --------------------------------------------------------------------------------
 --- Инициализация виджета.
---- @param widgetManager table - экземпляр класса AlchemyWidgetManager
+--- @param context table - экземпляр класса AlchemyContext
 --------------------------------------------------------------------------------
-function WidgetDnD:Init( widgetManager ) --- void
-	self._widgetManager = widgetManager
-    self._services = self._widgetManager:GetServices()
+function WidgetDnD:Init( context ) --- void
+	self._widgetManager = context:GetWidgetManager()
+    self._services      = context:GetServices()
 end
 
 --------------------------------------------------------------------------------
@@ -24,7 +23,7 @@ function WidgetDnD:InitDragAndDrop()
     local panelWrapper = self._widgetManager:GetWidgetWrapper( "panel" )
     
     if self._services.dnd then
-        self._services.dnd:Register( panelWrapper:GetNativeWidget(), { cursor = "drag" } )
+        self._services.dnd:Register( panelWrapper:GetNativeWidget() )
         
         return true
     end
