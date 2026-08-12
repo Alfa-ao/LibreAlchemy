@@ -8,10 +8,10 @@ Class( "WidgetAlchemyV2", WidgetClassInterface() )
 
 --------------------------------------------------------------------------------
 --- Инициализация виджета
---- @param widgetManager table - экземпляр класса AlchemyWidgetManager
+--- @param context table - экземпляр класса AlchemyContext
 --------------------------------------------------------------------------------
-function WidgetAlchemyV2:Init( widgetManager ) --- void
-    self._widgetManager = widgetManager
+function WidgetAlchemyV2:Init( context ) --- void
+    self._widgetManager = context:GetWidgetManager()
     self._widget        = common.GetAddonMainForm( self:GetWidgetName() )
 end
 
