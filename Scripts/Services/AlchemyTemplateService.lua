@@ -24,6 +24,6 @@ function AlchemyTemplateService:Get( key )
 		return self._group:GetText( key )
 	end
 	
-	-- Если ключ не найден, выбрасываем ошибку с указанием отсутствующего ключа
+	-- Если ключ не найден, выбрасывает ошибку с указанием отсутствующего ключа
 	error( string.format( "AlchemyTemplateService: Template key '%s' not found in text group.", tostring( key ) ) )
 end
