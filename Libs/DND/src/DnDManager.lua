@@ -20,7 +20,6 @@ Class( "DnDManager", {
 
 
 
-
 --------------------------------------------------------------------------------
 --- Инициализация менеджера.
 --- @param params table|nil
@@ -42,6 +41,11 @@ function DnDManager:Init( params )
         -- nil: использовать дефолтный конфиг.
         -- table: использовать кастомный configProvider.
         configProvider = nil,
+        
+        -- Курсор по умолчанию для виджетов, у которых cursor не задан явно.
+        defaultCursor = type( params.defaultCursor ) == "string"
+            and params.defaultCursor
+            or "default",
     }
     
     if type( params.configProvider ) == "table" then
@@ -95,6 +99,11 @@ end
 --- @return number dndId ID зарегистрированного виджета.
 --------------------------------------------------------------------------------
 function DnDManager:Register( wtMovable, options )
+    assert(
+        self._initialized,
+        "DnDManager:Register() failed: call DnDManager:Init() before registering widgets"
+    )
+    
     self:_ValidateWidget( wtMovable, "wtMovable" ) -- всемогучая проверочка "это виджет?"
     
     options = options or {}
@@ -114,6 +123,10 @@ function DnDManager:Register( wtMovable, options )
             tostring( dndId )
         ) )
     end
+    
+    local cursor = type( options.cursor ) == "string"
+            and options.cursor
+            or self._options.defaultCursor
 
     local info = {
         dndId = dndId,
@@ -123,7 +136,7 @@ function DnDManager:Register( wtMovable, options )
         saveToConfig = options.saveToConfig == true,              -- По умолчанию false.
         lockedToParentArea = options.lockedToParentArea ~= false, -- По умолчанию true.
         kbFlag = type( options.kbFlag ) == "number" and options.kbFlag or false,     -- По умолчанию false. Ограничения отключены.
-        cursor = type( options.cursor ) == "string" and options.cursor or "default", -- По умолчанию "default". Имена в нижнем регистре.
+        cursor = cursor,                                          -- По умолчанию "default". Имена в нижнем регистре.
         padding = self:_NormalizePadding( options.padding ),      -- { T, R, B, L }
         configName = nil,
     }
@@ -136,9 +149,6 @@ function DnDManager:Register( wtMovable, options )
     -- Сохраняет начальное положение после применения конфига.
     info.initialPlacement = wtMovable:GetPlacementPlain()
     
-    self._widgets[ dndId ] = info
-
-    
     local currentDNDState = options.wtReacting:DNDGetState()
     
     -- Вдруг виджет в момент регистрации находится в состоянии DND_STATE_DRAGGING или DND_STATE_WAIT_DROP_CONFIRMATION
@@ -146,22 +156,19 @@ function DnDManager:Register( wtMovable, options )
         options.wtReacting:DNDCancelDrag()
     end
     
+    -- Если виджет уже зарегистрирован в DND-системе, но не менеджером.
     if options.wtReacting:DNDGetState() ~= DND_STATE_NOT_REGISTERED then
-        options.wtReacting:DNDUnregister()
+        error( string.format(
+            "DnDManager:Register() failed: widget is already registered in DND system outside manager, dndId = %s, state = %s",
+            tostring( dndId ),
+            tostring( currentDNDState )
+        ) )
     end
     
     -- isDragOnly = true.
     options.wtReacting:DNDRegister( dndId, true )
     
-    -- На будущее:
-    -- Убрать DNDUnregister
-    --[[ if options.wtReacting:DNDGetState() == DND_STATE_NOT_REGISTERED then
-        options.wtReacting:DNDRegister( dndId, true )
-        
-        return dndId
-    end
-    
-    error( "DND_STATE_NOT_REGISTERED" ) ]]
+    self._widgets[ dndId ] = info
 
     return dndId
 end
@@ -215,11 +222,26 @@ function DnDManager:SetEnabled( wtWidget, isEnabled )
 
     local dndId = self:GetWidgetID( wtWidget )
     
-    if dndId and self._widgets[ dndId ] then -- Если отключается виджет, который сейчас является активным drag-виджетом, желательно принудительно отменить перетаскивание.
-        self._widgets[ dndId ].enabled = isEnabled == true
-        
-        self._widgets[ dndId ].wtReacting:DNDEnable( isEnabled == true )
+    assert( dndId ~= nil, "DnDManager:SetEnabled() failed: widget is not registered" )
+    
+    local info = self._widgets[ dndId ]
+    isEnabled = isEnabled == true
+    
+    if not isEnabled
+        and self:IsDragActive()
+        and self._activeDrag.info.dndId == dndId 
+    then -- Если отключается виджет, отменить сначала перетаскивание.
+        local currentDNDState = info.wtReacting:DNDGetState()
+
+        if currentDNDState ~= DND_STATE_NOT_REGISTERED then
+            info.wtReacting:DNDCancelDrag()
+        end
+
+        self:_StopDragging( false )
     end
+    
+    info.enabled = isEnabled
+    info.wtReacting:DNDEnable( isEnabled )
 end
 
 
@@ -399,7 +421,6 @@ function DnDManager:_HandlePickAttempt( params )
     }
 
     if info.lockedToParentArea then
-        self._screenParams = common.GetPosConverterParams() -- Возможно Deprecated. См в сторону DnDManager:_HandlePosConverterChanged и Init
         self._activeDrag.limits = self:_PrepareLimits( info, currentPlace )
     end
 
@@ -456,7 +477,7 @@ end
 
 
 --------------------------------------------------------------------------------
---- Проверяет, подходит ли флаг клавиш из события под требуемый KBF_*.
+--- Проверяет, подходит ли флаг клавиш из события под требуемый модификатор KBF_*.
 --- @param requiredKbFlag number|false|nil Требуемый флаг.
 --- @param eventKbFlags number|nil Флаги из события.
 --- @return boolean
@@ -481,19 +502,25 @@ end
 
 
 --------------------------------------------------------------------------------
---- Приводит padding к формату { T, R, B, L }.
+--- Проверяет и выводит padding в формате { T, R, B, L }.
 --- @param padding table|nil Отступы: { T, R, B, L }.
 --- @return table
 --------------------------------------------------------------------------------
 function DnDManager:_NormalizePadding( padding )
-    padding = type( padding ) == "table" and padding or {}
+    if padding == nil then
+        return { 0, 0, 0, 0 }
+    end
 
-    return {
-        tonumber( padding[1] ) or 0,
-        tonumber( padding[2] ) or 0,
-        tonumber( padding[3] ) or 0,
-        tonumber( padding[4] ) or 0,
-    }
+    for i = 1, 4 do
+        if padding[ i ] ~= nil and type( padding[ i ] ) ~= "number" then
+            error( string.format(
+                "DnDManager: padding[ %d ] must be a number or nil",
+                i
+            ) )
+        end
+    end
+    
+    return padding
 end
 
 
@@ -519,7 +546,7 @@ end
 
 
 --------------------------------------------------------------------------------
---- Событие: Отмена перетаскивания (Escape, выход за пределы и т.д.)
+--- Событие: Отмена перетаскивания
 --------------------------------------------------------------------------------
 function DnDManager:_HandleDragCancelled()
     self:_StopDragging( false )
@@ -572,7 +599,7 @@ end
 --- @return table|nil ParentRect
 --------------------------------------------------------------------------------
 function DnDManager:_GetParentRealSize( wtWidget )
-    local screen = self._screenParams or common.GetPosConverterParams() -- Возможно Deprecated. См в сторону DnDManager:_HandlePosConverterChanged и Init
+    local screen = self._screenParams
 
     local parent = wtWidget:GetParent()
 
@@ -617,7 +644,7 @@ end
 function DnDManager:_PrepareLimits( info, place )
     place = place or info.wtMovable:GetPlacementPlain()
 
-    local screen = self._screenParams or common.GetPosConverterParams() -- Возможно Deprecated. См в сторону DnDManager:_HandlePosConverterChanged и Init
+    local screen = self._screenParams
     local ParentSize = self:_GetParentRealSize( info.wtMovable )
 
     local padding = info.padding or { 0, 0, 0, 0 }
@@ -813,19 +840,28 @@ function DnDManager:_HandlePosConverterChanged()
     self._screenParams = common.GetPosConverterParams()
 
     -- Пересчитать границы и запихнуть все виджеты в новые рамки
-    for dndId, info in pairs( self._widgets ) do
+    for _, info in pairs( self._widgets ) do
         if info.lockedToParentArea and info.initialPlacement then
-            local limits = self:_PrepareLimits( info, info.initialPlacement )
+            -- Актуальный placement виджета.
+            local currentPlace = info.wtMovable:GetPlacementPlain()
+            
+            local limits = self:_PrepareLimits( info, currentPlace )
+            
+            -- Координаты из сохраненной позиции.
+            currentPlace.posX = info.initialPlacement.posX or currentPlace.posX
+            currentPlace.posY = info.initialPlacement.posY or currentPlace.posY
+            currentPlace.highPosX = info.initialPlacement.highPosX or currentPlace.highPosX
+            currentPlace.highPosY = info.initialPlacement.highPosY or currentPlace.highPosY
             
             local correctedPlace = self:_NormalizePlacement(
-                self:_CopyPlacement( info.initialPlacement ),
+                currentPlace,
                 limits.min,
                 limits.max
             )
             
             info.wtMovable:SetPlacementPlain( correctedPlace )
             
-            info.initialPlacement = correctedPlace
+            info.initialPlacement = self:_CopyPlacement( currentPlace )
         end
     end
 end
