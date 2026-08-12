@@ -5,22 +5,18 @@
 -- перед их выводом в текстовый контейнер (ouText).
 --------------------------------------------------------------------------------
 
-Class( "AlchemyTextFormatter", {
-	_services      = nil, -- Ссылка на контейнер сервисов (debug, locale, textContainer).
-	_widgetManager = nil, -- Менеджер виджетов.
-} )
+Class( "AlchemyTextFormatter" )
 
 --------------------------------------------------------------------------------
 --- Инициализация форматировщика.
---- @param widgetManager table AlchemyWidgetManager
---- @param services table Services
+--- @param context table AlchemyContext
 --------------------------------------------------------------------------------
-function AlchemyTextFormatter:Init( widgetManager, services ) --- void
-    self._services      = services
-	self._widgetManager = widgetManager
+function AlchemyTextFormatter:Init( context ) --- void
+	self._widgetManager = context:GetWidgetManager() -- AlchemyWidgetManager
+    self._services      = context:GetServices()      -- Cервисы
     
     -- Передаем весь менеджер виджетов в сервис текстового контейнера
-    self._services.textContainer:Init( widgetManager )
+    self._services.textContainer:Init( self._widgetManager )
 	-- Вывод в контейнер имя аддона как текст по умолчанию
 	self._services.textContainer:SetSingleLine( common.GetAddonName() )
 end
@@ -66,20 +62,20 @@ function AlchemyTextFormatter:FormatResults( found, maxDisplay, drumsCount )
 		return a.recipe.score > b.recipe.score
 	end )
 	
-	-- Получаем имя рецепта через обертку виджета AlchemyV2
+	-- Имя рецепта через обертку виджета AlchemyV2
     local currentRecipeName = self._widgetManager:
 		GetWidgetWrapper( "AlchemyV2" ):
 		GetCurrentRecipeName()
 	
 	local linesData = {}
 	
-	-- Получаем локализованный шаблон строки рецепта "level:N |N |N |N |N - name"
+	-- Локализованный шаблон строки рецепта "level:N |N |N |N |N - name"
     local recipeLineFormat = self._services.template:Get( "RECIPE_LINE" )
 	
-	-- Получаем локализованный шаблон для значения с жёлтым цветом (<span color="0xFFFFFF00"><r name="val"/></span>)
+	-- Локализованный шаблон для значения с жёлтым цветом (<span color="0xFFFFFF00"><r name="val"/></span>)
 	local colorYellowtextFormat = self._services.template:Get( "COLOR_YELLOW_TEXT" )
 	
-	-- Формируем строки для ТОП-N рецептов (ограничено maxDisplay)
+	-- Создание строк для ТОП-N рецептов (ограничено maxDisplay)
     for i = 1, math.min( #found, maxDisplay ) do
         local foundResult = found[ i ]
         
@@ -110,13 +106,12 @@ function AlchemyTextFormatter:FormatResults( found, maxDisplay, drumsCount )
             name   = nameValue,  -- WString, либо цветной ValuedText
         }
         
-        -- Заполняем параметры сдвигов для каждого барабана (bulb1, bulb2, ...)
+        -- Заполняет параметры сдвигов для каждого барабана (bulb1, bulb2, ...)
         for drumIndex = 1, drumsCount do
-			-- Форматируем сдвиг для отображения "% d"
+			-- Форматирует сдвиг для отображения "% d"
             textValues[ "bulb" .. drumIndex ] = userMods.ToWString( string.format( "% d", -foundResult.shifts[ drumIndex ] ) )
         end
-
-        -- Создаем готовый ValuedText и добавляем в массив строк
+		
         table.insert( linesData, common.CreateValuedText( textValues ) )
     end
 
@@ -137,15 +132,15 @@ function AlchemyTextFormatter:FormatResultsForLog( found, maxDisplay, drumsCount
 	for i = 1, math.min( #found, maxDisplay ) do
 		local foundResult = found[ i ]
 		
-		-- Начинаем формирование строки с уровня и первого сдвига
+		-- Начало формирования строки с уровня и первого сдвига
 		local logStr = string.format( "%d,%d", foundResult.recipe.score, -foundResult.shifts[ 1 ] )
 		
-		-- Добавляем остальные сдвиги через запятую
+		-- Добавление остальных сдвигов через запятую
 		for drumIndex = 2, drumsCount do
 			logStr = logStr .. string.format( ",%d", -foundResult.shifts[ drumIndex ] )
 		end
 		
-		-- Добавляем имя рецепта в конец строки
+		-- Добавляет имя рецепта в конец строки
 		logStr = logStr .. "," .. foundResult.recipe.name
 		table.insert( parts, logStr )
 	end
