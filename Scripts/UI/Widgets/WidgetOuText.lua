@@ -7,13 +7,13 @@ Class( "WidgetOuText", WidgetClassInterface() )
 
 --------------------------------------------------------------------------------
 --- Инициализация виджета.
---- @param widgetManager table - экземпляр класса AlchemyWidgetManager
+--- @param context table - экземпляр класса AlchemyContext
 --------------------------------------------------------------------------------
-function WidgetOuText:Init( widgetManager ) --- void
-    self._widgetManager = widgetManager
+function WidgetOuText:Init( context ) --- void
+    self._widgetManager = context:GetWidgetManager()
     
     -- ouText является дочерним элементом Panel
-    local panel = widgetManager:GetMainForm():GetChildChecked( "Panel" )
+    local panel = self._widgetManager:GetMainForm():GetChildChecked( "Panel" )
     self._widget = panel:GetChildChecked( "ouText" )
 end
 
