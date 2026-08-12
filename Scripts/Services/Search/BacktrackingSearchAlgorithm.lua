@@ -17,7 +17,7 @@ function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvai
 	local function recursiveSearch( drumIdx, shiftsLeft, currentShifts, lineZero, lineMinusOne, linePlusOne ) --- void
 		local filteredRecipes = state.filteredRecipes
 		
-		-- Если мы уже нашли все возможные отфильтрованные рецепты, дальше искать нет смысла
+		-- Если уже нашли все возможные отфильтрованные рецепты, дальше искать нет смысла
 		if filteredRecipes and #filteredRecipes > 0 and #foundResults >= #filteredRecipes then 
 			return 
 		end
@@ -27,27 +27,27 @@ function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvai
 			-- Если для текущего барабана нет возможных сдвигов (он пустой или не инициализирован)
 			if next( state.drumShiftMap[ drumIdx ] ) == nil then
 				currentShifts[ drumIdx ] = 0 -- Фиксируем сдвиг 0
-				-- Идем к следующему (предыдущему по индексу) барабану
+				-- К следующему (предыдущему по индексу) барабану
 				recursiveSearch( drumIdx - 1, shiftsLeft, currentShifts, lineZero, lineMinusOne, linePlusOne )
-				currentShifts[ drumIdx ] = nil -- Откатываем состояние
+				currentShifts[ drumIdx ] = nil -- Откатывает состояние
 				return
 			end
 			
-			-- Вычисляем максимальный сдвиг для текущего барабана
+			-- Вычисляет максимальный сдвиг для текущего барабана
 			local maxShift = math.min( shiftsLeft, state.maxCorrections )
 			
-			-- Перебираем все возможные сдвиги для текущего барабана
+			-- Перебирает все возможные сдвиги для текущего барабана
 			for shift = -maxShift, maxShift do 
 				local nextLeft = shiftsLeft - math.abs( shift ) -- number (int). Очки коррекции, которые останутся для следующих барабанов.
 				
-				-- Переменные для отслеживания того, что мы добавили в линии (нужны для отката состояния)
+				-- Переменные для отслеживания того, что добавили в линии (нужны для отката состояния)
 				local addedZero, addedMinus, addedPlus = nil, nil, nil 
 				
 				-- Обработка линии 0 (текущая позиция)
 				if lineZero then
 					local comp = state.drumShiftMap[ drumIdx ][ shift ] -- Имя компонента при сдвиге "shift"
 					if comp then
-						lineZero[ comp ] = ( lineZero[ comp ] or 0 ) + 1 -- Увеличиваем счетчик компонента в линии
+						lineZero[ comp ] = ( lineZero[ comp ] or 0 ) + 1 -- Увеличивает счетчик компонента в линии
 						addedZero = comp
 					end
 				end
@@ -72,7 +72,7 @@ function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvai
 
 				-- Если хотя бы в одну линию что-то добавилось, имеет смысл идти глубже (рекурсия)
 				if addedZero or addedMinus or addedPlus then
-					currentShifts[ drumIdx ] = shift -- Фиксируем текущий сдвиг для этого барабана
+					currentShifts[ drumIdx ] = shift -- Фиксирует текущий сдвиг для этого барабана
 					
 					-- Рекурсивный вызов для следующего барабана
 					recursiveSearch( drumIdx - 1, nextLeft, currentShifts, lineZero, lineMinusOne, linePlusOne )
@@ -80,10 +80,10 @@ function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvai
 					-- Backtracking
 					currentShifts[ drumIdx ] = nil -- Откат состояния
 					
-					-- Уменьшаем счетчики компонентов в линиях, которые мы увеличили перед рекурсией
+					-- Уменьшает счетчики компонентов в линиях, которые мы увеличили перед рекурсией
 					if addedZero then
 						lineZero[ addedZero ] = lineZero[ addedZero ] - 1
-						if lineZero[ addedZero ] == 0 then lineZero[ addedZero ] = nil end -- Чистим ключ, если счетчик обнулился
+						if lineZero[ addedZero ] == 0 then lineZero[ addedZero ] = nil end -- Чистит ключ, если счетчик обнулился
 					end
 					if addedMinus then
 						lineMinusOne[ addedMinus ] = lineMinusOne[ addedMinus ] - 1
@@ -109,7 +109,7 @@ function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvai
 				end
 			end
 			
-			-- Мы прошли все барабаны. Теперь регистрируем накопленные компоненты как потенциальные результаты для каждой линии.
+			-- Все барабаны пройдены. Теперь регистрирует накопленные компоненты как потенциальные результаты для каждой линии.
 			registerLine( lineZero )
 			registerLine( lineMinusOne )
 			registerLine( linePlusOne )
