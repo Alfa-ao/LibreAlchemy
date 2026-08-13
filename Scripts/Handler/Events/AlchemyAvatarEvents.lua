@@ -42,9 +42,9 @@ function AlchemyAvatarEvents:OnAvatarCreated() --- void
         self._ui:GetWidgetWrapper( "AlchemyV2" ):InitCustomLayout()
     end
     
-    -- Попытка инициализации библиотеки Drag&Drop для перетаскивания окна.
     local dndWidgetWrapper = self._ui:GetWidgetWrapper( "dnd" )
     
+    -- Попытка инициализации библиотеки Drag&Drop для перетаскивания окна.
     if not dndWidgetWrapper or not dndWidgetWrapper:InitDragAndDrop() then
         -- Сохранить до лучших времен:
         -- self._text:SetText( self._services.locale:Get( "INSTALL_LIB_DND" ) )
