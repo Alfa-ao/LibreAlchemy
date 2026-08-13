@@ -23,7 +23,7 @@ function WidgetDnD:InitDragAndDrop()
     local panelWrapper = self._widgetManager:GetWidgetWrapper( "panel" )
     
     if self._services.dnd then
-        self._services.dnd:Register( panelWrapper:GetNativeWidget() )
+        self._services.dnd:Register( panelWrapper:GetNativeWidget(), { saveToConfig = true } )
         
         return true
     end
