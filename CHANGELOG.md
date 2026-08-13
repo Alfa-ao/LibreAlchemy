@@ -1,0 +1,206 @@
+# Changelog
+
+Все перечисленные изменения в релизе.
+
+## [v2.2.0](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.2.0)
+
+### Added
+- Добавлена библиотека `Libs/DND/src/DnDManager.lua` - ООП-менеджер Drag & Drop.
+- Добавлен класс `AlchemyContext` в `Scripts/Core/AlchemyContext.lua` - единый контекст зависимостей:
+  - `AlchemyState`.
+  - `AlchemyConfig`.
+  - `AlchemyWidgetManager`.
+  - `AlchemyTextFormatter`.
+  - сервисы.
+- Добавлен сервис `AlchemyTemplateService` в `Scripts/Services/AlchemyTemplateService.lua` для работы с группой шаблонов `template`.
+- Добавлены новые обработчики событий:
+  - `AlchemyDNDEvents` в `Scripts/Handler/Events/AlchemyDNDEvents.lua` для обработки событий `EVENT_DND_*`.
+  - `AlchemyPosEvents` в `Scripts/Handler/Events/AlchemyPosEvents.lua` для обработки события `EVENT_POS_CONVERTER_CHANGED`.
+- Добавлена отдельная группа локализации `template`:
+  - `Locales/template/Locale.(UIRelatedTexts).xdb`.
+  - `Locales/template/RECIPE_LINE.txt`.
+  - `Locales/template/COLOR_YELLOW_TEXT.txt`.
+- Добавлен шаблон `COLOR_YELLOW_TEXT` для выделения текста жёлтым цветом через `ValuedText`.
+- Добавлено логирование событий `EVENT_DND_PICK_ATTEMPT`, `EVENT_DND_DRAG_TO`, `EVENT_DND_DROP_ATTEMPT`, `EVENT_DND_DRAG_CANCELLED` и `EVENT_POS_CONVERTER_CHANGED`.
+- В `AlchemyInit` добавлено создание и инициализация сервиса `DnDManager` с параметрами:
+  - `autoRegisterEvents = false`.
+  - `defaultCursor = "drag"`.
+- `AlchemyEventManager` теперь принимает список обработчиков и `AlchemyContext`, а также самостоятельно вызывает инициализацию обработчиков через `handler:Init(context)`.
+
+### Changed
+- Drag & Drop полностью переведён с библиотеки `LibDnD.lua` на сервис `DnDManager.lua`.
+- `WidgetDnD` теперь регистрирует панель через `services.dnd:Register(...)`, а не через глобальный вызов `DnD.Init(...)`.
+- Системное имя виджета Drag & Drop изменено с `"Drag&Drop"` на `"dnd"`.
+- `WidgetDnD:GetNativeWidget()` больше не возвращает глобальную таблицу `DnD`. Теперь метод возвращает `nil`.
+- Структура проекта изменена:
+  - `Scripts/Events` переименован в `Scripts/Handler`.
+  - все скрипты событий `*Events.lua` перемещены в `Scripts/Handler/Events`.
+  - `AlchemyEventManager.lua` перемещён в `Scripts/Handler/AlchemyEventManager.lua`.
+  - `EventClassInterface.lua` перемещён в `Scripts/Handler/EventClassInterface.lua`.
+  - `WidgetClassInterface.lua` перемещён из `Scripts/UI/Widgets/WidgetClassInterface.lua` в `Scripts/UI/WidgetClassInterface.lua`.
+- Локализация языков `rus` и `eng` перемещена:
+  - из `Locales/rus` в `Locales/lang/rus`.
+  - из `Locales/eng` в `Locales/lang/eng`.
+- Шаблон `RECIPE_LINE` вынесен из языковой локализации `rus`/`eng` в отдельную группу `Locales/template`.
+- Формат `COUNT_RECIPES` изменён с обычного текста и `string.format` на шаблон `ValuedText`/HTML:
+  - теперь используется тег `<r name="count"/>`.
+  - сообщение формируется через `common.CreateValuedText`.
+- `AlchemyTextFormatter` переведён на использование `AlchemyContext`.
+- `AlchemyTextFormatter` теперь использует `AlchemyTemplateService` для получения:
+  - `RECIPE_LINE`.
+  - `COLOR_YELLOW_TEXT`.
+- Логика подсветки текущего рецепта переведена на шаблон `COLOR_YELLOW_TEXT` вместо хардкода HTML-строки.
+- `WidgetAlchemyV2:GetCurrentRecipeName()` теперь возвращает `WString`, а не строку.
+- Сравнение имени текущего рецепта в `AlchemyTextFormatter` теперь работает с `WString`-значениями.
+- `AlchemyWidgetManager` теперь принимает список виджетов и `AlchemyContext`:
+  - старый вариант инициализации через варарг заменён на передачу контекста.
+  - виджеты инициализируются через `widget:Init(context)`.
+- `EventClassInterface` изменён:
+  - добавлен контракт `Init(context)`.
+  - удалены поля `_state` и `_config` из базового интерфейса.
+- Обработчики событий переведены на получение зависимостей через `AlchemyContext`:
+  - `AlchemyEvents`.
+  - `AlchemyAvatarEvents`.
+  - `AlchemyDNDEvents`.
+  - `AlchemyPosEvents`.
+- `AlchemyAvatarEvents` больше не вызывает `services.locale:Init()` в `EVENT_AVATAR_CREATED`. Инициализация локали теперь выполняется централизованно в `AlchemyInit`.
+- `AlchemyTextContainerService:SetLines()` больше не автоматически преобразует `string` в `WString`:
+  - использование `userMods.ToWString` для этого сценария помечено как deprecated.
+- Обновлены текстовые строки локализации:
+  - `GREETINGS`: `LibreAlchemy` заменён на `LibreAlchemyV2`.
+  - `WELCOME_BACK`: `LibreAlchemy` заменён на `LibreAlchemyV2`.
+  - `CONGRATULATION`: `LibreAlchemy` заменён на `LibreAlchemyV2`.
+- Обновлён `AddonDesc.(UIAddon).xdb`:
+  - изменены пути подключения скриптов.
+  - изменены пути локализации.
+  - добавлена группа локализации `template`.
+  - подключение Drag & Drop теперь указывает на `Libs/DND/src/DnDManager.lua`.
+- Инициализация кэша имён компонентов в `AlchemyRecipeService` перенесена в `Init`.
+
+### Removed
+- Удалена библиотека `Libs/LibDnD.lua`.
+- Удалены локализационные шаблоны `INSTALL_LIB_DND`:
+  - `Locales/eng/INSTALL_LIB_DND.txt`.
+  - `Locales/rus/INSTALL_LIB_DND.txt`.
+- Удалены записи `INSTALL_LIB_DND` из языковых файлов локализации `Locale.(UIRelatedTexts).xdb`.
+- Удалён `RECIPE_LINE` из языковых групп `eng` и `rus`.
+- Удалены старые пути:
+  - `Scripts/Events/*`.
+  - `Scripts/UI/Widgets/WidgetClassInterface.lua`.
+  - `Locales/rus/*`.
+  - `Locales/eng/*`.
+- Удалено неиспользуемое поле `_mathUtils` из `AlchemySearchService`.
+- Удалено неиспользуемое локальное объявление `local userMods = Facade.AO.userMods` из `Scripts/Facade.lua`.
+
+## [v2.1.2-alpha.3](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.1.2-alpha.3)
+
+### Added
+- Добавлены запланированные задачи `common.DelayedCall`.
+- Добавлена библиотека `EnumFactory`.
+- В `AlchemyState` добавлена полная очистка запланированных вызовов.
+
+### Changed
+- Логическая ответственность `AlchemySystemEvents` перенесена и упрощена в `AlchemyEvents`.
+
+### Removed
+- Полностью удалён `AlchemySystemEvents`.
+
+## [v2.1.2-alpha.2](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.1.2-alpha.2)
+
+### Added
+- Счётчик слотов события `EVENT_ALCHEMY_ITEM_PLACED` дополнен логированием.
+
+### Changed
+- Изменён `Debug`: глобальная функция `log` в `Facade.lua` теперь корректно работает без `/Mods/Facade`.
+- Фасад-методы вынесены из класса в `AlchemyInit`.
+
+### Fixed
+- Исправлена опечатка в имени локализации `NOT_FOUND_RECIPLES` на `NOT_FOUND_RECIPES`.
+- Исправлена логика счётчиков заполненных слотов в обработчике события `EVENT_ALCHEMY_ITEM_PLACED`.
+
+## [v2.1.2-alpha](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.1.2-alpha)
+
+> Промежуточный alpha-релиз
+
+## [v2.1.0](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.1.0)
+
+### Added
+- Добавлены контракты:
+  - `EventClassInterface.lua`
+  - `SearchAlgorithmClassInterface.lua`
+  - `WidgetClassInterface.lua`
+- Добавлены компоненты поиска:
+  - `BacktrackingSearchAlgorithm` - алгоритм перебора сдвигов каждого барабана на основе сопоставления аспектов компонента с требуемыми компонентами.
+  - `DrumShiftMapper` - создаёт карту всевозможных сдвигов для каждого барабана.
+  - `RecipeEvaluator` - отсекает худшие рецепты.
+- Добавлен `AlchemyWidgetManager`:
+  - регистрирует виджеты с элементами управления.
+  - Также проверяет, что переданный объект реализует интерфейс `WidgetClassInterface` через `InstanceOf`.
+- Добавлены виджетные компоненты:
+  - `WidgetRollsBar`.
+  - `WidgetOuText`.
+  - `WidgetDnD`.
+
+### Changed
+- Изменён интерфейс и расположение кнопок.
+- Для возврата стандартного расположения кнопок необходимо установить `ENABLE_CUSTOM_LAYOUT = false` в скрипте `LibreAlchemyV2\Scripts\Core\AlchemyConfig.lua` и перезагрузить игру.
+- Скриптовая часть полностью переписана с нуля.
+- Использовано объектно-ориентированное программирование и принципы SOLID, где это было возможно.
+- `AlchemySearchService` разделён на логические составляющие с отдельными зонами ответственности.
+
+### Fixed
+- Исправлены недочёты виджетов, issue #1.
+
+> [!WARNING]
+> Известные ошибки:
+> 
+> При изменении масштаба интерфейса игры с минимального на стандартный после перезагрузки игры текст подсказки может исчезать.  
+> Причина: координаты подсказки становятся отрицательными, и при следующем входе в игру текст прячется за экраном.  
+> Временно лечится удалением `Configs\LibreAlchemyV2\user.cfg`.  
+> Ответственность за это несёт библиотека `LibDnD.lua`: она должна обнулять или корректировать координаты.
+
+## [v1.2.1](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v1.2.1)
+
+### Added
+- Добавлена локализация:
+  - `ENG`
+  - `RUS`
+
+### Changed
+- Все текстовые сообщения из Lua перенесены в локализацию.
+- Скриптовая часть переведена в кодировку `UTF-8 no BOM`.
+
+## [v1.2.0](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v1.2.0)
+
+### Added
+- Добавлена библиотека Drag&Drop `LibDnD.lua`.
+- Текст с подсказкой теперь можно перемещать по всей области экрана `MainForm`.
+- Добавлен `Debug` событий.
+- Добавлены состояния сообщений:
+  - приветствие при первом открытии окна алхимии.
+  - сообщение при повторном открытии окна алхимии.
+  - сообщение о возможных рецептах при полном заполнении требуемых слотов.
+  - сообщение о неготовых компонентах при недостаточном заполнении слотов.
+  - сообщение об отсутствии рецептов при пустых слотах.
+  - поздравление при получении предмета из результата алхимических реакций.
+
+### Changed
+- Проведена чистка неиспользуемых участков кода и функций.
+- `SetBackgroundColor`, `SetPriority`, частично метод `OnSize` и связанные атрибуты перенесены в ответственные виджеты.
+- Переписана точка инициализации аддона.
+- Переделана логика сообщений: текст теперь отрабатывает один раз вместо наложения друг на друга.
+- В `MainForm` увеличен приоритет позиционирования родителя для текста подсказки на `10000`.
+- В `BackBlack` используется цвет `0xe61a1a0d` вместо `SetBackgroundColor`.
+
+### Fixed
+- Исправлен `Placement` окна `MainForm` на `WIDGET_ALIGN_BOTH`.
+- Исправлен `Placement` и размер `ouText`: размер теперь определяется на основании содержимого текста.
+- Множество логических исправлений.
+
+### Removed
+- Удалена старая функция `Init`.
+
+## [v1.1.4](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v1.1.4)
+
+### Changed
+- Опубликован бэкап старой версии.
