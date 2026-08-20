@@ -64,6 +64,7 @@
   - `AlchemyDNDEvents`.
   - `AlchemyPosEvents`.
 - `AlchemyAvatarEvents` больше не вызывает `services.locale:Init()` в `EVENT_AVATAR_CREATED`. Инициализация локали теперь выполняется централизованно в `AlchemyInit`.
+  - Исправлена проблема с зависшим поздравлением при изменении списка доступных зельев.
 - `AlchemyTextContainerService:SetLines()` больше не автоматически преобразует `string` в `WString`:
   - использование `userMods.ToWString` для этого сценария помечено как deprecated.
 - `AlchemyConfig` изменён с `Class` на `Global` (теперь это глобальная таблица конфигурации).
