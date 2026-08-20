@@ -57,15 +57,6 @@ function AlchemyEvents:OnStarted() --- void
     elseif self._state.messageType == self._config.MESSAGE_GREETINGS then
         self._text:SetText( self._services.locale:Get( "GREETINGS" ) )
     end
-	
-    -- Нужна, иначе вместо возвращения, закроется сообщением "Возможно N рецептов"
-	self._state.taskRefs.funcAlchemyStarted = common.DelayedCall( 100, function()
-        if self._state.active then
-            self._state.messageType = self._config.MESSAGE_NORMAL
-        end
-        
-        self._state.taskRefs.funcAlchemyStarted = nil
-    end )
 end
 
 --------------------------------------------------------------------------------
@@ -128,8 +119,20 @@ function AlchemyEvents:OnItemPlaced( params ) --- void
     ----------------------------------------
     
     -- Если сейчас не стандартный режим отображения, не обновлять текст.
-    -- Автоматически переключится. См. (AlchemyEvents:OnStarted)
-    if self._state.messageType ~= self._config.MESSAGE_NORMAL then return end
+    -- Автоматически переключится.
+    if self._state.messageType ~= self._config.MESSAGE_NORMAL then
+        if self._state.taskRefs.funcAlchemyStarted == nil then
+            self._state.taskRefs.funcAlchemyStarted = common.DelayedCall( 100, function()
+                if self._state.active then
+                    self._state.messageType = self._config.MESSAGE_NORMAL
+                end
+                
+                self._state.taskRefs.funcAlchemyStarted = nil
+            end )
+        end
+        
+        return
+    end
     
     
     local funcGetMessage = function()
@@ -225,7 +228,6 @@ function AlchemyEvents:OnRecipesChanged() --- void
     self._text:SetText( self._services.locale:Get( "CONGRATULATION" ) )
     
     -- Отрубить сообщения в EVENT_ALCHEMY_ITEM_PLACED
-    -- Почему не MESSAGE_WARNING ? потому что, если переоткрыли алхимку, то сообщений никаких не было бы.
-    -- А так, поздравление (работаем дальше с алхимкой) или Приветсвие (переоткрыли окно)
+    -- поздравление (работаем дальше с алхимкой) или Приветсвие (переоткрыли окно)
     self._state.messageType = self._config.MESSAGE_WELCOME_BACK
 end
