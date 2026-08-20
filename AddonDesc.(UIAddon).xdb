@@ -60,8 +60,7 @@
 		
 		<!-- Services (Сервисы) -->
 		<Item href="Scripts/Services/AlchemyDebugService.lua" />
-		<Item href="Scripts/Services/AlchemyTemplateService.lua" />
-		<Item href="Scripts/Services/AlchemyLocaleService.lua" />
+		<Item href="Scripts/Services/AlchemyRelatedTextService.lua" />
 		<Item href="Scripts/Services/AlchemyRecipeService.lua" />
 		<Item href="Scripts/Services/AlchemySearchService.lua" />
 		<Item href="Scripts/Services/AlchemyTextContainerService.lua" />
