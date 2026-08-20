@@ -53,7 +53,6 @@
 		<Item href="Scripts/Core/AlchemyContext.lua" />
 		
 		<!-- Search Subsystem (Реализации поиска) -->
-		<Item href="Scripts/Services/Search/SearchAlgorithmClassInterface.lua" />
 		<Item href="Scripts/Services/Search/RecipeEvaluator.lua" />
 		<Item href="Scripts/Services/Search/DrumShiftMapper.lua" />
 		<Item href="Scripts/Services/Search/BacktrackingSearchAlgorithm.lua" />
@@ -68,7 +67,6 @@
 		<!-- UI -->
 		<Item href="Scripts/UI/WidgetClassInterface.lua" />
 		<Item href="Scripts/UI/Widgets/WidgetPanel.lua" />
-		<Item href="Scripts/UI/Widgets/WidgetDnD.lua" />
 		<Item href="Scripts/UI/Widgets/WidgetOuText.lua" />
 		<Item href="Scripts/UI/Widgets/WidgetAlchemyV2.lua" />
 		<Item href="Scripts/UI/AlchemyWidgetManager.lua" />
