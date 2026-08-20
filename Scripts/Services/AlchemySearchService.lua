@@ -24,19 +24,7 @@ function AlchemySearchService:Init( state, recipeService, mapper, algorithm ) --
 	self._recipeService = recipeService
 	self._mapper        = mapper
 	self._foundSet      = {}
-	
-	-- Проверка реализации интерфейса алгоритма поиска
-	if InstanceOf( algorithm, _G.SearchAlgorithmClassInterface ) then
-		self._algorithm = algorithm
-	else
-		local objectClass = GetParentClass( algorithm )
-		local className = GetClassName( objectClass )
-		
-		error( string.format( 
-			"Unsupported class '%s' does not have an interface 'SearchAlgorithmClassInterface'", 
-			className 
-		) )
-	end
+	self._algorithm     = algorithm
 end
 
 --------------------------------------------------------------------------------
