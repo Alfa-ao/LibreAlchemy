@@ -2,7 +2,17 @@
 -- Services/Search/BacktrackingSearchAlgorithm.lua
 --------------------------------------------------------------------------------
 
-Class( "BacktrackingSearchAlgorithm", SearchAlgorithmClassInterface() )
+Class( "BacktrackingSearchAlgorithm" )
+
+--------------------------------------------------------------------------------
+--- Инициализация алгоритма поиска.
+--- @param evaluator table RecipeEvaluator
+--- @param mathUtils table MathUtils
+--------------------------------------------------------------------------------
+function BacktrackingSearchAlgorithm:Init( evaluator, mathUtils ) --- void
+	self._evaluator = evaluator
+	self._mathUtils = mathUtils
+end
 
 --------------------------------------------------------------------------------
 --- @param state table 
