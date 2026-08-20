@@ -37,7 +37,7 @@ end
 
 --------------------------------------------------------------------------------
 -- Обработчик события EVENT_ALCHEMY_STARTED.
--- Срабатывает при открытии окна алхимии. Инициализирует UI и кэширует рецепты.
+-- Срабатывает при открытии окна алхимии.
 --------------------------------------------------------------------------------
 function AlchemyEvents:OnStarted() --- void
     ----------------------------------------
@@ -49,9 +49,6 @@ function AlchemyEvents:OnStarted() --- void
     self._state.active = true
 
     -- Создает кэш всех доступных рецептов.
-    -- Более логично подготовить весь список зелий (около 250) именно при открытии Алхимии,
-    -- чтобы не делать это при каждом размещении компонента.
-    -- (Также продублировано в CountPotential() на случай, если список поменяется во время работы).
     self._services.recipe:CreateRecipeCache()
 
     -- Выводит HELLO сообщение в зависимости от предыдущего состояния
@@ -60,17 +57,15 @@ function AlchemyEvents:OnStarted() --- void
     elseif self._state.messageType == self._config.MESSAGE_GREETINGS then
         self._text:SetText( self._services.locale:Get( "GREETINGS" ) )
     end
-    
-	-- А нафига ? Раньше должно было ругать из-за отсутствия DND либы. 
-    -- self._state.taskRefs.funcAlchemyStarted = common.DelayedCall( 100, function()
-        -- if self._state.active then
-            -- self._state.messageType = self._config.MESSAGE_NORMAL
-        -- end
-        
-        -- self._state.taskRefs.funcAlchemyStarted = nil
-    -- end )
 	
-	self._state.messageType = self._config.MESSAGE_NORMAL
+    -- Нужна, иначе вместо возвращения, закроется сообщением "Возможно N рецептов"
+	self._state.taskRefs.funcAlchemyStarted = common.DelayedCall( 100, function()
+        if self._state.active then
+            self._state.messageType = self._config.MESSAGE_NORMAL
+        end
+        
+        self._state.taskRefs.funcAlchemyStarted = nil
+    end )
 end
 
 --------------------------------------------------------------------------------
@@ -140,10 +135,10 @@ function AlchemyEvents:OnItemPlaced( params ) --- void
     local funcGetMessage = function()
         self._state.taskRefs.funcAlchemyItemPlaced = nil
         
-        -- Если не варим (меню колбочек), попытаться оценить возможные рецепты
+        -- Если не варим (в меню варки), то оценить возможные рецепты
         if not self._state.reactionSuccess then
             -- Кол-во возможных рецептов (countRecipe) и кол-во требуемых слотов (filledDrumsCount)
-            local countRecipe, filledDrumsCount = self._services.recipe:CountPotential()
+            local countRecipe, _ = self._services.recipe:CountPotential()
             
             -- Если все слоты заполнены и есть подходящие рецепты
             if countRecipe > 0 then
