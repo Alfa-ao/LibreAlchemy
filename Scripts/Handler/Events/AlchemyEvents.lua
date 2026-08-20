@@ -61,13 +61,16 @@ function AlchemyEvents:OnStarted() --- void
         self._text:SetText( self._services.locale:Get( "GREETINGS" ) )
     end
     
-    self._state.taskRefs.funcAlchemyStarted = common.DelayedCall( 100, function()
-        if self._state.active then
-            self._state.messageType = self._config.MESSAGE_NORMAL
-        end
+	-- А нафига ? Раньше должно было ругать из-за отсутствия DND либы. 
+    -- self._state.taskRefs.funcAlchemyStarted = common.DelayedCall( 100, function()
+        -- if self._state.active then
+            -- self._state.messageType = self._config.MESSAGE_NORMAL
+        -- end
         
-        self._state.taskRefs.funcAlchemyStarted = nil
-    end )
+        -- self._state.taskRefs.funcAlchemyStarted = nil
+    -- end )
+	
+	self._state.messageType = self._config.MESSAGE_NORMAL
 end
 
 --------------------------------------------------------------------------------
@@ -217,7 +220,12 @@ function AlchemyEvents:OnRecipesChanged() --- void
     
     -- Сбрасывает кэш рецептов для обновления
     self._state:ResetRecipeCache()
-
+	
+	-- Заглушка если алхимка не открыта, но взяли допустим рецепт из Айрина и добавили зелье в рецепт.
+	if not self._state.active then
+		return
+	end
+	
     -- Поздравить игрока.
     self._text:SetText( self._services.locale:Get( "CONGRATULATION" ) )
     
