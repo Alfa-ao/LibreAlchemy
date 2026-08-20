@@ -2,7 +2,7 @@
 
 Все перечисленные изменения в релизе.
 
-## [v2.2.0](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.2.0)
+## [v2.2.0-alpha.4](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.2.0-alpha.4)
 
 ### Added
 - Добавлена библиотека `Libs/DND/src/DnDManager.lua` - ООП-менеджер Drag & Drop.
@@ -12,7 +12,7 @@
   - `AlchemyWidgetManager`.
   - `AlchemyTextFormatter`.
   - сервисы.
-- Добавлен сервис `AlchemyTemplateService` в `Scripts/Services/AlchemyTemplateService.lua` для работы с группой шаблонов `template`.
+- Добавлено использование `AlchemyRelatedTextService` для работы с группой шаблонов `template` (инициализация с параметром `"template"`).
 - Добавлены новые обработчики событий:
   - `AlchemyDNDEvents` в `Scripts/Handler/Events/AlchemyDNDEvents.lua` для обработки событий `EVENT_DND_*`.
   - `AlchemyPosEvents` в `Scripts/Handler/Events/AlchemyPosEvents.lua` для обработки события `EVENT_POS_CONVERTER_CHANGED`.
@@ -29,9 +29,8 @@
 
 ### Changed
 - Drag & Drop полностью переведён с библиотеки `LibDnD.lua` на сервис `DnDManager.lua`.
-- `WidgetDnD` теперь регистрирует панель через `services.dnd:Register(...)`, а не через глобальный вызов `DnD.Init(...)`.
+- Регистрация Drag & Drop для панели подсказок перенесена из `WidgetDnD` напрямую в `AlchemyAvatarEvents:OnAvatarCreated()` через `services.dnd:Register(...)`.
 - Системное имя виджета Drag & Drop изменено с `"Drag&Drop"` на `"dnd"`.
-- `WidgetDnD:GetNativeWidget()` больше не возвращает глобальную таблицу `DnD`. Теперь метод возвращает `nil`.
 - Структура проекта изменена:
   - `Scripts/Events` переименован в `Scripts/Handler`.
   - все скрипты событий `*Events.lua` перемещены в `Scripts/Handler/Events`.
@@ -46,7 +45,7 @@
   - теперь используется тег `<r name="count"/>`.
   - сообщение формируется через `common.CreateValuedText`.
 - `AlchemyTextFormatter` переведён на использование `AlchemyContext`.
-- `AlchemyTextFormatter` теперь использует `AlchemyTemplateService` для получения:
+- `AlchemyTextFormatter` теперь использует сервис шаблонов (`services.template`) для получения:
   - `RECIPE_LINE`.
   - `COLOR_YELLOW_TEXT`.
 - Логика подсветки текущего рецепта переведена на шаблон `COLOR_YELLOW_TEXT` вместо хардкода HTML-строки.
@@ -55,6 +54,7 @@
 - `AlchemyWidgetManager` теперь принимает список виджетов и `AlchemyContext`:
   - старый вариант инициализации через варарг заменён на передачу контекста.
   - виджеты инициализируются через `widget:Init(context)`.
+- Методы `Init` в виджетах `WidgetPanel`, `WidgetOuText` и `WidgetAlchemyV2` теперь принимают `context` вместо `widgetManager`.
 - `EventClassInterface` изменён:
   - добавлен контракт `Init(context)`.
   - удалены поля `_state` и `_config` из базового интерфейса.
@@ -66,19 +66,26 @@
 - `AlchemyAvatarEvents` больше не вызывает `services.locale:Init()` в `EVENT_AVATAR_CREATED`. Инициализация локали теперь выполняется централизованно в `AlchemyInit`.
 - `AlchemyTextContainerService:SetLines()` больше не автоматически преобразует `string` в `WString`:
   - использование `userMods.ToWString` для этого сценария помечено как deprecated.
+- `AlchemyConfig` изменён с `Class` на `Global` (теперь это глобальная таблица конфигурации).
+- `AlchemyRelatedTextService` (бывший `AlchemyLocaleService`) теперь принимает параметр `sysGroup` в `Init`, что позволило использовать его и для `locale`, и для `template`.
 - Обновлены текстовые строки локализации:
   - `GREETINGS`: `LibreAlchemy` заменён на `LibreAlchemyV2`.
   - `WELCOME_BACK`: `LibreAlchemy` заменён на `LibreAlchemyV2`.
   - `CONGRATULATION`: `LibreAlchemy` заменён на `LibreAlchemyV2`.
 - Обновлён `AddonDesc.(UIAddon).xdb`:
+  - версия обновлена до `2.2.0`.
   - изменены пути подключения скриптов.
   - изменены пути локализации.
   - добавлена группа локализации `template`.
   - подключение Drag & Drop теперь указывает на `Libs/DND/src/DnDManager.lua`.
-- Инициализация кэша имён компонентов в `AlchemyRecipeService` перенесена в `Init`.
+- Инициализация кэша имён компонентов в `AlchemyRecipeService` перенесена в метод `Init`.
 
 ### Removed
 - Удалена библиотека `Libs/LibDnD.lua`.
+- Удален вызов `dndWidgetWrapper:InitDragAndDrop()` и связанные с ним проверки из `AlchemyAvatarEvents`.
+- Удален класс `WidgetDnD`.
+- Удалён файл `Scripts/Services/AlchemyLocaleService.lua` (заменён универсальным `AlchemyRelatedTextService.lua`).
+- Удалён файл `Scripts/Services/Search/SearchAlgorithmClassInterface.lua` (алгоритм поиска больше не использует этот интерфейс).
 - Удалены локализационные шаблоны `INSTALL_LIB_DND`:
   - `Locales/eng/INSTALL_LIB_DND.txt`.
   - `Locales/rus/INSTALL_LIB_DND.txt`.
