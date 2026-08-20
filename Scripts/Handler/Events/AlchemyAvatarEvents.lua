@@ -37,19 +37,14 @@ end
 --- Выполняется при входе персонажа в игру.
 --------------------------------------------------------------------------------
 function AlchemyAvatarEvents:OnAvatarCreated() --- void
-    -- Применение кастомного расположения элементов окна алхимии (если включено в конфиге).
     if self._config.ENABLE_CUSTOM_LAYOUT then
+        -- Применение кастомного расположения элементов окна алхимии.
         self._ui:GetWidgetWrapper( "AlchemyV2" ):InitCustomLayout()
     end
     
-    local dndWidgetWrapper = self._ui:GetWidgetWrapper( "dnd" )
-    
-    -- Попытка инициализации библиотеки Drag&Drop для перетаскивания окна.
-    if not dndWidgetWrapper or not dndWidgetWrapper:InitDragAndDrop() then
-        -- Сохранить до лучших времен:
-        -- self._text:SetText( self._services.locale:Get( "INSTALL_LIB_DND" ) )
-        -- self._state.messageType = self._config.MESSAGE_WARNING
-    end
+    local panelWrapper = self._ui:GetWidgetWrapper( "panel" )
+    -- Окно с подсказкой становится перетаскиваемым.
+    self._services.dnd:Register( panelWrapper:GetNativeWidget(), { saveToConfig = true } )
 end
 
 --------------------------------------------------------------------------------
