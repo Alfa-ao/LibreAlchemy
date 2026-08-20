@@ -118,7 +118,6 @@ context:Init {
 widgetManager:Init(
     {
         WidgetOuText(),
-        WidgetDnD(),
         WidgetAlchemyV2(),
         WidgetPanel(),
     },
