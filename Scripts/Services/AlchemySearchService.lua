@@ -4,11 +4,11 @@
 --------------------------------------------------------------------------------
 
 Class( "AlchemySearchService", {
-	_state         = nil, -- Ссылка на глобальное состояние аддона (AlchemyState).
-	_recipeService = nil, -- Сервис для работы с рецептами (кэширование и фильтрация).
-	_mapper        = nil, -- Маппер сдвигов барабанов (DrumShiftMapper).
-	_algorithm     = nil, -- Алгоритм поиска (реализация SearchAlgorithmClassInterface).
-	_foundSet      = nil, -- Хеш-таблица для отслеживания уникальных найденных рецептов (используется внутри алгоритма).
+	_state     = nil, -- Ссылка на глобальное состояние аддона (AlchemyState).
+	_recipe    = nil, -- Сервис для работы с рецептами (кэширование и фильтрация).
+	_mapper    = nil, -- Маппер сдвигов барабанов (DrumShiftMapper).
+	_algorithm = nil, -- Алгоритм поиска (реализация BacktrackingSearchAlgorithm).
+	_foundSet  = nil, -- Хеш-таблица для отслеживания уникальных найденных рецептов (используется внутри алгоритма).
 } )
 
 --------------------------------------------------------------------------------
@@ -17,14 +17,14 @@ Class( "AlchemySearchService", {
 --- @param state table AlchemyState
 --- @param recipeService table AlchemyRecipeService
 --- @param mapper table DrumShiftMapper
---- @param algorithm table SearchAlgorithmClassInterface
+--- @param algorithm table BacktrackingSearchAlgorithm
 --------------------------------------------------------------------------------
 function AlchemySearchService:Init( state, recipeService, mapper, algorithm ) --- void
-	self._state         = state
-	self._recipeService = recipeService
-	self._mapper        = mapper
-	self._foundSet      = {}
-	self._algorithm     = algorithm
+	self._state      = state
+	self._recipe     = recipeService
+	self._mapper     = mapper
+	self._foundSet   = {}
+	self._algorithm  = algorithm
 end
 
 --------------------------------------------------------------------------------
@@ -57,7 +57,7 @@ function AlchemySearchService:FindBestRecipes()
 	local drumRequiredComponents, totalDrumsCount = self._mapper:BuildMap()
 
 	-- Фильтрует глобальный кэш рецептов, оставляя только подходящие по компонентам
-	self._recipeService:FilterByComponents( drumRequiredComponents, totalDrumsCount )
+	self._recipe:FilterByComponents( drumRequiredComponents, totalDrumsCount )
 
 	-- Запускает алгоритм поиска для перебора вариантов с учетом коррекций и доступных линий
 	self._state.foundResults = self._algorithm:Execute( 
