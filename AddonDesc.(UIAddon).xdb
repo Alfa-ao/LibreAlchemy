@@ -7,26 +7,14 @@
 		<name href="AddonName.txt" />
 		<description href="AddonDescription.txt" />
 		<author>Alfa</author>
-		<version>2.2.0</version>
+		<version>2.3.0</version>
 		<apiVersion>18000000</apiVersion>
 		<buildTime>0</buildTime>
 		<useCommonScripts>false</useCommonScripts>
 	</userAddonInfo>
 	<ScriptFileRefs>
-		<!-- Фасад над API -->
-		<!-- <Item href="/Mods/Facade/Facade.lua" />
-		<Item href="/Mods/Facade/AO/Avatar.lua" />
-		<Item href="/Mods/Facade/AO/Auction.lua" />
-		<Item href="/Mods/Facade/AO/Cartographer.lua" />
-		<Item href="/Mods/Facade/AO/Common.lua" />
-		<Item href="/Mods/Facade/AO/Events.lua" />
-		<Item href="/Mods/Facade/AO/Object.lua" />
-		<Item href="/Mods/Facade/AO/Unit.lua" />
-		<Item href="/Mods/Facade/AO/UserMods.lua" />
-		<Item href="/Mods/Facade/customAO/Custom.lua" />
-		<Item href="/Mods/Facade/support/Debug.lua" />
-		<Item href="/Mods/Facade/support/String.lua" />
-		<Item href="/Mods/Facade/support/Table.lua" /> -->
+		<!-- var_dump -->
+		<Item href="Libs/var_dump.lua" />
 		
 		<!-- GetTableSize -->
 		<Item href="/Mods/SampleCommon/SampleAddonBase.lua" />
@@ -48,9 +36,9 @@
 		<Item href="Scripts/Utils/MathUtils.lua" />
 		
 		<!-- LibreAlchemy -->
-		<Item href="Scripts/Core/AlchemyConfig.lua" />
+		<Item href="Scripts/Core/Config.lua" />
 		<Item href="Scripts/Core/AlchemyState.lua" />
-		<Item href="Scripts/Core/AlchemyContext.lua" />
+		<!-- <Item href="Scripts/Core/AlchemyContext.lua" /> -->
 		
 		<!-- Search Subsystem (Реализации поиска) -->
 		<Item href="Scripts/Services/Search/RecipeEvaluator.lua" />
@@ -65,24 +53,24 @@
 		<Item href="Scripts/Services/AlchemyTextContainerService.lua" />
 		
 		<!-- UI -->
-		<Item href="Scripts/UI/WidgetClassInterface.lua" />
-		<Item href="Scripts/UI/Widgets/WidgetPanel.lua" />
-		<Item href="Scripts/UI/Widgets/WidgetOuText.lua" />
-		<Item href="Scripts/UI/Widgets/WidgetAlchemyV2.lua" />
-		<Item href="Scripts/UI/AlchemyWidgetManager.lua" />
-		<Item href="Scripts/UI/AlchemyTextFormatter.lua" />
+		<!-- <Item href="Scripts/UI/WidgetClassInterface.lua" /> -->
+		<!-- <Item href="Scripts/UI/Widgets/WidgetPanel.lua" /> -->
+		<!-- <Item href="Scripts/UI/Widgets/WidgetOuText.lua" /> -->
+		<Item href="Scripts/GUI/WidgetAlchemyV2.lua" />
+		<!-- <Item href="Scripts/UI/AlchemyWidgetManager.lua" /> -->
+		<Item href="Scripts/GUI/AlchemyTextFormatter.lua" />
 		
 		<!-- Events -->
-		<Item href="Scripts/Handler/EventClassInterface.lua" />
-		<Item href="Scripts/Handler/Events/AlchemySystemEvents.lua" />
-		<Item href="Scripts/Handler/Events/AlchemyEvents.lua" />
-		<Item href="Scripts/Handler/Events/AlchemyAvatarEvents.lua" />
-		<Item href="Scripts/Handler/Events/AlchemyDNDEvents.lua" />
-		<Item href="Scripts/Handler/Events/AlchemyPosEvents.lua" />
-		<Item href="Scripts/Handler/AlchemyEventManager.lua" />
+		<!-- <Item href="Scripts/Handler/EventClassInterface.lua" /> -->
+		<!-- <Item href="Scripts/Handler/Events/AlchemySystemEvents.lua" /> -->
+		<Item href="Scripts/Events/AlchemyEvents.lua" />
+		<Item href="Scripts/Events/AlchemyAvatarEvents.lua" />
+		<!-- <Item href="Scripts/Handler/Events/AlchemyDNDEvents.lua" /> -->
+		<!-- <Item href="Scripts/Handler/Events/AlchemyPosEvents.lua" /> -->
+		<!-- <Item href="Scripts/Handler/AlchemyEventManager.lua" /> -->
 		
 		<!-- Bootstrap & Init -->
-		<Item href="Scripts/Core/AlchemyBootstrap.lua" />
+		<!-- <Item href="Scripts/Core/AlchemyBootstrap.lua" /> -->
 		<Item href="Scripts/Core/AlchemyInit.lua" />
 	</ScriptFileRefs>
 	
