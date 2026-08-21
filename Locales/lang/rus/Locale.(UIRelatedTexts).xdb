@@ -18,26 +18,6 @@
 			<resource href="COUNT_RECIPES.txt"/>
 		</Item>
 		<Item>
-			<name>DEBUG_COUNT_COMPONENTS</name>
-			<resource href="DEBUG_COUNT_COMPONENTS.txt"/>
-		</Item>
-		<Item>
-			<name>DEBUG_COUNT_RECIPES</name>
-			<resource href="DEBUG_COUNT_RECIPES.txt"/>
-		</Item>
-		<Item>
-			<name>DEBUG_INSERT_BAR</name>
-			<resource href="DEBUG_INSERT_BAR.txt"/>
-		</Item>
-		<Item>
-			<name>DEBUG_ITERATION_COMPONENTS</name>
-			<resource href="DEBUG_ITERATION_COMPONENTS.txt"/>
-		</Item>
-		<Item>
-			<name>DEBUG_REMOVED_BAR</name>
-			<resource href="DEBUG_REMOVED_BAR.txt"/>
-		</Item>
-		<Item>
 			<name>GREETINGS</name>
 			<resource href="GREETINGS.txt"/>
 		</Item>
