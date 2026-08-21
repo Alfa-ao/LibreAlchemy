@@ -1,69 +1,68 @@
 --------------------------------------------------------------------------------
 -- Scripts/Services/AlchemyTextContainerService.lua
 -- Сервис для управления текстовым контейнером (TextContainer).
--- Предоставляет интерфейс для очистки, добавления и вывода
--- текста в виджете-обертке (реализующем WidgetClassInterface).
 --------------------------------------------------------------------------------
 
-Class( "AlchemyTextContainerService", {
-	_widgetManager = nil,
-} )
+Class( "AlchemyTextContainerService" )
 
 --------------------------------------------------------------------------------
 --- Инициализация сервиса.
---- @param widgetManager table - экземпляр класса AlchemyWidgetManager
 --------------------------------------------------------------------------------
-function AlchemyTextContainerService:Init( widgetManager ) --- void
-	self._widgetManager = widgetManager
+function AlchemyTextContainerService:Init()
+    self._wtPanel = _G.mainForm:GetChildChecked( "Panel" )
+    self._wtOuText = self._wtPanel:GetChildChecked( "ouText" )
 end
 
 --------------------------------------------------------------------------------
 --- Установить набор строк в текстовый контейнер.
 --- Полностью очищает контейнер перед добавлением новых строк.
---- @param ... ValuedText | WString | string 
+--- @param ... ValuedText | WString | string
 --------------------------------------------------------------------------------
-function AlchemyTextContainerService:SetLines( ... ) --- void
+function AlchemyTextContainerService:SetLines( ... )
 	local linesArray = { ... }
-
-	local ouTextWrapper = self._widgetManager:GetWidgetWrapper( "ouText" )
-    local panelWrapper = self._widgetManager:GetWidgetWrapper( "panel" )
-
-    -- Чистка
-    ouTextWrapper:RemoveItems()
+    
+    self._wtOuText:RemoveItems()
 	
-	-- Последовательно добавляем строки в контейнер
 	for _, line in ipairs( linesArray ) do
-        if type( line ) == "string" then
-            -- line = userMods.ToWString( line ) -- Deprecated Более не юзабелен в аддоне
-        end
-        
-		ouTextWrapper:PushBackText( line )
+		self._wtOuText:PushBackText( line )
 	end
 	
-	-- Узнает точную высоту текста и заставляем Panel подстроиться
-    local exactHeight = ouTextWrapper:GetExactTextHeight()
-    panelWrapper:UpdateSize( exactHeight )
+	-- Выдать высоту текста и подстроить под него сам Panel
+    local exactHeight = self:GetExactTextHeight()
+    self:UpdateSizePanel( exactHeight )
 end
 
 --------------------------------------------------------------------------------
---- Установить одну строку в текстовый контейнер.
---- Является оберткой над SetLines.
---- @param text string | WString | ValuedText
+--- Динамически подстраивает размер Panel под переданную высоту текста + отступы.
+--- @param textHeight number
 --------------------------------------------------------------------------------
-function AlchemyTextContainerService:SetSingleLine( text ) --- void
-	self:SetLines( text )
-end
-
---------------------------------------------------------------------------------
---- Полностью очистить текстовый контейнер от всех строк.
---------------------------------------------------------------------------------
-function AlchemyTextContainerService:ClearAllLines() --- void
-    local ouTextWrapper = self._widgetManager:GetWidgetWrapper( "ouText" )
-    local panelWrapper = self._widgetManager:GetWidgetWrapper( "panel" )
-
-    ouTextWrapper:RemoveItems()
-    ouTextWrapper:ForceReposition()
+function AlchemyTextContainerService:UpdateSizePanel( textHeight ) --- void
+    local padding = 15 -- Говнокод убрать в конфиг
     
-    -- При очистке высота текста равна 0
-    panelWrapper:UpdateSize( 0 )
+    -- Размеры текстового контейнера
+    local ouTextPlc = self._wtOuText:GetPlacementPlain()
+    
+    -- Ширина: отступ слева (posX) + фиксированная ширина текста (sizeX) + отступ справа
+    local targetSizeX = ouTextPlc.posX + ouTextPlc.sizeX + padding
+    -- Высота: отступ сверху (posY) + (fontsize="15") высота текста + отступ снизу
+    local targetSizeY = ouTextPlc.posY + textHeight + padding
+
+    -- Новый размер для Panel
+    local panelPlc = self._wtPanel:GetPlacementPlain()
+    panelPlc.sizeX = targetSizeX
+    panelPlc.sizeY = targetSizeY
+    self._wtPanel:SetPlacementPlain( panelPlc )
+end
+
+--------------------------------------------------------------------------------
+--- Возвращает пиксельную высоту текстового контента.
+--- Использует внутренний ouText -> __Border -> __Content.
+--- @return number
+--------------------------------------------------------------------------------
+function AlchemyTextContainerService:GetExactTextHeight()
+    self._wtOuText:ForceReposition()
+    
+    local content = self._wtOuText:GetChildChecked( "__Border" ):GetChildChecked( "__Content" )
+    local contentPlc = content:GetPlacementPlain()
+    return contentPlc.posY + contentPlc.sizeY
 end
