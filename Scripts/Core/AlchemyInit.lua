@@ -1,11 +1,8 @@
 --------------------------------------------------------------------------------
 -- Core/AlchemyInit.lua
--- Главный скрипт инициализации LibreAlchemyV2.
 --------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------
--- Для логирования.
---------------------------------------------------------------------------------
+-- Для логирования
 function AlchemyDebugService:LogGeneral( ... )
     self:Log( "GENERAL", ... )
 end
@@ -15,140 +12,105 @@ function AlchemyDebugService:LogReaction( ... )
 end
 
 --------------------------------------------------------------------------------
--- Конфиг и состояние.
+-- Cостояние и вспомогательные функции.
 --------------------------------------------------------------------------------
-local config = AlchemyConfig
 local state  = AlchemyState()
-state.messageType = config.MESSAGE_GREETINGS
+state.messageType = CONFIG.MESSAGE_GREETINGS
 
 local mathUtils = MathUtils()
 
 --------------------------------------------------------------------------------
 -- Сервисы.
 --------------------------------------------------------------------------------
-local services = {
-    -- Дебаг.
-    debug = AlchemyDebugService(),
+local debugService = AlchemyDebugService() -- Лог.
+debugService:Init { GENERAL = CONFIG.DEBUG, REACTION = CONFIG.DEBUG_REACTION }
 
-    -- Сервис локализации. RUS, ENG.
-    locale = AlchemyRelatedTextService(),
+local localeService = AlchemyRelatedTextService() -- RUS, ENG.
+localeService:Init( common.GetLocalization() )
 
-    -- Шаблоны <html> из Locales/template/UIRelatedTexts.
-    template = AlchemyRelatedTextService(),
+local templateService = AlchemyRelatedTextService() -- Шаблоны <html> из Locales/template/UIRelatedTexts.
+templateService:Init( "template" )
 
-    -- Кэш 250 и более зельев.
-    recipe = AlchemyRecipeService(),
+local recipeService = AlchemyRecipeService() -- Кэш 250 и более зельев.
+recipeService:Init( state )
 
-    -- Сервис поиска возможных рецептов с учетом сдвигов барабанов.
-    search = AlchemySearchService(),
-
-    -- Сервис для управления текстовым контейнером.
-    textContainer = AlchemyTextContainerService(),
-
-    -- Drag & Drop менеджер.
-    dnd = DnDManager(),
-}
-
---------------------------------------------------------------------------------
--- Инициализация сервисов.
---------------------------------------------------------------------------------
-services.debug:Init {
-    GENERAL  = config.DEBUG,
-    REACTION = config.DEBUG_REACTION,
-}
-
-services.recipe:Init( state )
-services.locale:Init( common.GetLocalization() )
-services.template:Init( "template" )
-
--- autoRegisterEvents = false отменяет автоматическую регистрацию событий.
--- Ручная регистрация через AlchemyDNDEvents / AlchemyPosEvents.
-services.dnd:Init { autoRegisterEvents = false, defaultCursor = "drag" }
+local dndManager = DnDManager()
+dndManager:Init { defaultCursor = "drag" }
 
 --------------------------------------------------------------------------------
 -- По алхимке поиск рецептов.
 --------------------------------------------------------------------------------
-
--- Маппер сдвигов барабанов.
 local drumShiftMapper = DrumShiftMapper()
+drumShiftMapper:Init( state, recipeService, mathUtils )
 
--- Алгоритм поиска (Backtracking).
 local searchAlgorithm = BacktrackingSearchAlgorithm()
-
--- Связывание компонентов подсистемы поиска.
-drumShiftMapper:Init( state, services.recipe, mathUtils )
-
--- Передача оценщика рецептов (RecipeEvaluator) и утилиты.
 searchAlgorithm:Init( RecipeEvaluator(), mathUtils )
 
--- Инициализация главного сервиса поиска.
-services.search:Init(
-    state,
-    services.recipe,
-    drumShiftMapper,
-    searchAlgorithm
-)
-
---------------------------------------------------------------------------------
--- Инициализация связанное с интерфейсом.
---------------------------------------------------------------------------------
-
--- Менеджер виджетов.
-local widgetManager = AlchemyWidgetManager()
-
--- Форматировщик текста.
-local textFormatter = AlchemyTextFormatter()
-
---------------------------------------------------------------------------------
--- Подготовка контекста.
---------------------------------------------------------------------------------
-local context = AlchemyContext()
-
-context:Init {
-    state = state,
-    config = config,
-    widgetManager = widgetManager,
-    textFormatter = textFormatter,
-    services = services,
-}
+local searchService = AlchemySearchService()
+searchService:Init( state, recipeService, drumShiftMapper, searchAlgorithm )
 
 --------------------------------------------------------------------------------
 -- Виджеты.
 --------------------------------------------------------------------------------
-widgetManager:Init(
-    {
-        WidgetOuText(),
-        WidgetAlchemyV2(),
-        WidgetPanel(),
-    },
-    context
-)
+--[[ local widgetPanel = WidgetPanel()
+local widgetOuText = WidgetOuText() ]]
+local widgetAlchemyV2 = WidgetAlchemyV2()
+
+--[[ widgetPanel:Init()
+widgetOuText:Init( widgetPanel:GetWidget() ) ]]
+widgetAlchemyV2:Init()
 
 --------------------------------------------------------------------------------
--- Инициализация форматировщика текста.
+-- Всё что связано с текстом, почти.
 --------------------------------------------------------------------------------
-textFormatter:Init( context )
+local textContainerService = AlchemyTextContainerService()
+textContainerService:Init()
+
+local textFormatter = AlchemyTextFormatter()
+textFormatter:Init( widgetAlchemyV2, templateService )
 
 --------------------------------------------------------------------------------
--- События.
+-- Логика в событиях связано с алхимкой.
 --------------------------------------------------------------------------------
-local eventManager = AlchemyEventManager()
+local alchemyEvents = AlchemyEvents()
+alchemyEvents:Init {
+    state         = state,
+    textContainer = textContainerService,
+    formatter     = textFormatter,
+    search        = searchService,
+    recipe        = recipeService,
+    debug         = debugService,
+    locale        = localeService,
+}
 
-eventManager:Init(
-    {
-        AlchemyEvents(),
-        AlchemyAvatarEvents(),
-        AlchemyPosEvents(),
-        AlchemyDNDEvents(),
-    },
-    context
-)
-
-eventManager:RegisterAll()
+local avatarEvents = AlchemyAvatarEvents()
+avatarEvents:Init {
+    state         = state,
+    AlchemyV2     = widgetAlchemyV2,
+    textContainer = textContainerService,
+    debug         = debugService,
+    locale        = localeService,
+    dnd           = dndManager,
+}
 
 --------------------------------------------------------------------------------
--- Инициализация и запуск.
+-- Регистрация событий.
 --------------------------------------------------------------------------------
-local bootstrap = AlchemyBootstrap()
-bootstrap:Init( eventManager )
-bootstrap:Run()
+-- Алхимия
+common.RegisterEventHandler( function() alchemyEvents:OnStarted() end, "EVENT_ALCHEMY_STARTED" )                        -- Окно алхимки открывается. Инициализируется HELLO сообщение и кэш рецептов.
+common.RegisterEventHandler( function( params ) alchemyEvents:OnCanceled( params ) end, "EVENT_ALCHEMY_CANCELED" )      -- Окно алхимки закрывается / вышли из варки в меню.
+common.RegisterEventHandler( function( params ) alchemyEvents:OnItemPlaced( params ) end, "EVENT_ALCHEMY_ITEM_PLACED" ) -- При каждом изменении слота для компонентов уведомляет, что в такой-то слот был вставлен/вынут компонент.
+common.RegisterEventHandler( function() alchemyEvents:OnReactionFinished() end, "EVENT_ALCHEMY_REACTION_FINISHED" )     -- Уведомляет о начале варки зелья. Хоть и название события говорит о другом...
+common.RegisterEventHandler( function() alchemyEvents:OnRecipesChanged() end, "EVENT_ALCHEMY_RECIPES_CHANGED" )         -- Уведомляет об необходимости обновить список рецептов.
+
+-- Аватар
+common.RegisterEventHandler( function() avatarEvents:OnAvatarCreated() end, "EVENT_AVATAR_CREATED" )                    -- Инициализация логики. Когда игрок уже в игре, ТОЛЬКО ТОГДА необходимо применинить следующую логику.
+common.RegisterEventHandler( function( params ) avatarEvents:OnItemTaken( params ) end, "EVENT_AVATAR_ITEM_TAKEN" )     -- Всё что попало в сумку игрока от крафта алхимки.
+
+--------------------------------------------------------------------------------
+-- Повторно событие EVENT_AVATAR_CREATED не прийдет, т.к. аватар уже находиться в игре.
+-- Если аддон по каким-то причинам load/reload.
+--------------------------------------------------------------------------------
+if avatar.IsExist() then
+    avatarEvents:OnAvatarCreated()
+end
