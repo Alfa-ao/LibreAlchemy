@@ -3,6 +3,18 @@
 --------------------------------------------------------------------------------
 
 -- Для логирования
+local VAR_DEBUG_EXISTS = apitype( rawget( _G, "var_dump" ) ) == "function"
+
+Global( "log", function( ... )
+    if VAR_DEBUG_EXISTS then
+        common.LogInfo( "common", var_dump( ... ) )
+    else
+        for _, value in ipairs { ... } do
+            common.LogInfo( "common", tostring( value ) )
+        end
+    end
+end )
+
 function AlchemyDebugService:LogGeneral( ... )
     self:Log( "GENERAL", ... )
 end
@@ -52,12 +64,7 @@ searchService:Init( state, recipeService, drumShiftMapper, searchAlgorithm )
 --------------------------------------------------------------------------------
 -- Виджеты.
 --------------------------------------------------------------------------------
---[[ local widgetPanel = WidgetPanel()
-local widgetOuText = WidgetOuText() ]]
 local widgetAlchemyV2 = WidgetAlchemyV2()
-
---[[ widgetPanel:Init()
-widgetOuText:Init( widgetPanel:GetWidget() ) ]]
 widgetAlchemyV2:Init()
 
 --------------------------------------------------------------------------------
