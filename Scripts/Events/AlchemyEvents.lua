@@ -85,7 +85,6 @@ end
 --------------------------------------------------------------------------------
 function AlchemyEvents:OnItemPlaced( params )
     ----------------------------------------
-    -- Логирует действие (положен или вынут предмет)
     self._debug:LogGeneral( "EVENT_ALCHEMY_ITEM_PLACED", function ()
         if params.placed then
             return "DEBUG_INSERT_BAR"
@@ -140,7 +139,7 @@ function AlchemyEvents:OnItemPlaced( params )
             
             -- Если все слоты заполнены и есть подходящие рецепты
             if countRecipe > 0 then
-                -- Сопоставляется локализованный шаблон со значением и пушится в текстовый контейнер
+                -- Сопоставляется шаблон со значением и пушится в текстовый контейнер
                 local vtCountRecipes = common.CreateValuedText{
                     format = self._locale:Get( "COUNT_RECIPES" ),
                     count = countRecipe,
@@ -156,7 +155,8 @@ function AlchemyEvents:OnItemPlaced( params )
                 ----------------------------------------
                 self._debug:LogGeneral( "COMPONENTS_NOT_READY" )
                 ----------------------------------------
-            else -- Ни одного слота не заполнено
+            -- Ни одного слота не заполнено
+            else
                 self._textContainer:SetLines( self._locale:Get( "NOT_FOUND_RECIPES" ) )
                 ----------------------------------------
                 self._debug:LogGeneral( "NOT_FOUND_RECIPES" )
