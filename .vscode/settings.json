@@ -5,6 +5,9 @@
 		}
 	],
 	"Lua.diagnostics.disable": [
-		"undefined-global"
+		"undefined-global",
+		"undefined-field",
+		"lowercase-global",
+		"undefined-doc-name"
 	]
 }
