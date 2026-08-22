@@ -6,7 +6,7 @@
 	<userAddonInfo>
 		<name href="AddonName.txt" />
 		<description href="AddonDescription.txt" />
-		<author>Alfa</author>
+		<author>Alfa-ao</author>
 		<version>2.3.0</version>
 		<apiVersion>18000000</apiVersion>
 		<buildTime>0</buildTime>
@@ -27,7 +27,7 @@
 		<Item href="Libs/Enum/src/Definitions/TakeItemActionType.lua" />
 		
 		<!-- Facade -->
-		<Item href="Scripts/Facade.lua" />
+		<!-- <Item href="Scripts/Facade.lua" /> -->
 		
 		<!-- Drag & Drop -->
 		<Item href="Libs/DND/src/DnDManager.lua" />
