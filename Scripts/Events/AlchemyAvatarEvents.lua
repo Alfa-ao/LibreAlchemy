@@ -57,16 +57,14 @@ function AlchemyAvatarEvents:OnItemTaken( params )
     if params.actionType == EnumTakeItemActionType.CRAFT and self._state.reactionSuccess then
         -- Информация о созданном предмете по его ID.
         local info = itemLib.GetItemInfo( params.itemObject:GetId() )
-        local potionName = userMods.FromWString( info.name ) -- ПЕРЕДЕЛАТЬ
+        local potionName = userMods.FromWString( info.name )
         
         -- Количество предметов в стаке.
         local count = itemLib.GetStackInfo( params.itemObject:GetId() ).count
         
         self._textContainer:SetLines( 
-            self._locale:Get( "AVATAR_ITEM_TAKEN" ), -- WString("Поздравляю! Вы получаете:") -- ПЕРЕДЕЛАТЬ
-            string.format( "[%s]x%d", potionName, count ) -- ПЕРЕДЕЛАТЬ
+            self._locale:Get( "AVATAR_ITEM_TAKEN" ), -- WString("Поздравляю! Вы получаете:")
+            string.format( "[%s]x%d", potionName, count )
         )
-        
-        error( "REWORK" )
     end
 end
