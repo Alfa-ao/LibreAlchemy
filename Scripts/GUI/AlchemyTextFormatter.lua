@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 -- GUI/AlchemyTextFormatter.lua
 -- Форматировщик текста для вывода результатов алхимии.
--- Отвечает за подготовку, сортировку и форматирование списка найденных рецептов
+-- Подготавливает, сортирует и форматирует список найденных рецептов
 -- перед их выводом в текстовый контейнер (ouText).
 --------------------------------------------------------------------------------
 
@@ -40,12 +40,11 @@ function AlchemyTextFormatter:FormatResults( found, maxDisplay, drumsCount )
 	-- Имя рецепта через обертку виджета AlchemyV2
     local currentRecipeName = self._classWidgetAlchemyV2:GetCurrentRecipeName()
 	
-	-- Локализованный шаблон строки рецепта "level:N |N |N |N |N - name"
+	-- Шаблон строки рецепта "level:N |N |N |N |N - name"
     local recipeLineFormat = self._template:Get( "RECIPE_LINE" )
 	
-	-- Локализованный шаблон для значения с жёлтым цветом (<span color="0xFFFFFF00"><r name="val"/></span>)
+	-- Шаблон для значения с жёлтым цветом (<span color="0xFFFFFF00"><r name="val"/></span>)
 	local colorYellowtextFormat = self._template:Get( "COLOR_YELLOW_TEXT" )
-	
 	
 	local linesData = {}
 	
@@ -53,12 +52,10 @@ function AlchemyTextFormatter:FormatResults( found, maxDisplay, drumsCount )
     for i = 1, math.min( #found, maxDisplay ) do
         local foundResult = found[ i ]
         
-        -- Стандартные значения
         local levelValue = foundResult.recipe.score
         local nameValue  = userMods.ToWString( foundResult.recipe.name )
 		
-		-- Красим только строку с конкретным зельем.
-        -- Если строка подходит под условие, оборачиваем значения в ValuedText с желтым цветом
+		-- Выбранное зелье помечается желтым цветом.
         if currentRecipeName == nameValue then
 			-- Уровень зелья
             levelValue = common.CreateValuedText( {
@@ -105,15 +102,12 @@ function AlchemyTextFormatter:FormatResultsForLog( found, maxDisplay, drumsCount
 	for i = 1, math.min( #found, maxDisplay ) do
 		local foundResult = found[ i ]
 		
-		-- Начало формирования строки с уровня и первого сдвига
 		local logStr = string.format( "%d,%d", foundResult.recipe.score, -foundResult.shifts[ 1 ] )
 		
-		-- Добавление остальных сдвигов через запятую
 		for drumIndex = 2, drumsCount do
 			logStr = logStr .. string.format( ",%d", -foundResult.shifts[ drumIndex ] )
 		end
 		
-		-- Добавляет имя рецепта в конец строки
 		logStr = logStr .. "," .. foundResult.recipe.name
 		table.insert( parts, logStr )
 	end
