@@ -36,10 +36,9 @@ end
 --- Динамически подстраивает размер Panel под переданную высоту текста + отступы.
 --- @param textHeight number
 --------------------------------------------------------------------------------
-function AlchemyTextContainerService:UpdateSizePanel( textHeight ) --- void
+function AlchemyTextContainerService:UpdateSizePanel( textHeight )
     local padding = 15 -- Говнокод убрать в конфиг
     
-    -- Размеры текстового контейнера
     local ouTextPlc = self._wtOuText:GetPlacementPlain()
     
     -- Ширина: отступ слева (posX) + фиксированная ширина текста (sizeX) + отступ справа
