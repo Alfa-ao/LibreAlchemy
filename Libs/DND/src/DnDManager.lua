@@ -25,7 +25,7 @@ Class( "DnDManager", {
 --- @param params table|nil
 --------------------------------------------------------------------------------
 function DnDManager:Init( params )
-    params = params or {}
+    params = type( params ) == "table" and params or {}
     
     if self._initialized then
         error( "DnDManager:Init() has already been called. Re-initialization is not allowed." )
@@ -106,7 +106,7 @@ function DnDManager:Register( wtMovable, options )
     
     self:_ValidateWidget( wtMovable, "wtMovable" ) -- всемогучая проверочка "это виджет?"
     
-    options = options or {}
+    options = type( options ) == "table" and options or {}
 
     if options.wtReacting ~= nil then
         self:_ValidateWidget( options.wtReacting, "wtReacting" ) -- всемогучая проверочка "это виджет?"
