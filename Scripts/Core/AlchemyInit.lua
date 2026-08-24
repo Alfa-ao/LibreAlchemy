@@ -47,7 +47,7 @@ local recipeService = AlchemyRecipeService() -- Кэш 250 и более зел�
 recipeService:Init( state )
 
 local dndManager = DnDManager()
-dndManager:Init { defaultCursor = "drag" }
+dndManager:Init { defaultCursor = CONFIG.DND.CURSOR }
 
 --------------------------------------------------------------------------------
 -- По алхимке поиск рецептов.
@@ -64,14 +64,33 @@ searchService:Init( state, recipeService, drumShiftMapper, searchAlgorithm )
 --------------------------------------------------------------------------------
 -- Виджеты.
 --------------------------------------------------------------------------------
-local widgetAlchemyV2 = WidgetAlchemyV2()
-widgetAlchemyV2:Init()
+local wtPanel = _G.mainForm:GetChildChecked( "Panel" )
+local wtOuText = wtPanel:GetChildChecked( "ouText" )
+
+local wtAlchemyV2 = common.GetAddonMainForm( "AlchemyV2" )
+
+local wtRolls = wtAlchemyV2:
+    GetChildChecked( "MainFrame" ):
+    GetChildChecked( "Alchemy" ):
+    GetChildChecked( "Game" ):
+    GetChildChecked( "View" ):
+    GetChildChecked( "Rolls" )
+
+local wtRecipeName = wtAlchemyV2:
+    GetChildChecked( "MainFrame" ):
+    GetChildChecked( "Alchemy" ):
+    GetChildChecked( "Game" ):
+    GetChildChecked( "View" ):
+    GetChildChecked( "Recipe" ):
+    GetChildChecked( "Name" )
+
+local widgetAlchemyV2 = WidgetAlchemyV2 { _wtRolls = wtRolls, _wtRecipeName = wtRecipeName }
 
 --------------------------------------------------------------------------------
 -- Всё что связано с текстом, почти.
 --------------------------------------------------------------------------------
-local textContainerService = AlchemyTextContainerService()
-textContainerService:Init()
+local textContainerService = AlchemyTextContainerService { _wtTextContainer = wtOuText }
+textContainerService:Init { sizePadding = CONFIG.GUI.PADDING }
 
 local textFormatter = AlchemyTextFormatter()
 textFormatter:Init( widgetAlchemyV2, templateService )
@@ -90,7 +109,7 @@ alchemyEvents:Init {
     locale        = localeService,
 }
 
-local avatarEvents = AlchemyAvatarEvents()
+local avatarEvents = AlchemyAvatarEvents { _wtPanel = wtPanel }
 avatarEvents:Init {
     state         = state,
     AlchemyV2     = widgetAlchemyV2,
@@ -113,6 +132,18 @@ common.RegisterEventHandler( function() alchemyEvents:OnRecipesChanged() end, "E
 -- Аватар
 common.RegisterEventHandler( function() avatarEvents:OnAvatarCreated() end, "EVENT_AVATAR_CREATED" )                    -- Инициализация логики. Когда игрок уже в игре, ТОЛЬКО ТОГДА необходимо применинить следующую логику.
 common.RegisterEventHandler( function( params ) avatarEvents:OnItemTaken( params ) end, "EVENT_AVATAR_ITEM_TAKEN" )     -- Всё что попало в сумку игрока от крафта алхимки.
+
+-- Обновляет размеры Panel при изменении размера окна игры.
+-- Причина:
+-- 1) Закомментить этот ивент.
+-- 2) В игре - Меню -> Графика -> выставить Режим: "Оконный"
+-- 3) Изменять размер окна игры.
+-- Результат: Часть текста смещается и скрывается, а padding отступы превращаются невалидными.
+-- DnDManager не знает как работать с текстовым контейнером, если смотреть на опцию padding.
+common.RegisterEventHandler( function()
+    local exactHeight = textContainerService:GetExactTextHeight()
+    textContainerService:UpdateSizePanel( exactHeight )
+end, "EVENT_POS_CONVERTER_CHANGED" )
 
 --------------------------------------------------------------------------------
 -- Повторно событие EVENT_AVATAR_CREATED не прийдет, т.к. аватар уже находиться в игре.
