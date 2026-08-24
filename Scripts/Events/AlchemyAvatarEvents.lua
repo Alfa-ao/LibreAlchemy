@@ -3,7 +3,9 @@
 -- Класс, отвечающий за обработку событий персонажа (EVENT_AVATAR_*).
 --------------------------------------------------------------------------------
 
-Class( "AlchemyAvatarEvents" )
+Class( "AlchemyAvatarEvents", {
+    _wtPanel = nil,
+} )
 
 --------------------------------------------------------------------------------
 --- @param context table -- Набор всякого всяческого
@@ -22,19 +24,7 @@ end
 --- Выполняется при входе персонажа в игру.
 --------------------------------------------------------------------------------
 function AlchemyAvatarEvents:OnAvatarCreated()
-    local wtPanel = _G.mainForm:GetChildChecked( "Panel" )
-
-    -- Получаем параметры виртуального экрана
-    local pco = common.GetPosConverterParams()
-    local plc = wtPanel:GetPlacementPlain()
-
-    -- Центрируем панель по горизонтали
-    plc.posX = pco.fullVirtualSizeX / 2 - 360 - 15
-    -- Инвертируем координату Y для корректного отображения относительно верха экрана
-    -- Подробности: https://github.com/Alfa-ao/LibreAlchemyV2/issues/1
-    plc.posY = pco.fullVirtualSizeY - plc.posY -- Переделать потом на основании окна алхимки
-
-    wtPanel:SetPlacementPlain( plc )
+    self._textContainer:UpdateCenterPanel()
     
     if CONFIG.ENABLE_CUSTOM_LAYOUT then
         -- Применение кастомного расположения элементов окна алхимии.
@@ -42,7 +32,7 @@ function AlchemyAvatarEvents:OnAvatarCreated()
     end
     
     -- Окно с подсказкой становится перетаскиваемым.
-    self._dnd:Register( wtPanel, { saveToConfig = true } )
+    self._dnd:Register( self._wtPanel, { saveToConfig = CONFIG.DND.SAVE } )
 end
 
 --------------------------------------------------------------------------------
