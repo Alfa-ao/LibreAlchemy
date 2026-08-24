@@ -11,8 +11,8 @@ Class( "AlchemyDebugService", {
 --- Инициализация сервиса отладки.
 --- @param categories table
 --------------------------------------------------------------------------------
-function AlchemyDebugService:Init( categories ) --- void
-	self._categories = categories or {}
+function AlchemyDebugService:Init( categories )
+	self._categories = type( categories ) == "table" and categories or {}
 end
 
 --------------------------------------------------------------------------------
@@ -20,7 +20,7 @@ end
 --- @param category string имя категории
 --- @param isEnabled boolean 
 --------------------------------------------------------------------------------
-function AlchemyDebugService:SetEnabled( category, isEnabled ) --- void
+function AlchemyDebugService:SetEnabled( category, isEnabled )
 	if self._categories[category] ~= nil then
 		self._categories[category] = isEnabled
 	end
@@ -40,7 +40,7 @@ end
 --- @param category string категория логирования
 --- @param ... any
 --------------------------------------------------------------------------------
-function AlchemyDebugService:Log( category, ... ) --- void
+function AlchemyDebugService:Log( category, ... )
 	if not self:IsEnabled( category ) then
 		return
 	end
