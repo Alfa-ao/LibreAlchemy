@@ -14,7 +14,7 @@
 	</userAddonInfo>
 	<ScriptFileRefs>
 		<!-- var_dump -->
-		<Item href="Libs/var_dump.lua" />
+		<!-- <Item href="Libs/var_dump.lua" /> -->
 		
 		<!-- GetTableSize -->
 		<Item href="/Mods/SampleCommon/SampleAddonBase.lua" />
