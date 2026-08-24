@@ -5,74 +5,60 @@
 --------------------------------------------------------------------------------
 
 Class( "WidgetAlchemyV2", {
-    _widget = nil,
+    _wtRolls = nil,
+    _wtRecipeName = nil,
 } )
-
---------------------------------------------------------------------------------
---- Инициализация виджета
---------------------------------------------------------------------------------
-function WidgetAlchemyV2:Init()
-    self._widget = common.GetAddonMainForm( "AlchemyV2" )
-end
 
 --------------------------------------------------------------------------------
 -- Новый стиль окна с барабанами для Алхимки
 --------------------------------------------------------------------------------
 function WidgetAlchemyV2:InitCustomLayout()
-	-- AlchemyV2.MainFrame.Alchemy.Game.View.Rolls
-    local rolls = self:GetWidget():
-        GetChildChecked( "MainFrame" ):
-        GetChildChecked( "Alchemy" ):
-        GetChildChecked( "Game" ):
-        GetChildChecked( "View" ):
-        GetChildChecked( "Rolls" )
-    
-    local bars = {
-        rolls:GetChildChecked( "Bar01" ),
-        rolls:GetChildChecked( "Bar02" ),
-        rolls:GetChildChecked( "Bar03" ),
-        rolls:GetChildChecked( "Bar04" ),
-        rolls:GetChildChecked( "Bar05" ),
+    local listBars = {
+        self._wtRolls:GetChildChecked( "Bar01" ),
+        self._wtRolls:GetChildChecked( "Bar02" ),
+        self._wtRolls:GetChildChecked( "Bar03" ),
+        self._wtRolls:GetChildChecked( "Bar04" ),
+        self._wtRolls:GetChildChecked( "Bar05" ),
     }
     
     -- Bar(01/02/03/04/05).RollTube.(ActionUp/ActionDown)
-    for _, bar in ipairs( bars ) do
+    for _, bar in ipairs( listBars ) do
         local rollTube = bar:GetChildChecked( "RollTube" )
         
         -- Отвечает за: Позицию верхней кнопки.
         local actionUp = rollTube:GetChildChecked( "ActionUp" )
         local plcActionUp = actionUp:GetPlacementPlain()
-        plcActionUp.posY = 308
+        plcActionUp.posY = CONFIG.GUI.ACTION_UP_POS_Y
         actionUp:SetPlacementPlain( plcActionUp )
         
         -- Отвечает за: Позицию нижней кнопки.
         local actionDown = rollTube:GetChildChecked( "ActionDown" )
         local plcActionDown = actionDown:GetPlacementPlain()
-        plcActionDown.posY = 308 + plcActionDown.sizeY
+        plcActionDown.posY = CONFIG.GUI.ACTION_UP_POS_Y + plcActionDown.sizeY
         actionDown:SetPlacementPlain( plcActionDown )
         
         -- Отвечает за: Размер основной колбы совместно с BackLayer текстурой.
         local plcRollTube = rollTube:GetPlacementPlain()
-        plcRollTube.sizeY = 342 + plcActionDown.sizeY
+        plcRollTube.sizeY = CONFIG.GUI.ROLL_TUBE_EXTRA_SIZE + plcActionDown.sizeY
         rollTube:SetPlacementPlain( plcRollTube )
         
         -- Отвечает за: Контейнер (Основная колба + Горелка под колбой)
         local plcBar = bar:GetPlacementPlain()
-        plcBar.sizeY = 440 + plcActionDown.sizeY
+        plcBar.sizeY = CONFIG.GUI.BAR_EXTRA_SIZE + plcActionDown.sizeY
         bar:SetPlacementPlain( plcBar )
         
         -- Отвечает за: Цифра над горелкой
         local correctionCount = bar:GetChildChecked( "CorrectionCount" )
         local plcCorrectionCount = correctionCount:GetPlacementPlain()
-        plcCorrectionCount.sizeY = 20 + 10
+        plcCorrectionCount.sizeY = CONFIG.GUI.CORRECTION_COUNT_EXTRA_SIZE
         correctionCount:SetPlacementPlain( plcCorrectionCount )
     end
     
     -- Отвечает за: Контейнер c 5ю колбами (Иконки над колбой + Основная колба + Горелка под колбой)
-    local plcRolls = rolls:GetPlacementPlain()
-    plcRolls.sizeY = 440 + 26
-    plcRolls.highPosY = 15 - 26
-    rolls:SetPlacementPlain( plcRolls )
+    local plcRolls = self._wtRolls:GetPlacementPlain()
+    plcRolls.sizeY = CONFIG.GUI.BAR_EXTRA_SIZE + CONFIG.GUI.ROLLS_EXTRA_SIZE
+    plcRolls.highPosY = CONFIG.GUI.ROLLS_HIGH_POS_Y_OFFSET - CONFIG.GUI.ROLLS_EXTRA_SIZE
+    self._wtRolls:SetPlacementPlain( plcRolls )
 end
 
 --------------------------------------------------------------------------------
@@ -80,20 +66,5 @@ end
 --- @return WString
 --------------------------------------------------------------------------------
 function WidgetAlchemyV2:GetCurrentRecipeName()
-    local nameWidget = self:GetWidget():
-        GetChildChecked( "MainFrame" ):
-        GetChildChecked( "Alchemy" ):
-        GetChildChecked( "Game" ):
-        GetChildChecked( "View" ):
-        GetChildChecked( "Recipe" ):
-        GetChildChecked( "Name" )
-
-    return nameWidget and nameWidget:GetWString() or userMods.ToWString( "WTF" )
-end
-
---------------------------------------------------------------------------------
-
---- @return Widget | TWidget | nil
-function WidgetAlchemyV2:GetWidget()
-    return self._widget
+    return self._wtRecipeName:GetWString()
 end
