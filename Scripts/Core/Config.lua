@@ -37,4 +37,28 @@ Global( "CONFIG", {
     
     DEBUG = false,                 -- Включить общее логирование работы аддона (категория GENERAL).
     DEBUG_REACTION = false,        -- Включить расширенное логирование реакций (категория REACTION).
+    
+    ---------------------------------------------
+    -- GUI позиция, размещения, отступы различные
+    ---------------------------------------------
+    GUI = {
+        PANEL_HALF_WIDTH = 360,
+        PANEL_OFFSET_X = 15,
+        PADDING = 15,
+        
+        ACTION_UP_POS_Y = 308,
+        ROLL_TUBE_EXTRA_SIZE = 342,
+        BAR_EXTRA_SIZE = 440,
+        CORRECTION_COUNT_EXTRA_SIZE = 30,
+        ROLLS_EXTRA_SIZE = 26,
+        ROLLS_HIGH_POS_Y_OFFSET = 15,
+    },
+    
+    ---------------------------------------------
+    -- DND
+    ---------------------------------------------
+    DND = {
+        SAVE = true,
+        CURSOR = "drag",
+    },
 } )
