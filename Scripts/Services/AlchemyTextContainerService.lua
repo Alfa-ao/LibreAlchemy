@@ -80,7 +80,7 @@ end
 --------------------------------------------------------------------------------
 function AlchemyTextContainerService:UpdateCenterPanel()
     local pco = common.GetPosConverterParams()
-    local plc = self._wtPanel:GetPlacementPlain()
+    local plc = self._wtParent:GetPlacementPlain()
 
     -- Центрируем панель по горизонтали
     plc.posX = pco.fullVirtualSizeX / 2 - CONFIG.GUI.PANEL_HALF_WIDTH - CONFIG.GUI.PANEL_OFFSET_X
@@ -88,5 +88,5 @@ function AlchemyTextContainerService:UpdateCenterPanel()
     -- Подробности: https://github.com/Alfa-ao/LibreAlchemyV2/issues/1
     plc.posY = pco.fullVirtualSizeY - plc.posY -- Переделать потом на основании окна алхимки
 
-    self._wtPanel:SetPlacementPlain( plc )
+    self._wtParent:SetPlacementPlain( plc )
 end
