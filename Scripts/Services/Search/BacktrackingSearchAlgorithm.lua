@@ -7,11 +7,9 @@ Class( "BacktrackingSearchAlgorithm" )
 --------------------------------------------------------------------------------
 --- Инициализация алгоритма поиска.
 --- @param evaluator table RecipeEvaluator
---- @param mathUtils table MathUtils
 --------------------------------------------------------------------------------
-function BacktrackingSearchAlgorithm:Init( evaluator, mathUtils ) --- void
+function BacktrackingSearchAlgorithm:Init( evaluator ) --- void
 	self._evaluator = evaluator
-	self._mathUtils = mathUtils
 end
 
 --------------------------------------------------------------------------------
@@ -113,8 +111,8 @@ function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvai
 					foundSet[ bestRecipe.name ] = true
 					table.insert( foundResults, {
 						recipe     = bestRecipe,
-						shifts     = self._mathUtils.shallowCopy( currentShifts ),
-						components = self._mathUtils.shallowCopy( componentMap ),
+						shifts     = MathUtils.shallowCopy( currentShifts ),
+						components = MathUtils.shallowCopy( componentMap ),
 					} )
 				end
 			end
