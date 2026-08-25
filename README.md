@@ -22,7 +22,7 @@
 
 1. Открыть файл `LibreAlchemyV2\Scripts\Core\Config.lua`.
 2. Изменить параметр `ENABLE_CUSTOM_LAYOUT = true` на `ENABLE_CUSTOM_LAYOUT = false`.
-3. Перезагрузить **игру**.
+3. Перезапустить **игру**.
 
 ## Список изменений
 
