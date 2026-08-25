@@ -20,9 +20,9 @@
 
 Аддон использует кастомное расположение кнопок барабанов для удобства. Для возврата к стандартному интерфейсу игры:
 
-1. Откройте файл `LibreAlchemyV2\Scripts\Core\AlchemyConfig.lua`.
-2. Измените параметр `ENABLE_CUSTOM_LAYOUT = true` на `ENABLE_CUSTOM_LAYOUT = false`.
-3. Перезагрузите **игру**.
+1. Открыть файл `LibreAlchemyV2\Scripts\Core\Config.lua`.
+2. Изменить параметр `ENABLE_CUSTOM_LAYOUT = true` на `ENABLE_CUSTOM_LAYOUT = false`.
+3. Перезагрузить **игру**.
 
 ## Список изменений
 
@@ -39,5 +39,5 @@
 - Current recipe highlighted in yellow
 - Localization: Russian / English
 
-**Configuration:** To revert to default UI, set `ENABLE_CUSTOM_LAYOUT = false` in `AlchemyConfig.lua` and restart the game.
+**Configuration:** To revert to default UI, set `ENABLE_CUSTOM_LAYOUT = false` in `Config.lua` and restart the game.
 </details>
