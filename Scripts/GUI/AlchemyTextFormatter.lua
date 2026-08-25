@@ -37,14 +37,14 @@ function AlchemyTextFormatter:FormatResults( found, maxDisplay, drumsCount )
 		return a.recipe.score > b.recipe.score
 	end )
 	
-	-- Имя рецепта через обертку виджета AlchemyV2
+	-- Имя рецепта из AlchemyV2
     local currentRecipeName = self._classWidgetAlchemyV2:GetCurrentRecipeName()
 	
 	-- Шаблон строки рецепта "level:N |N |N |N |N - name"
     local recipeLineFormat = self._template:Get( "RECIPE_LINE" )
 	
 	-- Шаблон для значения с жёлтым цветом (<span color="0xFFFFFF00"><r name="val"/></span>)
-	local colorYellowtextFormat = self._template:Get( "COLOR_YELLOW_TEXT" )
+	--local colorYellowtextFormat = self._template:Get( "COLOR_YELLOW_TEXT" )
 	
 	local linesData = {}
 	
@@ -52,29 +52,12 @@ function AlchemyTextFormatter:FormatResults( found, maxDisplay, drumsCount )
     for i = 1, math.min( #found, maxDisplay ) do
         local foundResult = found[ i ]
         
-        local levelValue = foundResult.recipe.score
-        local nameValue  = userMods.ToWString( foundResult.recipe.name )
-		
-		-- Выбранное зелье помечается желтым цветом.
-        if currentRecipeName == nameValue then
-			-- Уровень зелья
-            levelValue = common.CreateValuedText( {
-                format = colorYellowtextFormat,
-                val    = levelValue
-            } )
-            
-			-- Название зелья
-            nameValue = common.CreateValuedText( {
-                format = colorYellowtextFormat,
-                val    = nameValue
-            } )
-        end
-
         -- Таблица значений для подстановки в основной шаблон
         local textValues = {
             format = recipeLineFormat,
-            level  = levelValue, -- число, либо цветной ValuedText
-            name   = nameValue,  -- WString, либо цветной ValuedText
+            level  = foundResult.recipe.score,
+            name   = foundResult.recipe.name,
+            class1 = currentRecipeName == foundResult.recipe.name and "alchemy-yellow-text" or nil
         }
         
         for drumIndex = 1, drumsCount do
@@ -86,31 +69,4 @@ function AlchemyTextFormatter:FormatResults( found, maxDisplay, drumsCount )
     end
 
     return linesData
-end
-
---------------------------------------------------------------------------------
---- Формат записи: score,shift1,shift2,shift3,shift4,shift5,name|score,shift1,...
---- EVENT_ALCHEMY_REACTION_FINISHED:123,1,-1,0,0,0,зелье|123,...
---- @param found table массив найденных результатов (recipe и shifts).
---- @param maxDisplay number максимальное количество строк для отображения (ТОП-N).
---- @param drumsCount number количество барабанов (для вывода сдвигов).
---- @return string
---------------------------------------------------------------------------------
-function AlchemyTextFormatter:FormatResultsForLog( found, maxDisplay, drumsCount )
-	local parts = {}
-	
-	for i = 1, math.min( #found, maxDisplay ) do
-		local foundResult = found[ i ]
-		
-		local logStr = string.format( "%d,%d", foundResult.recipe.score, -foundResult.shifts[ 1 ] )
-		
-		for drumIndex = 2, drumsCount do
-			logStr = logStr .. string.format( ",%d", -foundResult.shifts[ drumIndex ] )
-		end
-		
-		logStr = logStr .. "," .. foundResult.recipe.name
-		table.insert( parts, logStr )
-	end
-	
-	return "EVENT_ALCHEMY_REACTION_FINISHED:" .. table.concat( parts, "|" )
 end
