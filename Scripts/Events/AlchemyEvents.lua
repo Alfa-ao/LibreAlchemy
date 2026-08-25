@@ -9,13 +9,11 @@ Class( "AlchemyEvents" )
 --- @param context table -- Набор всякого всяческого
 --------------------------------------------------------------------------------
 function AlchemyEvents:Init( context )
-    self._state         = context.state
-    self._textContainer = context.textContainer
-    self._formatter     = context.formatter
-    self._search        = context.search
-    self._recipe        = context.recipe
-    self._debug         = context.debug
-    self._locale        = context.locale
+    self._state  = context.state
+    self._search = context.search
+    self._recipe = context.recipe
+    self._debug  = context.debug
+    self._view   = context.view
 end
 
 --------------------------------------------------------------------------------
@@ -26,8 +24,7 @@ function AlchemyEvents:OnStarted()
     ----------------------------------------
     self._debug:LogGeneral( "EVENT_ALCHEMY_STARTED" )
     ----------------------------------------
-
-    -- Показывает окно подсказки и помечает состояние как активное
+    
     _G.mainForm:Show( true )
     self._state.active = true
 
@@ -35,17 +32,10 @@ function AlchemyEvents:OnStarted()
     self._recipe:CreateRecipeCache()
 
     -- Выводит HELLO сообщение в зависимости от предыдущего состояния
-    if self._state.messageType == CONFIG.MESSAGE_WELCOME_BACK then
-        self._textContainer:SetLines( self._locale:Get( "WELCOME_BACK" ) )
-        ----------------------------------------
-        self._debug:LogGeneral( "WELCOME_BACK" )
-        ----------------------------------------
-    elseif self._state.messageType == CONFIG.MESSAGE_GREETINGS then
-        self._textContainer:SetLines( self._locale:Get( "GREETINGS" ) )
-        ----------------------------------------
-        self._debug:LogGeneral( "GREETINGS" )
-        ----------------------------------------
-    end
+    self._view:ShowGreetings( self._state.messageType )
+    ----------------------------------------
+    self._debug:LogGeneral( "ShowGreetings:", self._state.messageType )
+    ----------------------------------------
 end
 
 --------------------------------------------------------------------------------
@@ -101,7 +91,8 @@ function AlchemyEvents:OnItemPlaced( params )
     if params.placed then
         self._state.place.count = self._state.place.count + 1
     else
-        self._state.reactionSuccess = false
+        --self._state.reactionSuccess = false
+        self._state:InvalidateReaction()
         self._state.place.count = self._state.place.count - 1
     end
     
@@ -113,7 +104,7 @@ function AlchemyEvents:OnItemPlaced( params )
     -- Автоматически переключится.
     if self._state.messageType ~= CONFIG.MESSAGE_NORMAL then
         if self._state.taskRefs.funcAlchemyStarted == nil then
-            self._state.taskRefs.funcAlchemyStarted = common.DelayedCall( 100, function()
+            self._state.taskRefs.funcAlchemyStarted = common.DelayedCall( CONFIG.DELAY_MS_UPDATE, function()
                 if self._state.active then
                     self._state.messageType = CONFIG.MESSAGE_NORMAL
                     ----------------------------------------
@@ -135,33 +126,12 @@ function AlchemyEvents:OnItemPlaced( params )
         -- Если не варим (в меню варки), то оценить возможные рецепты
         if not self._state.reactionSuccess then
             -- Кол-во возможных рецептов (countRecipe) и кол-во требуемых слотов (filledDrumsCount)
-            local countRecipe, _ = self._recipe:CountPotential()
+            local countRecipe, filledDrumsCount = self._recipe:CountPotential()
             
-            -- Если все слоты заполнены и есть подходящие рецепты
-            if countRecipe > 0 then
-                -- Сопоставляется шаблон со значением и пушится в текстовый контейнер
-                local vtCountRecipes = common.CreateValuedText{
-                    format = self._locale:Get( "COUNT_RECIPES" ),
-                    count = countRecipe,
-                }
-                
-                self._textContainer:SetLines( vtCountRecipes )
-                ----------------------------------------
-                self._debug:LogGeneral( "COUNT_RECIPES", countRecipe )
-                ----------------------------------------
-            -- Если до сих пор рецептов нет, но слоты частично заполнены
-            elseif self._state.place.count > 0 then
-                self._textContainer:SetLines( self._locale:Get( "COMPONENTS_NOT_READY" ) )
-                ----------------------------------------
-                self._debug:LogGeneral( "COMPONENTS_NOT_READY" )
-                ----------------------------------------
-            -- Ни одного слота не заполнено
-            else
-                self._textContainer:SetLines( self._locale:Get( "NOT_FOUND_RECIPES" ) )
-                ----------------------------------------
-                self._debug:LogGeneral( "NOT_FOUND_RECIPES" )
-                ----------------------------------------
-            end
+            self._view:ShowPotentialRecipes( countRecipe, filledDrumsCount )
+            ----------------------------------------
+            self._debug:LogGeneral( "ShowPotentialRecipes:", countRecipe )
+            ----------------------------------------
         end
     end
     
@@ -171,43 +141,36 @@ function AlchemyEvents:OnItemPlaced( params )
     end
 
     -- Запланировать новый отложенный вызов и сохранить его идентификатор
-    self._state.taskRefs.funcAlchemyItemPlaced = common.DelayedCall( 100, funcGetMessage )
+    self._state.taskRefs.funcAlchemyItemPlaced = common.DelayedCall( CONFIG.DELAY_MS_UPDATE, funcGetMessage )
 end
 
 --------------------------------------------------------------------------------
 -- Обработчик события EVENT_ALCHEMY_REACTION_FINISHED.
 -- Срабатывает сразу после начала процесса варки (нажатие кнопки "варить").
 --------------------------------------------------------------------------------
-function AlchemyEvents:OnReactionFinished() --- void
+function AlchemyEvents:OnReactionFinished()
     ----------------------------------------
     self._debug:LogGeneral( "EVENT_ALCHEMY_REACTION_FINISHED" )
     ----------------------------------------
     
     -- Запускает алгоритм поиска подходящих рецептов
     local found = self._search:FindBestRecipes()
+    self._view:ShowReactionResults( found, CONFIG.MAX_DISPLAY_RESULTS, self._state.drumsCount )
     
     -- Если ничего не найдено
     if #found == 0 then
         ----------------------------------------
         self._debug:LogReaction( "EVENT_ALCHEMY_REACTION_FINISHED:{empty}" )
         ----------------------------------------
-        
-        -- Ничего нет кроме бормотухи
-        self._textContainer:SetLines( self._locale:Get( "RESULT_GIBBERISH" ) )
-        self._state.reactionSuccess = false
+        self._state:InvalidateReaction()
     else
         ----------------------------------------
         -- Log: EVENT_ALCHEMY_REACTION_FINISHED:123,1,-1,0,0,0,зелье|123,...
         self._debug:LogReaction( function()
-            return self._formatter:FormatResultsForLog( found, CONFIG.MAX_DISPLAY_RESULTS, self._state.drumsCount )
+            return self._view:ResultsForLog( found, CONFIG.MAX_DISPLAY_RESULTS, self._state.drumsCount )
         end )
         ----------------------------------------
-        
-        -- Вывод ТОП-N результатов
-        local linesData = self._formatter:FormatResults( found, CONFIG.MAX_DISPLAY_RESULTS, self._state.drumsCount )
-	    self._textContainer:SetLines( table.unpack( linesData ) )
-        
-        -- Присваивается метка реакции как успешную (чтобы при получении предмета показать поздравление с кол-вом полученного предмета)
+        -- Присваивается метка реакции как успешная (чтобы при получении предмета показать поздравление с кол-вом полученного предмета)
         self._state.reactionSuccess = true
     end
 end
@@ -216,7 +179,7 @@ end
 -- Обработчик события EVENT_ALCHEMY_RECIPES_CHANGED.
 -- Срабатывает, когда список рецептов изменился.
 --------------------------------------------------------------------------------
-function AlchemyEvents:OnRecipesChanged() --- void
+function AlchemyEvents:OnRecipesChanged()
     ----------------------------------------
     self._debug:LogGeneral( "EVENT_ALCHEMY_RECIPES_CHANGED" )
     ----------------------------------------
@@ -225,12 +188,10 @@ function AlchemyEvents:OnRecipesChanged() --- void
     self._state:ResetRecipeCache()
 	
 	-- Заглушка если алхимка не открыта, но взяли допустим рецепт из Айрина и добавили зелье в рецепт.
-	if not self._state.active then
-		return
-	end
+	if not self._state.active then return end
 	
     -- Поздравить игрока.
-    self._textContainer:SetLines( self._locale:Get( "CONGRATULATION" ) )
+    self._view:ShowCongratulation()
     
     -- Отрубить сообщения в EVENT_ALCHEMY_ITEM_PLACED
     -- поздравление (работаем дальше с алхимкой) или Приветсвие (переоткрыли окно)
