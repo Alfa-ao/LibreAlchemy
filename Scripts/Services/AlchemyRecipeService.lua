@@ -88,7 +88,7 @@ function AlchemyRecipeService:CreateRecipeCache()
 		if recipeInfo then
 			local recipe = {
 				componentsCount = 0,                              -- Общее количество компонентов, требуемых рецептом.
-				name = userMods.FromWString( recipeInfo.name ),   -- Локализованное имя зелья/рецепта.
+				name = recipeInfo.name,   -- Локализованное имя зелья/рецепта.
 				score = recipeInfo.score,                         -- Необходимый уровень умения для крафта.
 				requiredComponents = {},                          -- Хеш-таблица требуемых компонентов: { ["Имя"] = кол-во }.
 			}
