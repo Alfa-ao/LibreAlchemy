@@ -24,12 +24,9 @@ function AlchemyDebugService:LogReaction( ... )
 end
 
 --------------------------------------------------------------------------------
--- Cостояние и вспомогательные функции.
+-- Cостояние.
 --------------------------------------------------------------------------------
-local state  = AlchemyState()
-state.messageType = CONFIG.MESSAGE_GREETINGS
-
-local mathUtils = MathUtils()
+local state  = AlchemyState { messageType = CONFIG.MESSAGE_GREETINGS }
 
 --------------------------------------------------------------------------------
 -- Сервисы.
@@ -53,10 +50,10 @@ dndManager:Init { defaultCursor = CONFIG.DND.CURSOR }
 -- По алхимке поиск рецептов.
 --------------------------------------------------------------------------------
 local drumShiftMapper = DrumShiftMapper()
-drumShiftMapper:Init( state, recipeService, mathUtils )
+drumShiftMapper:Init( state, recipeService )
 
 local searchAlgorithm = BacktrackingSearchAlgorithm()
-searchAlgorithm:Init( RecipeEvaluator(), mathUtils )
+searchAlgorithm:Init( RecipeEvaluator() )
 
 local searchService = AlchemySearchService()
 searchService:Init( state, recipeService, drumShiftMapper, searchAlgorithm )
@@ -67,24 +64,8 @@ searchService:Init( state, recipeService, drumShiftMapper, searchAlgorithm )
 local wtPanel = _G.mainForm:GetChildChecked( "Panel" )
 local wtOuText = wtPanel:GetChildChecked( "ouText" )
 
-local wtAlchemyV2 = common.GetAddonMainForm( "AlchemyV2" )
-
-local wtRolls = wtAlchemyV2:
-    GetChildChecked( "MainFrame" ):
-    GetChildChecked( "Alchemy" ):
-    GetChildChecked( "Game" ):
-    GetChildChecked( "View" ):
-    GetChildChecked( "Rolls" )
-
-local wtRecipeName = wtAlchemyV2:
-    GetChildChecked( "MainFrame" ):
-    GetChildChecked( "Alchemy" ):
-    GetChildChecked( "Game" ):
-    GetChildChecked( "View" ):
-    GetChildChecked( "Recipe" ):
-    GetChildChecked( "Name" )
-
-local widgetAlchemyV2 = WidgetAlchemyV2 { _wtRolls = wtRolls, _wtRecipeName = wtRecipeName }
+local widgetAlchemyV2 = WidgetAlchemyV2() -- Всё что изменяется кастомно внутри окна AlchemyV2
+widgetAlchemyV2:Init( common.GetAddonMainForm( "AlchemyV2" ) )
 
 --------------------------------------------------------------------------------
 -- Всё что связано с текстом, почти.
@@ -95,55 +76,65 @@ textContainerService:Init { sizePadding = CONFIG.GUI.PADDING }
 local textFormatter = AlchemyTextFormatter()
 textFormatter:Init( widgetAlchemyV2, templateService )
 
+local viewService = AlchemyViewService()
+viewService:Init {
+    textContainer = textContainerService,
+    locale        = localeService,
+    formatter     = textFormatter,
+}
+
 --------------------------------------------------------------------------------
 -- Логика в событиях связано с алхимкой.
 --------------------------------------------------------------------------------
 local alchemyEvents = AlchemyEvents()
 alchemyEvents:Init {
-    state         = state,
-    textContainer = textContainerService,
-    formatter     = textFormatter,
-    search        = searchService,
-    recipe        = recipeService,
-    debug         = debugService,
-    locale        = localeService,
+    state  = state,
+    view   = viewService,
+    search = searchService,
+    recipe = recipeService,
+    debug  = debugService,
 }
 
-local avatarEvents = AlchemyAvatarEvents { _wtPanel = wtPanel }
+local avatarEvents = AlchemyAvatarEvents { _wtMovable = wtPanel }
 avatarEvents:Init {
-    state         = state,
-    AlchemyV2     = widgetAlchemyV2,
-    textContainer = textContainerService,
-    debug         = debugService,
-    locale        = localeService,
-    dnd           = dndManager,
+    state     = state,
+    AlchemyV2 = widgetAlchemyV2,
+    view      = viewService,
+    debug     = debugService,
+    dnd       = dndManager,
 }
 
 --------------------------------------------------------------------------------
 -- Регистрация событий.
 --------------------------------------------------------------------------------
--- Алхимия
-common.RegisterEventHandler( function() alchemyEvents:OnStarted() end, "EVENT_ALCHEMY_STARTED" )                        -- Окно алхимки открывается. Инициализируется HELLO сообщение и кэш рецептов.
-common.RegisterEventHandler( function( params ) alchemyEvents:OnCanceled( params ) end, "EVENT_ALCHEMY_CANCELED" )      -- Окно алхимки закрывается / вышли из варки в меню.
-common.RegisterEventHandler( function( params ) alchemyEvents:OnItemPlaced( params ) end, "EVENT_ALCHEMY_ITEM_PLACED" ) -- При каждом изменении слота для компонентов уведомляет, что в такой-то слот был вставлен/вынут компонент.
-common.RegisterEventHandler( function() alchemyEvents:OnReactionFinished() end, "EVENT_ALCHEMY_REACTION_FINISHED" )     -- Уведомляет о начале варки зелья. Хоть и название события говорит о другом...
-common.RegisterEventHandler( function() alchemyEvents:OnRecipesChanged() end, "EVENT_ALCHEMY_RECIPES_CHANGED" )         -- Уведомляет об необходимости обновить список рецептов.
+local events = {
+    -- Алхимия
+    EVENT_ALCHEMY_STARTED = function() alchemyEvents:OnStarted() end, -- Окно алхимки открывается. Инициализируется HELLO сообщение и кэш рецептов.
+    EVENT_ALCHEMY_CANCELED = function( params ) alchemyEvents:OnCanceled( params ) end, -- Окно алхимки закрывается / вышли из варки в меню.
+    EVENT_ALCHEMY_ITEM_PLACED = function( params ) alchemyEvents:OnItemPlaced( params ) end, -- При каждом изменении слота для компонентов уведомляет, что в такой-то слот был вставлен/вынут компонент.
+    EVENT_ALCHEMY_REACTION_FINISHED = function() alchemyEvents:OnReactionFinished() end, -- Уведомляет о начале варки зелья. Хоть и название события говорит о другом...
+    EVENT_ALCHEMY_RECIPES_CHANGED = function() alchemyEvents:OnRecipesChanged() end, -- Уведомляет об необходимости обновить список рецептов.
+    
+    -- Аватар
+    EVENT_AVATAR_CREATED = function() avatarEvents:OnAvatarCreated() end, -- Инициализация логики. Когда игрок уже в игре, ТОЛЬКО ТОГДА необходимо применинить следующую логику.
+    EVENT_AVATAR_ITEM_TAKEN = function( params ) avatarEvents:OnItemTaken( params ) end, -- Всё что попало в сумку игрока от крафта алхимки.
 
--- Аватар
-common.RegisterEventHandler( function() avatarEvents:OnAvatarCreated() end, "EVENT_AVATAR_CREATED" )                    -- Инициализация логики. Когда игрок уже в игре, ТОЛЬКО ТОГДА необходимо применинить следующую логику.
-common.RegisterEventHandler( function( params ) avatarEvents:OnItemTaken( params ) end, "EVENT_AVATAR_ITEM_TAKEN" )     -- Всё что попало в сумку игрока от крафта алхимки.
+    -- Обновляет размеры Panel при изменении размера окна игры.
+    -- Причина:
+    -- 1) Закомментить этот ивент.
+    -- 2) В игре - Меню -> Графика -> выставить Режим: "Оконный"
+    -- 3) Изменять размер окна игры.
+    -- Результат: Часть текста смещается и скрывается, а padding отступы превращаются невалидными.
+    -- DnDManager не знает как работать с текстовым контейнером, если смотреть на опцию padding.
+    EVENT_POS_CONVERTER_CHANGED = function()
+        local exactHeight = textContainerService:GetExactTextHeight()
+        textContainerService:UpdateSizePanel( exactHeight )
+    end,
+}
 
--- Обновляет размеры Panel при изменении размера окна игры.
--- Причина:
--- 1) Закомментить этот ивент.
--- 2) В игре - Меню -> Графика -> выставить Режим: "Оконный"
--- 3) Изменять размер окна игры.
--- Результат: Часть текста смещается и скрывается, а padding отступы превращаются невалидными.
--- DnDManager не знает как работать с текстовым контейнером, если смотреть на опцию padding.
-common.RegisterEventHandler( function()
-    local exactHeight = textContainerService:GetExactTextHeight()
-    textContainerService:UpdateSizePanel( exactHeight )
-end, "EVENT_POS_CONVERTER_CHANGED" )
+for eventName, handler in pairs( events ) do
+    common.RegisterEventHandler( handler, eventName )
+end
 
 --------------------------------------------------------------------------------
 -- Повторно событие EVENT_AVATAR_CREATED не прийдет, т.к. аватар уже находиться в игре.
