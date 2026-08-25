@@ -5,18 +5,15 @@
 Class( "DrumShiftMapper", {
 	_state         = nil,
 	_recipeService = nil,
-	_mathUtils     = nil,
 } )
 
 --------------------------------------------------------------------------------
 --- @param state table AlchemyState
 --- @param recipeService table AlchemyRecipeService
---- @param mathUtils table MathUtils
 --------------------------------------------------------------------------------
-function DrumShiftMapper:Init( state, recipeService, mathUtils ) --- void
+function DrumShiftMapper:Init( state, recipeService )
 	self._state         = state
 	self._recipeService = recipeService
-	self._mathUtils     = mathUtils
 end
 
 --------------------------------------------------------------------------------
@@ -50,7 +47,7 @@ function DrumShiftMapper:BuildMap()
 				-- Перебирает все возможные сдвиги от -maxCorrections до +maxCorrections
 				for shift = -self._state.maxCorrections, self._state.maxCorrections do
 					-- Вычисляет индекс компонента с учетом сдвига и зацикленности барабана
-                    local targetIndex = self._mathUtils.safeModulo( basePos + shift, componentCount )
+                    local targetIndex = MathUtils.safeModulo( basePos + shift, componentCount )
 					
                     local componentId = drumInfo.components[ targetIndex ] -- ID компонента (userdata/ResourceId)
 					
