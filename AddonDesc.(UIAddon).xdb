@@ -33,7 +33,7 @@
 		<Item href="Libs/DND/src/DnDManager.lua" />
 		
 		<!-- Utils (Утилиты) -->
-		<Item href="Scripts/Utils/MathUtils.lua" />
+		<Item href="Libs/Utils/MathUtils.lua" />
 		
 		<!-- LibreAlchemy -->
 		<Item href="Scripts/Core/Config.lua" />
@@ -51,6 +51,7 @@
 		<Item href="Scripts/Services/AlchemyRecipeService.lua" />
 		<Item href="Scripts/Services/AlchemySearchService.lua" />
 		<Item href="Scripts/Services/AlchemyTextContainerService.lua" />
+		<Item href="Scripts/Services/AlchemyViewService.lua" />
 		
 		<!-- UI -->
 		<!-- <Item href="Scripts/UI/WidgetClassInterface.lua" /> -->
@@ -89,4 +90,7 @@
 			<texts href="Locales/template/Locale.(UIRelatedTexts).xdb"/>
 		</Item>
 	</textsGroups>
+	<styleSheets>
+		<Item href="Widgets/Styles.(WidgetCss).xdb" />
+	</styleSheets>
 </UIAddon>
