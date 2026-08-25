@@ -2,6 +2,61 @@
 
 Все перечисленные изменения в релизе.
 
+## [v2.3.0-beta.1](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.3.0-beta.1)
+
+> **Глобальный рефакторинг архитектуры.** 
+> В этой версии был проведен глубокий анализ и пересмотр архитектурных решений, принятых в alpha-стадии. Отказ от излишней абстракции (over-engineering), паттернов контекста и менеджеров в пользу прямого, прозрачного и более производительного кода. Внутренняя версия аддона в `AddonDesc` обновлена до `2.3.0`.
+
+### Added
+- Добавлен сервис `AlchemyViewService` в `Scripts/Services/AlchemyViewService.lua` для централизованного управления отображением GUI и форматированием сообщений.
+- Добавлен файл стилей `Widgets/Styles.(WidgetCss).xdb` с именем `alchemy-yellow-text` и настройками тега `alchemy`.
+- Добавлен метод `AlchemyState:InvalidateReaction()` для корректного сброса флага успешной реакции и результатов поиска.
+- В глобальную таблицу `CONFIG` добавлены секции `GUI` (с параметрами отступов и размеров элементов) и `DND` (с параметрами `SAVE` и `CURSOR`), а также константа `DELAY_MS_UPDATE`.
+
+### Changed
+- Глобальный рефакторинг архитектуры: отказ от паттернов `Context`, `Manager` и `Bootstrap` в пользу прямой инициализации зависимостей в `AlchemyInit.lua`.
+- `AlchemyConfig` переименован в `CONFIG` и переведен из `Class` в `Global` таблицу.
+- `MathUtils` перемещен из `Scripts/Utils` в `Libs/Utils` и изменен с `Class` на `Global` таблицу.
+- Структура событий упрощена: удалены `AlchemyEventManager` и `EventClassInterface`, события регистрируются напрямую через локальную таблицу хендлеров в `AlchemyInit.lua`.
+- `AlchemyTextContainerService` теперь работает напрямую с нативными виджетами (`wtOuText` и его родитель), методы `UpdateSizePanel` и `GetExactTextHeight` перенесены в этот сервис.
+- `AlchemyTextFormatter` и `WidgetAlchemyV2` перемещены из `Scripts/UI` в `Scripts/GUI` и упрощены: убраны зависимости от менеджеров виджетов, инициализация происходит через прямую передачу нативных виджетов и сервисов.
+- Логика подсветки текущего рецепта в `AlchemyTextFormatter` переведена с шаблона `COLOR_YELLOW_TEXT` на использование CSS-виджета `alchemy-yellow-text` через параметр `class1`.
+- В шаблонах `RECIPE_LINE.txt` и `ContainerFormat.txt`, а также в `COUNT_RECIPES.txt` тег `<log fontsize="15">` заменен на кастомный тег `<alchemy>`. В `RECIPE_LINE.txt` добавлена поддержка CSS-виджета через `<rs class="class1">`.
+- Обработчик `EVENT_POS_CONVERTER_CHANGED` теперь явно обновляет размеры панели через `textContainerService`, что предотвращает смещение текста при изменении масштаба интерфейса игры.
+- `BacktrackingSearchAlgorithm` и `DrumShiftMapper` больше не принимают `mathUtils` через конструктор, а используют глобальный `MathUtils`.
+- `AlchemyRecipeService` теперь сохраняет имя рецепта как `WString` (ранее конвертировалось в строку).
+- Обновлены строки локализации: добавлен префикс `LibreAlchemyV2: ` в `AVATAR_ITEM_TAKEN`.
+
+### Removed
+- Удалены файлы и классы, связанные с устаревшей архитектурой:
+    - `Scripts/Facade.lua`
+    - `Scripts/Core/AlchemyContext.lua`
+    - `Scripts/Core/AlchemyBootstrap.lua`
+    - `Scripts/Handler/AlchemyEventManager.lua`
+    - `Scripts/Handler/EventClassInterface.lua`
+    - `Scripts/Handler/Events/AlchemyDNDEvents.lua`
+    - `Scripts/Handler/Events/AlchemyPosEvents.lua`
+    - `Scripts/Handler/Events/AlchemySystemEvents.lua`
+    - `Scripts/UI/AlchemyWidgetManager.lua`
+    - `Scripts/UI/WidgetClassInterface.lua`
+    - `Scripts/UI/Widgets/WidgetPanel.lua`
+    - `Scripts/UI/Widgets/WidgetOuText.lua`
+    - `Libs/DND/src/DnDManagerExtends.lua`
+- Удален шаблон `Locales/template/COLOR_YELLOW_TEXT.txt` (функциональность заменена на CSS-Виджет).
+- Удалены отладочные файлы локализации:
+    - `Locales/lang/eng/DEBUG_COUNT_COMPONENTS.txt`
+    - `Locales/lang/eng/DEBUG_COUNT_RECIPES.txt`
+    - `Locales/lang/eng/DEBUG_INSERT_BAR.txt`
+    - `Locales/lang/eng/DEBUG_ITERATION_COMPONENTS.txt`
+    - `Locales/lang/eng/DEBUG_REMOVED_BAR.txt`
+    - `Locales/lang/rus/DEBUG_COUNT_COMPONENTS.txt`
+    - `Locales/lang/rus/DEBUG_COUNT_RECIPES.txt`
+    - `Locales/lang/rus/DEBUG_INSERT_BAR.txt`
+    - `Locales/lang/rus/DEBUG_ITERATION_COMPONENTS.txt`
+    - `Locales/lang/rus/DEBUG_REMOVED_BAR.txt`
+- Удалена зависимость от `mathUtils` в `AlchemySearchService`, `BacktrackingSearchAlgorithm` и `DrumShiftMapper`.
+- Удалена константа `MESSAGE_WARNING` из конфигурации.
+
 ## [v2.2.0-alpha.4](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.2.0-alpha.4)
 
 ### Added
