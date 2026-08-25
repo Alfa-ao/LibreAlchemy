@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 
 Class( "AlchemyAvatarEvents", {
-    _wtPanel = nil,
+    _wtMovable = nil,
 } )
 
 --------------------------------------------------------------------------------
@@ -13,10 +13,9 @@ Class( "AlchemyAvatarEvents", {
 function AlchemyAvatarEvents:Init( context )
     self._state          = context.state
     self._classAlchemyV2 = context.AlchemyV2
-    self._textContainer  = context.textContainer
     self._debug          = context.debug
-    self._locale         = context.locale
     self._dnd            = context.dnd
+    self._view           = context.view
 end
 
 --------------------------------------------------------------------------------
@@ -24,7 +23,7 @@ end
 --- Выполняется при входе персонажа в игру.
 --------------------------------------------------------------------------------
 function AlchemyAvatarEvents:OnAvatarCreated()
-    self._textContainer:UpdateCenterPanel()
+    self._view:UpdateCenterPanel()
     
     if CONFIG.ENABLE_CUSTOM_LAYOUT then
         -- Применение кастомного расположения элементов окна алхимии.
@@ -32,7 +31,7 @@ function AlchemyAvatarEvents:OnAvatarCreated()
     end
     
     -- Окно с подсказкой становится перетаскиваемым.
-    self._dnd:Register( self._wtPanel, { saveToConfig = CONFIG.DND.SAVE } )
+    self._dnd:Register( self._wtMovable, { saveToConfig = CONFIG.DND.SAVE } )
 end
 
 --------------------------------------------------------------------------------
@@ -47,14 +46,13 @@ function AlchemyAvatarEvents:OnItemTaken( params )
     if params.actionType == EnumTakeItemActionType.CRAFT and self._state.reactionSuccess then
         -- Информация о созданном предмете по его ID.
         local info = itemLib.GetItemInfo( params.itemObject:GetId() )
-        local potionName = userMods.FromWString( info.name )
         
+        if not info or not info.name then return end
+        
+        local potionName = userMods.FromWString( info.name )
         -- Количество предметов в стаке.
         local count = itemLib.GetStackInfo( params.itemObject:GetId() ).count
         
-        self._textContainer:SetLines( 
-            self._locale:Get( "AVATAR_ITEM_TAKEN" ), -- WString("Поздравляю! Вы получаете:")
-            string.format( "[%s]x%d", potionName, count )
-        )
+        self._view:ShowItemTaken( potionName, count )
     end
 end
