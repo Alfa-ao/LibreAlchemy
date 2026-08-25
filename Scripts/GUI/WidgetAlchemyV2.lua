@@ -10,6 +10,27 @@ Class( "WidgetAlchemyV2", {
 } )
 
 --------------------------------------------------------------------------------
+--- Инициализация.
+--- @param wtAlchemyV2 Widget | TWidget
+--------------------------------------------------------------------------------
+function WidgetAlchemyV2:Init( wtAlchemyV2 )
+    self._wtRolls = wtAlchemyV2:
+        GetChildChecked( "MainFrame" ):
+        GetChildChecked( "Alchemy" ):
+        GetChildChecked( "Game" ):
+        GetChildChecked( "View" ):
+        GetChildChecked( "Rolls" )
+
+    self._wtRecipeName = wtAlchemyV2:
+        GetChildChecked( "MainFrame" ):
+        GetChildChecked( "Alchemy" ):
+        GetChildChecked( "Game" ):
+        GetChildChecked( "View" ):
+        GetChildChecked( "Recipe" ):
+        GetChildChecked( "Name" )
+end
+
+--------------------------------------------------------------------------------
 -- Новый стиль окна с барабанами для Алхимки
 --------------------------------------------------------------------------------
 function WidgetAlchemyV2:InitCustomLayout()
