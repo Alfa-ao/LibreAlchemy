@@ -4,6 +4,26 @@
 
 Class( "BacktrackingSearchAlgorithm" )
 
+-- Helper: добавить компонент по смещению.
+local function addComp( step, line, offset )
+	if not line then return nil end
+	local comp = step.state.drumShiftMap[ step.drumIdx ][ step.shift + offset ]
+	if comp then
+		line[ comp ] = ( line[ comp ] or 0 ) + 1
+		return comp
+	end
+	return nil
+end
+
+-- Helper: откатить счётчик компонента
+local function removeComp( line, comp )
+	if not comp then return end
+	line[ comp ] = line[ comp ] - 1
+	if line[ comp ] == 0 then
+		line[ comp ] = nil
+	end
+end
+
 --------------------------------------------------------------------------------
 --- Инициализация алгоритма поиска.
 --- @param evaluator table RecipeEvaluator
@@ -20,7 +40,7 @@ end
 function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvailability ) --- table
 	local foundResults = {}
 	local foundSet = {}
-	
+
 	-- Локальная рекурсивная функция
 	local function recursiveSearch( drumIdx, shiftsLeft, currentShifts, lineZero, lineMinusOne, linePlusOne ) --- void
 		local filteredRecipes = state.filteredRecipes
@@ -47,60 +67,24 @@ function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvai
 			-- Перебирает все возможные сдвиги для текущего барабана
 			for shift = -maxShift, maxShift do 
 				local nextLeft = shiftsLeft - math.abs( shift ) -- number (int). Очки коррекции, которые останутся для следующих барабанов.
+				local step = {
+                    state = state,
+                    drumIdx = drumIdx,
+                    shift = shift
+                }
 				
-				-- Переменные для отслеживания того, что добавили в линии (нужны для отката состояния)
-				local addedZero, addedMinus, addedPlus = nil, nil, nil 
-				
-				-- Обработка линии 0 (текущая позиция)
-				if lineZero then
-					local comp = state.drumShiftMap[ drumIdx ][ shift ] -- Имя компонента при сдвиге "shift"
-					if comp then
-						lineZero[ comp ] = ( lineZero[ comp ] or 0 ) + 1 -- Увеличивает счетчик компонента в линии
-						addedZero = comp
-					end
-				end
-				
-				-- Обработка линии -1 (сдвиг на 1 влево от текущего)
-				if lineMinusOne then
-					local comp = state.drumShiftMap[ drumIdx ][ shift - 1 ] -- Имя компонента при сдвиге "shift - 1"
-					if comp then
-						lineMinusOne[ comp ] = ( lineMinusOne[ comp ] or 0 ) + 1
-						addedMinus = comp
-					end
-				end
-				
-				-- Обработка линии +1 (сдвиг на 1 вправо от текущего)
-				if linePlusOne then
-					local comp = state.drumShiftMap[ drumIdx ][ shift + 1 ] -- Имя компонента при сдвиге "shift + 1"
-					if comp then
-						linePlusOne[ comp ] = ( linePlusOne[ comp ] or 0 ) + 1
-						addedPlus = comp
-					end
-				end
+				local addedZero  = addComp( step, lineZero, 0 )
+				local addedMinus = addComp( step, lineMinusOne, -1 )
+				local addedPlus  = addComp( step, linePlusOne, 1 )
 
-				-- Если хотя бы в одну линию что-то добавилось, имеет смысл идти глубже (рекурсия)
 				if addedZero or addedMinus or addedPlus then
-					currentShifts[ drumIdx ] = shift -- Фиксирует текущий сдвиг для этого барабана
-					
-					-- Рекурсивный вызов для следующего барабана
+					currentShifts[ drumIdx ] = shift
 					recursiveSearch( drumIdx - 1, nextLeft, currentShifts, lineZero, lineMinusOne, linePlusOne )
+					currentShifts[ drumIdx ] = nil
 					
-					-- Backtracking
-					currentShifts[ drumIdx ] = nil -- Откат состояния
-					
-					-- Уменьшает счетчики компонентов в линиях, которые мы увеличили перед рекурсией
-					if addedZero then
-						lineZero[ addedZero ] = lineZero[ addedZero ] - 1
-						if lineZero[ addedZero ] == 0 then lineZero[ addedZero ] = nil end -- Чистит ключ, если счетчик обнулился
-					end
-					if addedMinus then
-						lineMinusOne[ addedMinus ] = lineMinusOne[ addedMinus ] - 1
-						if lineMinusOne[ addedMinus ] == 0 then lineMinusOne[ addedMinus ] = nil end
-					end
-					if addedPlus then
-						linePlusOne[ addedPlus ] = linePlusOne[ addedPlus ] - 1
-						if linePlusOne[ addedPlus ] == 0 then linePlusOne[ addedPlus ] = nil end
-					end
+					removeComp( lineZero, addedZero )
+					removeComp( lineMinusOne, addedMinus )
+					removeComp( linePlusOne, addedPlus )
 				end
 			end
 		else
@@ -110,20 +94,18 @@ function BacktrackingSearchAlgorithm:Execute( state, totalCorrections, linesAvai
 				if bestRecipe and not foundSet[ bestRecipe.name ] then
 					foundSet[ bestRecipe.name ] = true
 					table.insert( foundResults, {
-						recipe     = bestRecipe,
-						shifts     = MathUtils.shallowCopy( currentShifts ),
-						components = MathUtils.shallowCopy( componentMap ),
+						recipe = bestRecipe,
+						shifts = MathUtils.shallowCopy( currentShifts ),
 					} )
 				end
 			end
 			
-			-- Все барабаны пройдены. Теперь регистрирует накопленные компоненты как потенциальные результаты для каждой линии.
 			registerLine( lineZero )
 			registerLine( lineMinusOne )
 			registerLine( linePlusOne )
 		end
 	end
-
+	
 	-- Запуск перебора
 	for shiftsLeft = 0, totalCorrections do
 		recursiveSearch(
