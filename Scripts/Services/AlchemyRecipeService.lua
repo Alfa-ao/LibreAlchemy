@@ -27,7 +27,6 @@ end
 --- @return nil | string name выводит имя
 --------------------------------------------------------------------------------
 function AlchemyRecipeService:GetComponentName( componentId )
-	-- Если имя уже запрашивалось, возвращает его сразу
 	if self._componentNamesCache[ componentId ] then
 		return self._componentNamesCache[ componentId ]
 	end
@@ -53,44 +52,124 @@ end
 function AlchemyRecipeService:CreateRecipeCache()
 	-- Если кэш уже создан
 	if self._state.recipeCache ~= nil then
+		--log(self._state.recipeCache)
+		--[[ 
+		table(250) {
+			[1] => table(4) {
+				["componentsCount"] => number(5)
+				["name"] => WString(28) "Демоническое зелье исцеления"
+				["requiredComponents"] => table(5) {
+					[Аспект телохранителя] => number(1)
+					[Искажение] => number(1)
+					[Иссушение] => number(1)
+					[Исцеление] => number(1)
+					[Мощь демонов] => number(1)
+				}
+				["score"] => number(82)
+			}
+			[2] => table(4) {
+				["componentsCount"] => number(2)
+				["name"] => WString(27) "Дешёвый эликсир невидимости"
+				["requiredComponents"] => table(1) {
+					[Помрачение] => number(2)
+				}
+				["score"] => number(10)
+			}
+			[3] => table(4) {
+				["componentsCount"] => number(5)
+				["name"] => WString(29) "Очень сильный бальзам чистоты"
+				["requiredComponents"] => table(4) {
+					[Аспект телохранителя] => number(1)
+					[Величие] => number(2)
+					[Защита] => number(1)
+					[Изменчивость] => number(1)
+				}
+				["score"] => number(58)
+			}
+		}
+		 ]]
 		return
 	end
 	
-	--[[
-	{
-		{
-			"componentsCount" => 5,
-			"name" => "Сильное зелье исцеления",
-			"requiredComponents" => {
-				"Время" => 2
-				"Исцеление" => 2
-				"Оглушение" => 1
-			},
-			"score" => 41
-		},
-		...
-	}
-	]]
 	self._state.recipeCache = {}
 	
 	-- alchemyInfo: table = { drumsCount, correctionCount, recipes (массив RecipeId) и т.д }.
 	local alchemyInfo = avatar.GetAlchemyInfo()
+	--log( alchemyInfo )
+	--[[ 
+	table(12) {
+		["active"] => boolean(true)
+		["correctionCount"] => number(5)
+		["defaultResultCount"] => number(1)
+		["drumSize"] => number(24)
+		["drumsCount"] => number(5)
+		["finished"] => boolean(false)
+		["id"] => SkillId
+		["perComponentBonus"] => number(0)
+		["perfectBonus"] => number(0)
+		["reactionInited"] => boolean(false)
+		["recipes"] => table(250) {
+			[0] => RecipeId
+			[1] => RecipeId
+			[2] => RecipeId
+			[3] => RecipeId
+			[4] => RecipeId
+			[5] => RecipeId
+			...
+			[249] => RecipeId
+		}
+		["unusedRollsBonus"] => number(0.5)
+	}
+	 ]]
 	
 	-- Сохранить актуальное количество слотов (барабанов) в состояние
 	self._state.drumsCount = alchemyInfo.drumsCount
 
-	-- Проходит по всем доступным рецептам
+	-- Проходит по всем рецептам
 	-- recipeId: userdata (RecipeId) - идентификатор ресурса рецепта
 	for _, recipeId in pairs( alchemyInfo.recipes ) do
-		-- recipeInfo: table. Содержит name (WString), score (int), components (массив ComponentId) и т.д.
 		local recipeInfo = avatar.GetRecipeInfo( recipeId )
+		--log( recipeInfo )
+		--[[ 
+		table(12) {
+			["bindResult"] => boolean(false)
+			["components"] => table(2) {
+				[0] => userdata(ComponentPropertyId) = {}
+				[1] => userdata(ComponentPropertyId) = {}
+			}
+			["defaultItem"] => number(79835)
+			["description"] => userdata(ValuedText) = {
+				ToWString = WString(202) "Если верить рецепту, данное зелье делает выпившего невидимым, но эффект может быть нестабилен. Невозможно использовать в бою. Имеет общее время восстановления с защитными бальзамами и лечебными зельями."
+			}
+			["id"] => RecipeId
+			["image"] => userdata(UITextureId) = {}
+			["name"] => WString(27) "Дешёвый эликсир невидимости"
+			["nextRecipePoints"] => number(0)
+			["resultItems"] => table(1) {
+				[0] => number(79835)
+			}
+			["resultQuantity"] => number(1)
+			["score"] => number(10)
+			["skillId"] => userdata(SkillId) = {
+				GetInfo = table(7) {
+					["description"] => WString(261) "Ремесло, которое позволяет создавать зелья различного действия. С их помощью на некоторое время можно улучшить характеристики персонажа, восстановить здоровье, защититься от урона или злых чар противника, увеличить наносимый урон или наложить негативный эффект."
+					["image"] => userdata(UITextureId) = {}
+					["name"] => WString(7) "Алхимия"
+					["sysName"] => string(7) "Alchemy"
+					["sysType"] => string(22) "ENUM_SkillType_Alchemy"
+					["type"] => number(1)
+					["useLevels"] => boolean(true)
+				}
+			}
+		}
+		 ]]
 		
 		if recipeInfo then
 			local recipe = {
-				componentsCount = 0,                              -- Общее количество компонентов, требуемых рецептом.
+				componentsCount = 0,      -- Общее количество компонентов, требуемых рецептом.
 				name = recipeInfo.name,   -- Локализованное имя зелья/рецепта.
-				score = recipeInfo.score,                         -- Необходимый уровень умения для крафта.
-				requiredComponents = {},                          -- Хеш-таблица требуемых компонентов: { ["Имя"] = кол-во }.
+				score = recipeInfo.score, -- Необходимый уровень умения для крафта.
+				requiredComponents = {},  -- Хеш-таблица требуемых компонентов: { ["Имя"] = кол-во }.
 			}
 
 			-- Разбирает массив компонентов рецепта
