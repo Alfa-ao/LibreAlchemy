@@ -7,7 +7,7 @@ local VAR_DEBUG_EXISTS = apitype( rawget( _G, "var_dump" ) ) == "function"
 
 Global( "log", function( ... )
     if VAR_DEBUG_EXISTS then
-        common.LogInfo( "common", var_dump( ... ) )
+        var_dump( ... )
     else
         for _, value in ipairs { ... } do
             common.LogInfo( "common", tostring( value ) )
