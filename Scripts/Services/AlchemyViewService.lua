@@ -3,11 +3,7 @@
 -- Сервис для управления отображением UI (View слой).
 -- Отвечает за форматирование и вывод сообщений в текстовый контейнер.
 --------------------------------------------------------------------------------
-Class( "AlchemyViewService", {
-    _textContainer = nil,
-    _locale        = nil,
-    _formatter     = nil,
-} )
+Class( "AlchemyViewService" )
 
 --------------------------------------------------------------------------------
 --- Инициализация сервиса.
@@ -20,7 +16,7 @@ function AlchemyViewService:Init( context )
 end
 
 --------------------------------------------------------------------------------
---- Показывает приветственное сообщение.
+--- Показывает GREETINGS / WELCOME_BACK сообщение.
 --- @param messageType number CONFIG.MESSAGE_*
 --------------------------------------------------------------------------------
 function AlchemyViewService:ShowGreetings( messageType )
@@ -38,7 +34,7 @@ end
 --------------------------------------------------------------------------------
 function AlchemyViewService:ShowPotentialRecipes( countRecipe, filledSlotsCount )
     if countRecipe > 0 then
-        local vtCountRecipes = common.CreateValuedText{
+        local vtCountRecipes = common.CreateValuedText {
             format = self._locale:Get( "COUNT_RECIPES" ),
             count  = countRecipe,
         }
@@ -78,10 +74,14 @@ end
 --- @param count number Количество предметов.
 --------------------------------------------------------------------------------
 function AlchemyViewService:ShowItemTaken( potionName, count )
-    self._textContainer:SetLines(
-        self._locale:Get( "AVATAR_ITEM_TAKEN" ),
-        string.format( "[%s]x%d", potionName, count )
-    )
+    local vtItem = common.CreateValuedText {
+        format = self._locale:Get( "AVATAR_ITEM_TAKEN" ),
+        name   = potionName,
+        count  = count,
+        class1 = "alchemy-yellow-text",
+    }
+    
+    self._textContainer:SetLines( vtItem )
 end
 
 --------------------------------------------------------------------------------
