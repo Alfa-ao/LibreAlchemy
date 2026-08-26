@@ -41,18 +41,17 @@ end
 --- @param params table { actionType: string, itemObject: ValuedObject }
 --------------------------------------------------------------------------------
 function AlchemyAvatarEvents:OnItemTaken( params )
-    self._debug:LogGeneral( "EVENT_AVATAR_ITEM_TAKEN" )
+    ----------------------------------------
+    self._debug:LogGeneral( "EVENT_AVATAR_ITEM_TAKEN", params.actionType, params.itemObject )
+    ----------------------------------------
     
     if params.actionType == EnumTakeItemActionType.CRAFT and self._state.reactionSuccess then
         -- Информация о созданном предмете по его ID.
         local info = itemLib.GetItemInfo( params.itemObject:GetId() )
-        
         if not info or not info.name then return end
-        
-        local potionName = userMods.FromWString( info.name )
         -- Количество предметов в стаке.
         local count = itemLib.GetStackInfo( params.itemObject:GetId() ).count
         
-        self._view:ShowItemTaken( potionName, count )
+        self._view:ShowItemTaken( info.name, count )
     end
 end
