@@ -25,7 +25,7 @@
             </Items>
         </Item> -->
         <Item>
-			<!-- O_o кастомные теги <alchemy>hello</alchemy>
+			<!-- кастомные теги <alchemy>hello</alchemy>
                 Или: 
                     common.CreateValuedText { ..., class01 = "alchemy" }
                     <rs class="class01">...</rs> 
