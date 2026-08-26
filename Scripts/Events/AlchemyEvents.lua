@@ -17,6 +17,28 @@ function AlchemyEvents:Init( context )
 end
 
 --------------------------------------------------------------------------------
+-- Запланировать автоматический сброс типа сообщения к MESSAGE_NORMAL.
+-- Необходимо, чтобы приветствие или поздравление задержалось отображением, а затем тригер возвращался к нормальному режиму.
+--------------------------------------------------------------------------------
+function AlchemyEvents:_ScheduleResetMessageType()
+    if self._state.messageType == CONFIG.MESSAGE_NORMAL then
+        return
+    end
+    
+    if self._state.taskRefs.funcResetMessageType ~= nil then
+        common.CancelDelayedCall( self._state.taskRefs.funcResetMessageType )
+    end
+
+    self._state.taskRefs.funcResetMessageType = common.DelayedCall( CONFIG.DELAY_MS_UPDATE, function()
+        self._state.messageType = CONFIG.MESSAGE_NORMAL
+        self._state.taskRefs.funcResetMessageType = nil
+        ----------------------------------------
+        self._debug:LogGeneral( "MESSAGE_TYPE change to default: <MESSAGE_NORMAL>" )
+        ----------------------------------------
+    end )
+end
+
+--------------------------------------------------------------------------------
 -- Обработчик события EVENT_ALCHEMY_STARTED.
 -- Срабатывает при открытии окна алхимии.
 --------------------------------------------------------------------------------
@@ -36,13 +58,16 @@ function AlchemyEvents:OnStarted()
     ----------------------------------------
     self._debug:LogGeneral( "ShowGreetings:", self._state.messageType )
     ----------------------------------------
+    
+    -- Запланировать возврат к MESSAGE_NORMAL режиму
+    self:_ScheduleResetMessageType()
 end
 
 --------------------------------------------------------------------------------
 --- Обработчик события EVENT_ALCHEMY_CANCELED.
 --- Срабатывает при закрытии окна алхимии или переход в меню рецептов.
 --- true: вышли в меню рецептов.
---- false: закрыли окно алхимии. Вроде и при прерывании (не забрал результат) - проверить.
+--- false: закрыли окно алхимии и при прерывании (не забрал результат).
 --- @param params table { isSuccess: boolean }
 --------------------------------------------------------------------------------
 function AlchemyEvents:OnCanceled( params )
@@ -81,7 +106,7 @@ function AlchemyEvents:OnItemPlaced( params )
         end
         
         return "DEBUG_REMOVED_BAR"
-    end, "Slot:", params.slot )
+    end, "slot:", params.slot, "placed:", params.placed )
     ----------------------------------------
     
     -- Обновляет состояние слотов
@@ -103,19 +128,6 @@ function AlchemyEvents:OnItemPlaced( params )
     -- Если сейчас не стандартный режим отображения, не обновлять текст.
     -- Автоматически переключится.
     if self._state.messageType ~= CONFIG.MESSAGE_NORMAL then
-        if self._state.taskRefs.funcAlchemyStarted == nil then
-            self._state.taskRefs.funcAlchemyStarted = common.DelayedCall( CONFIG.DELAY_MS_UPDATE, function()
-                if self._state.active then
-                    self._state.messageType = CONFIG.MESSAGE_NORMAL
-                    ----------------------------------------
-                    self._debug:LogGeneral( "MESSAGE_TYPE change to default" )
-                    ----------------------------------------
-                end
-                
-                self._state.taskRefs.funcAlchemyStarted = nil
-            end )
-        end
-        
         return
     end
     
@@ -196,4 +208,7 @@ function AlchemyEvents:OnRecipesChanged()
     -- Отрубить сообщения в EVENT_ALCHEMY_ITEM_PLACED
     -- поздравление (работаем дальше с алхимкой) или Приветсвие (переоткрыли окно)
     self._state.messageType = CONFIG.MESSAGE_WELCOME_BACK
+    
+    -- Запланировать возврат к MESSAGE_NORMAL режиму
+    self:_ScheduleResetMessageType()
 end
