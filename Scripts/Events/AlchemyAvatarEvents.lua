@@ -11,11 +11,11 @@ Class( "AlchemyAvatarEvents", {
 --- @param context table -- Набор всякого всяческого
 --------------------------------------------------------------------------------
 function AlchemyAvatarEvents:Init( context )
-    self._state          = context.state
-    self._classAlchemyV2 = context.AlchemyV2
-    self._debug          = context.debug
-    self._dnd            = context.dnd
-    self._view           = context.view
+    self._state = context.state
+    self._alchemy = context.alchemy
+    self._debug = context.debug
+    self._dnd = context.dnd
+    self._view = context.view
 end
 
 --------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ function AlchemyAvatarEvents:OnAvatarCreated()
     
     if CONFIG.ENABLE_CUSTOM_LAYOUT then
         -- Применение кастомного расположения элементов окна алхимии.
-        self._classAlchemyV2:InitCustomLayout()
+        self._alchemy:InitCustomLayout()
     end
     
     -- Окно с подсказкой становится перетаскиваемым.
