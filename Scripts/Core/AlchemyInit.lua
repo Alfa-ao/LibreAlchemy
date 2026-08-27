@@ -3,23 +3,11 @@
 --------------------------------------------------------------------------------
 
 -- Для логирования
-local VAR_DEBUG_EXISTS = apitype( rawget( _G, "var_dump" ) ) == "function"
-
-Global( "log", function( ... )
-    if VAR_DEBUG_EXISTS then
-        var_dump( ... )
-    else
-        for _, value in ipairs { ... } do
-            common.LogInfo( "common", tostring( value ) )
-        end
-    end
-end )
-
-function AlchemyDebugService:LogGeneral( ... )
+function DebugService:LogGeneral( ... )
     self:Log( "GENERAL", ... )
 end
 
-function AlchemyDebugService:LogReaction( ... )
+function DebugService:LogReaction( ... )
     self:Log( "REACTION", ... )
 end
 
@@ -27,13 +15,13 @@ end
 -- Cостояние.
 --------------------------------------------------------------------------------
 -- Здесь лежат все флаги (открыто ли окно, была ли варка успешной), кэши рецептов и т.д.
-local state  = AlchemyState { messageType = CONFIG.MESSAGE_GREETINGS }
+local state = AlchemyState { messageType = CONFIG.MESSAGE_GREETINGS }
 
 --------------------------------------------------------------------------------
 -- Сервисы.
 --------------------------------------------------------------------------------
 -- Сервис лога. Просто включает вывод определенных категорий, чтобы не засорять mods.txt.
-local debugService = AlchemyDebugService()
+local debugService = DebugService()
 debugService:Init { GENERAL = CONFIG.DEBUG, REACTION = CONFIG.DEBUG_REACTION }
 
 -- Сервис локализации (rus, eng).
@@ -81,41 +69,37 @@ widgetAlchemyV2:Init( common.GetAddonMainForm( "AlchemyV2" ) )
 --------------------------------------------------------------------------------
 -- Всё что связано с текстом, почти.
 --------------------------------------------------------------------------------
-local textContainerService = AlchemyTextContainerService { _wtTextContainer = wtOuText }
-textContainerService:Init { sizePadding = CONFIG.GUI.PADDING }
-
-local textFormatter = AlchemyTextFormatter()
-textFormatter:Init( widgetAlchemyV2, templateService )
+local widgetTextContainer = WidgetTextContainer { _wtTextContainer = wtOuText }
+widgetTextContainer:Init { sizePadding = CONFIG.GUI.PADDING }
 
 local viewService = AlchemyViewService()
 viewService:Init {
-    textContainer = textContainerService,
-    locale        = localeService,
-    formatter     = textFormatter,
+    alchemy = widgetAlchemyV2,
+    textContainer = widgetTextContainer,
+    locale = localeService,
+    template = templateService,
 }
 
 --------------------------------------------------------------------------------
 -- Логика в событиях связано с алхимкой.
 --------------------------------------------------------------------------------
--- Обработчик событий (EVENT_ALCHEMY_*)
-local alchemyEvents = AlchemyEvents()
-alchemyEvents:Init {
-    state  = state,
-    view   = viewService,
+local context = {
+    dnd = dndManager,
+    state = state,
+    view = viewService,
+    debug = debugService,
     search = searchService,
     recipe = recipeService,
-    debug  = debugService,
+    alchemy = widgetAlchemyV2,
 }
+
+-- Обработчик событий (EVENT_ALCHEMY_*)
+local alchemyEvents = AlchemyEvents()
+alchemyEvents:Init( context )
 
 -- Обработчик событий (EVENT_AVATAR_*).
 local avatarEvents = AlchemyAvatarEvents { _wtMovable = wtPanel }
-avatarEvents:Init {
-    state     = state,
-    AlchemyV2 = widgetAlchemyV2,
-    view      = viewService,
-    debug     = debugService,
-    dnd       = dndManager,
-}
+avatarEvents:Init( context )
 
 --------------------------------------------------------------------------------
 -- Регистрация событий.
@@ -140,8 +124,8 @@ local events = {
     -- Результат: Часть текста смещается и скрывается, а padding отступы превращаются невалидными.
     -- DnDManager не знает как работать с текстовым контейнером, если смотреть на опцию padding.
     EVENT_POS_CONVERTER_CHANGED = function()
-        local exactHeight = textContainerService:GetExactTextHeight()
-        textContainerService:UpdateSizePanel( exactHeight )
+        local exactHeight = widgetTextContainer:GetExactTextHeight()
+        widgetTextContainer:UpdateSizePanel( exactHeight )
     end,
 }
 
