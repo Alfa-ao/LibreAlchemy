@@ -2,6 +2,19 @@
 
 Все перечисленные изменения в релизе.
 
+## [v2.3.0](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.3.0)
+
+### Added
+
+- Добавлен виджет-обертка `Scripts/GUI/WidgetTextContainer.lua`, содержащую логику работы с нативным текстовым контейнером и его родителем.
+
+### Changed
+
+- `AlchemyTextContainerService` упразднен, его роль выполняет `WidgetTextContainer`, работающий напрямую с нативными виджетами (`wtOuText` и его родитель).
+- `AlchemyTextFormatter` упразднен, логика форматирования перенесена в `AlchemyViewService`.
+- Строка `AVATAR_ITEM_TAKEN` переведена на формат `ValuedText`/XHTML с использованием тега `<alchemy>` и CSS-класса.
+- Сервис отладки перенесен из `Scripts/Services/AlchemyDebugService.lua` в `Libs/DebugService.lua`.
+
 ## [v2.3.0-beta.1](https://github.com/Alfa-ao/LibreAlchemyV2/releases/tag/v2.3.0-beta.1)
 
 > [!CAUTION]
@@ -19,9 +32,12 @@
 
 ### Added
 - Добавлен сервис `AlchemyViewService` в `Scripts/Services/AlchemyViewService.lua` для централизованного управления отображением GUI и форматированием сообщений.
-- Добавлен файл стилей `Widgets/Styles.(WidgetCss).xdb` с именем `alchemy-yellow-text` и настройками тега `alchemy`.
+- Добавлен файл стилей `Widgets/Styles.(WidgetCss).xdb` с именем `alchemy-yellow-text` и настройками тега `<alchemy>`.
 - Добавлен метод `AlchemyState:InvalidateReaction()` для корректного сброса флага успешной реакции и результатов поиска.
-- В глобальную таблицу `CONFIG` добавлены секции `GUI` (с параметрами отступов и размеров элементов) и `DND` (с параметрами `SAVE` и `CURSOR`), а также константа `DELAY_MS_UPDATE`.
+- В глобальную таблицу `CONFIG` добавлены секции:
+  - `GUI` (параметры отступов, размеров элементов и позиционирования).
+  - `DND` (параметры `SAVE` и `CURSOR`).
+  - Константа `DELAY_MS_UPDATE` для отложенных вызовов.
 
 ### Changed
 - Глобальный рефакторинг архитектуры: отказ от паттернов `Context`, `Manager` и `Bootstrap` в пользу прямой инициализации зависимостей в `AlchemyInit.lua`.
