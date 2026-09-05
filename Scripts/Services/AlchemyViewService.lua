@@ -119,7 +119,9 @@ function AlchemyViewService:FormatResults( found, maxDisplay, drumsCount )
         }
         
         for drumIndex = 1, drumsCount do
-			-- Форматирует сдвиг для отображения "% d"
+			-- Форматирует сдвиг для отображения "% d" = " 1" or "-1". Функция не умеет работать с подобными форматами:
+            -- common.FormatInt( -foundResult.shifts[ drumIndex ], "% d" )
+            -- Бьётся: "UI::LuaCommonFormatInt: РфQx"
             textValues[ "bulb" .. drumIndex ] = userMods.ToWString( string.format( "% d", -foundResult.shifts[ drumIndex ] ) )
         end
 		
