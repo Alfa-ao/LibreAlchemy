@@ -13,7 +13,7 @@ Global( "log", function( ... )
         var_dump( ... )
     else
         for _, value in ipairs { ... } do
-            common.LogInfo( "common", value )
+            common.LogInfo( "common", tostring(value) )
         end
     end
 end )
