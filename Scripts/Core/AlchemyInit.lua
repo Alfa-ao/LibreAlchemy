@@ -14,13 +14,13 @@ end
 --------------------------------------------------------------------------------
 -- Cостояние.
 --------------------------------------------------------------------------------
--- Здесь лежат все флаги (открыто ли окно, была ли варка успешной), кэши рецептов и т.д.
+-- State кэши рецептов и т.д.
 local state = AlchemyState { messageType = CONFIG.MESSAGE_GREETINGS }
 
 --------------------------------------------------------------------------------
 -- Сервисы.
 --------------------------------------------------------------------------------
--- Сервис лога. Просто включает вывод определенных категорий, чтобы не засорять mods.txt.
+-- Сервис лога. Включает вывод определенных категорий, чтобы не засорять mods.txt.
 local debugService = DebugService()
 debugService:Init { GENERAL = CONFIG.DEBUG, REACTION = CONFIG.DEBUG_REACTION }
 
@@ -32,8 +32,7 @@ localeService:Init( common.GetLocalization() )
 local templateService = AlchemyRelatedTextService()
 templateService:Init( "template" )
 
--- Сервис для работы с рецептами. При первом открытии алхимки он запрашивает у игры 
--- все 250+ доступных рецептов, сохраняет их в кэш, чтобы потом быстро фильтровать.
+-- Сервис для работы с рецептами. При первом открытии алхимки он запрашивает у игры все (250+) доступных рецептов, сохраняет их в кэш.
 local recipeService = AlchemyRecipeService()
 recipeService:Init( state )
 
@@ -52,7 +51,7 @@ drumShiftMapper:Init( state, recipeService )
 local searchAlgorithm = BacktrackingSearchAlgorithm()
 searchAlgorithm:Init( RecipeEvaluator() )
 
--- Фасад поиска. Связывает маппер и алгоритм воедино.
+-- Фасад поиска. Связывает маппер и алгоритм.
 local searchService = AlchemySearchService()
 searchService:Init( state, recipeService, drumShiftMapper, searchAlgorithm )
 
